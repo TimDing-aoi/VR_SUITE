@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <Setting Type="Optic Flow Settings">
+    <LifeSpan>0.25</LifeSpan>
+    <DrawDistance>15</DrawDistance>
+    <Density>50</Density>
+    <EyeMode>2</EyeMode>
+  </Setting>
+  <Setting Type="Joystick Settings">
+    <MaxLinearSpeed>2</MaxLinearSpeed>
+    <MaxAngularSpeed>90</MaxAngularSpeed>
+  </Setting>
+  <Setting Type="Firefly Settings">
+    <Size>0.25</Size>
+    <RewardZoneRadius>0.5</RewardZoneRadius>
+    <MinimumFireflyDistance>1</MinimumFireflyDistance>
+    <MaximumFireflyDistance>4</MaximumFireflyDistance>
+    <MinAngle>0</MinAngle>
+    <MaxAngle>44</MaxAngle>
+    <LeftRight>0.5</LeftRight>
+    <Ratio>0.1</Ratio>
+    <Reward>1</Reward>
+    <NumberofFireflies>1</NumberofFireflies>
+    <Timeout>10</Timeout>
+    <Frequency>0</Frequency>
+    <DutyCycle>0</DutyCycle>
+    <FireflyLifeSpan>0.3</FireflyLifeSpan>
+    <MinimumWaittoCheck>0.1</MinimumWaittoCheck>
+    <MaximumWaittoCheck>0.6</MaximumWaittoCheck>
+    <Mean1>0.2</Mean1>
+    <MinimumIntertrialWait>0.1</MinimumIntertrialWait>
+    <MaximumIntertrialWait>2</MaximumIntertrialWait>
+    <Mean2>0.5</Mean2>
+    <OpticFlowSeed>4547</OpticFlowSeed>
+    <FireflySeed>1517</FireflySeed>
+  </Setting>
+</Settings>
