@@ -1026,6 +1026,8 @@ public class Reward2D : MonoBehaviour
                        string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
                        string.Join(",", left.eye_openness, right.eye_openness)));
 
+                Console.WriteLine("{0} chars: {1}", sb.Length, sb.ToString());
+
                 if (ptb == 2)
                 {
                     sb.Append("\n");
