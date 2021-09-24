@@ -117,6 +117,7 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> toggleRatios = new List<float>();
     private bool isFlowToggle;
     private bool isGaussian;
+    private bool isArena;
     private float currentAmp = 0;
     private float currentAmpDur = 0;
     private Vector3 currentDirection;
@@ -572,9 +573,11 @@ public class Reward2D : MonoBehaviour
 
         isGaussian = PlayerPrefs.GetInt("Gaussian Perturbation ON") == 1;
         isFlowToggle = PlayerPrefs.GetInt("Optic Flow OnOff") == 1;
-
+        isArena = PlayerPrefs.GetInt("Arena Mode") == 1;
+        
         //print(isFlowToggle);
         //print(isGaussian);
+        //print(isArena);
 
         for (int i = 1; i < 13; i++)
         {
@@ -2809,9 +2812,9 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio").ToString());
             xmlWriter.WriteEndElement();
 
-            //xmlWriter.WriteStartElement("Reward");
-            //xmlWriter.WriteString(PlayerPrefs.GetFloat("Reward").ToString());
-            //xmlWriter.WriteEndElement();
+            xmlWriter.WriteStartElement("ArenaMode");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Arena Mode").ToString());
+            xmlWriter.WriteEndElement();
 
             xmlWriter.WriteStartElement("NumberofFireflies");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Number of Fireflies").ToString());

@@ -11,7 +11,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{902365B7-5771-78B6-F039-F1125DEFD006}</ProjectGuid>
+    <ProjectGuid>{3E73A5A1-6BC2-2FFB-1963-C4B919778700}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>SteamVR_Editor</AssemblyName>
@@ -263,43 +263,43 @@
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/PlaybackEngines/MetroSupport/UnityEditor.UWP.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="antlr.runtime">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/antlr.runtime.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/antlr.runtime.dll</HintPath>
  </Reference>
  <Reference Include="Antlr3.Runtime">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Antlr3.Runtime.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Antlr3.Runtime.dll</HintPath>
  </Reference>
  <Reference Include="ICSharpCode.SharpZipLib">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/ICSharpCode.SharpZipLib.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/ICSharpCode.SharpZipLib.dll</HintPath>
  </Reference>
  <Reference Include="LibGit2Sharp">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/LibGit2Sharp.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/LibGit2Sharp.dll</HintPath>
  </Reference>
  <Reference Include="log4net">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/log4net.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/log4net.dll</HintPath>
  </Reference>
  <Reference Include="Newtonsoft.Json.Net20">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Newtonsoft.Json.Net20.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Newtonsoft.Json.Net20.dll</HintPath>
  </Reference>
  <Reference Include="unityplastic">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/unityplastic.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/unityplastic.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Posix">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Mono.Posix.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Mono.Posix.dll</HintPath>
  </Reference>
  <Reference Include="Mono.WebBrowser">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Mono.WebBrowser.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Mono.WebBrowser.dll</HintPath>
  </Reference>
  <Reference Include="Ookii.Dialogs">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Ookii.Dialogs.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Ookii.Dialogs.dll</HintPath>
  </Reference>
  <Reference Include="System.Windows.Forms">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/System.Windows.Forms.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/System.Windows.Forms.dll</HintPath>
  </Reference>
  <Reference Include="Valve.Newtonsoft.Json">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="nunit.framework">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>
@@ -656,27 +656,27 @@
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
  </Reference>
  <Reference Include="Unity.XR.Management.Editor">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/Unity.XR.Management.Editor.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/Unity.XR.Management.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.XR.Management">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/Unity.XR.Management.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/Unity.XR.Management.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.TestRunner">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.TestRunner">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
  </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="SteamVR.csproj">
-      <Project>{BA7E6ED3-2DA3-304C-842E-4588012E0DEE}</Project>
+      <Project>{C49DBB7C-2311-B695-6224-3D8868324672}</Project>
       <Name>SteamVR</Name>
     </ProjectReference>
   </ItemGroup>

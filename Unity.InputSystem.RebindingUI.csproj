@@ -11,7 +11,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{64345EB2-4054-7537-FC2F-65AE4B6E3787}</ProjectGuid>
+    <ProjectGuid>{16855496-DC84-B613-F0D6-60D6728709C0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Unity.InputSystem.RebindingUI</AssemblyName>
@@ -258,40 +258,40 @@
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/PlaybackEngines/MetroSupport/UnityEditor.UWP.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="antlr.runtime">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/antlr.runtime.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/antlr.runtime.dll</HintPath>
  </Reference>
  <Reference Include="Antlr3.Runtime">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Antlr3.Runtime.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Antlr3.Runtime.dll</HintPath>
  </Reference>
  <Reference Include="ICSharpCode.SharpZipLib">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/ICSharpCode.SharpZipLib.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/ICSharpCode.SharpZipLib.dll</HintPath>
  </Reference>
  <Reference Include="LibGit2Sharp">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/LibGit2Sharp.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/LibGit2Sharp.dll</HintPath>
  </Reference>
  <Reference Include="log4net">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/log4net.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/log4net.dll</HintPath>
  </Reference>
  <Reference Include="Newtonsoft.Json.Net20">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Newtonsoft.Json.Net20.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/Newtonsoft.Json.Net20.dll</HintPath>
  </Reference>
  <Reference Include="unityplastic">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/Plugins/PlasticSCM/Editor/PlasticLib/unityplastic.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/Plugins/PlasticSCM/Editor/PlasticLib/unityplastic.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Posix">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Mono.Posix.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Mono.Posix.dll</HintPath>
  </Reference>
  <Reference Include="Mono.WebBrowser">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Mono.WebBrowser.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Mono.WebBrowser.dll</HintPath>
  </Reference>
  <Reference Include="Ookii.Dialogs">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/Ookii.Dialogs.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/Ookii.Dialogs.dll</HintPath>
  </Reference>
  <Reference Include="System.Windows.Forms">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/StandaloneFileBrowser/Plugins/System.Windows.Forms.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/StandaloneFileBrowser/Plugins/System.Windows.Forms.dll</HintPath>
  </Reference>
  <Reference Include="Valve.Newtonsoft.Json">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Assets/SteamVR/Input/Plugins/JSON.NET/Valve.Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>
@@ -648,13 +648,13 @@
  <HintPath>C:/Program Files/2019.3.15f1/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
  </Reference>
  <Reference Include="Unity.InputSystem">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/Unity.InputSystem.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/Unity.InputSystem.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Users/hd840/Desktop/VR_Suite/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ <HintPath>C:/Users/hd840/Desktop/VR/VR_SUITE/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
   </ItemGroup>
   <ItemGroup>
