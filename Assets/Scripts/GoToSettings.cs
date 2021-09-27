@@ -56,6 +56,7 @@ public class GoToSettings : MonoBehaviour
     public TMP_InputField max;
     public TMP_InputField dist;
     public TMP_InputField height;
+    public TMP_InputField ArenaMode;
     public GameObject panel;
     public TMP_Text error;
     public GameObject okayButton;
@@ -276,6 +277,10 @@ public class GoToSettings : MonoBehaviour
                 {
                     Debug.LogException(e, this);
                 }
+            }
+            else if (obj.name == "Arena Mode")
+            {
+                PlayerPrefs.SetInt(obj.name, int.Parse(input.text));
             }
             else
             {

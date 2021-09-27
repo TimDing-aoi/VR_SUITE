@@ -38,6 +38,7 @@ using UnityEngine;
 using static AlloEgoJoystick;
 using UnityEngine.SceneManagement;
 using System;
+using System.Collections;
 using UnityEngine.XR;
 
 public class Reward2D : MonoBehaviour
@@ -53,6 +54,7 @@ public class Reward2D : MonoBehaviour
     public Camera Rcam;
     public GameObject FP;
     public GameObject Marker;
+    public GameObject Arena;
     // public GameObject inner;
     // public GameObject outer;
     [Tooltip("Radius of firefly")]
@@ -117,7 +119,7 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> toggleRatios = new List<float>();
     private bool isFlowToggle;
     private bool isGaussian;
-    private bool isArena;
+    private int isArena;
     private float currentAmp = 0;
     private float currentAmpDur = 0;
     private Vector3 currentDirection;
@@ -573,8 +575,8 @@ public class Reward2D : MonoBehaviour
 
         isGaussian = PlayerPrefs.GetInt("Gaussian Perturbation ON") == 1;
         isFlowToggle = PlayerPrefs.GetInt("Optic Flow OnOff") == 1;
-        isArena = PlayerPrefs.GetInt("Arena Mode") == 1;
-        
+        isArena = PlayerPrefs.GetInt("Arena Mode");
+
         //print(isFlowToggle);
         //print(isGaussian);
         //print(isArena);
@@ -710,6 +712,33 @@ public class Reward2D : MonoBehaviour
         player_rotation_initial = player.transform.rotation;
 
         firefly.SetActive(false);
+
+        //Arena mode switch
+        switch (isArena)
+        {
+            case 1:
+                Arena = GameObject.Find("FirstArena");
+                if(Arena == null)
+                {
+                    print("No arena found!");
+                    break;
+                }
+                Arena.SetActive(true);
+                print("activating FirstArena");
+                break;
+
+            default:
+                //Default/off mode
+                Arena = GameObject.Find("FirstArena");
+                if (Arena == null)
+                {
+                    print("No arena found!");
+                    break;
+                }
+                Arena.SetActive(false);
+                print("No arena activated");
+                break;
+        }
     }
 
     /// <summary>

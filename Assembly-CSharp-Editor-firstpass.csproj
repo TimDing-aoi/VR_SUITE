@@ -724,6 +724,14 @@
       <Project>{6D87AB3D-A71F-B5E6-9A2B-BC5ECC915203}</Project>
       <Name>Assembly-CSharp-firstpass</Name>
     </ProjectReference>
+    <ProjectReference Include="Unity.PlayerPrefsEditor.Editor.csproj">
+      <Project>{4DA5BB88-AC6C-85BE-06E9-F47326351465}</Project>
+      <Name>Unity.PlayerPrefsEditor.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.PlayerPrefsEditor.EditorResources.csproj">
+      <Project>{0C619882-1D18-36CD-2EFB-C4CA993BE793}</Project>
+      <Name>Unity.PlayerPrefsEditor.EditorResources</Name>
+    </ProjectReference>
     <ProjectReference Include="SteamVR_Input_Editor.csproj">
       <Project>{5B3C512A-6911-FEB2-2822-CF82403ABC79}</Project>
       <Name>SteamVR_Input_Editor</Name>
@@ -747,6 +755,10 @@
     <ProjectReference Include="Unity.PlasticSCM.Editor.csproj">
       <Project>{E6648C62-9F38-6870-E2C2-A969FF282D40}</Project>
       <Name>Unity.PlasticSCM.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.PlayerPrefsEditor.Samples.SampleScene.csproj">
+      <Project>{1F89AA13-882B-09EA-7768-AD728081D160}</Project>
+      <Name>Unity.PlayerPrefsEditor.Samples.SampleScene</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
