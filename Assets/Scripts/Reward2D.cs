@@ -274,7 +274,7 @@ public class Reward2D : MonoBehaviour
     private int seed;
     private System.Random rand;
 
-    private bool on = true;
+    private bool FlashingOn = true;
     
     // above/below threshold
     private bool ab = true;
@@ -772,28 +772,6 @@ public class Reward2D : MonoBehaviour
     void Update()
     {
         phaseString = currPhase.ToString();
-        //print(phaseString);
-
-        //if (playing)
-        //{
-        //    switch (phase)
-        //    {
-        //        case Phases.begin:
-        //            phase = Phases.none;
-        //            if (mode == Modes.ON)
-        //            {
-        //                if (nFF > 1)
-        //                {
-        //                    toggle = true;
-        //                    first = false;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                toggle = rand.NextDouble() <= ratio;
-        //            }
-        //            currentTask = Begin();
-        //            break;
         if (playing && Time.realtimeSinceStartup - programT0 > 0.3f)
         {
             switch (phase)
@@ -860,18 +838,6 @@ public class Reward2D : MonoBehaviour
     {
         var tNow = Time.realtimeSinceStartup;
 
-        //if (idx < 10)
-        //{
-        //    avgSpeed += Vector3.Magnitude(player.transform.position - prevPos) / (tNow - timeSinceLastFixedUpdate);
-        //    idx++;
-        //}
-        //else
-        //{
-        //    print(avgSpeed / 10);
-        //    avgSpeed = 0;
-        //    idx = 0;
-        //}
-
         prevPos = player.transform.position;
 
         particleSystem.transform.position = player.transform.position - (Vector3.up * (p_height - 0.0001f));
@@ -905,11 +871,6 @@ public class Reward2D : MonoBehaviour
                     isBegin = false;
                 }
             }
-            //else if (isCheck)
-            //{
-            //    checkTime.Add(Time.realtimeSinceStartup - programT0);
-            //    isCheck = false;
-            //}
 
 
 
@@ -954,15 +915,6 @@ public class Reward2D : MonoBehaviour
                 checkTimeString = "";
                 isEnd = false;
             }
-
-            //if (nFF > 1)
-            //{
-            //    onoff.Add(pooledFF[0].GetComponent<SpriteRenderer>().enabled);
-            //}
-            //else
-            //{
-            //    onoff.Add(firefly.activeInHierarchy);
-            //}
 
             ///This part I'll have to work on later, but it's getting there; basically, I can make it so that there's no sudden jump to 0 but the data still records as such,
             ///but only for the player position. I still have to figure out the firefly position and rotation, as well as spawning the firefly in the correct position in
@@ -1371,11 +1323,11 @@ public class Reward2D : MonoBehaviour
                 case Modes.ON:
                     foreach (GameObject FF in pooledFF)
                     {
-                        FF.SetActive(true);
+                        flashTask = SequentialFlash(FF, 1);
                     }
                     break;
                 case Modes.Flash:
-                    on = true;
+                    FlashingOn = true;
                     foreach (GameObject FF in pooledFF)
                     {
                         flashTask = Flash(FF);
@@ -1422,7 +1374,7 @@ public class Reward2D : MonoBehaviour
                         onDur.Add(lifeSpan);
                         foreach (GameObject FF in pooledFF)
                         {
-                            FF.SetActive(true);
+                            flashTask = SequentialFlash(FF, 1);
                         }
                         await new WaitForSeconds(lifeSpan);
                         foreach (GameObject FF in pooledFF)
@@ -1444,7 +1396,7 @@ public class Reward2D : MonoBehaviour
                     firefly.SetActive(true);
                     break;
                 case Modes.Flash:
-                    on = true;
+                    FlashingOn = true;
                     flashTask = Flash(firefly);
                     break;
                 case Modes.Fixed:
@@ -1606,7 +1558,7 @@ public class Reward2D : MonoBehaviour
 
         if (mode == Modes.Flash)
         {
-            on = false;
+            FlashingOn = false;
         }
 
         //if (toggle)
@@ -2374,7 +2326,7 @@ public class Reward2D : MonoBehaviour
     /// 
     public async Task Flash(GameObject obj)
     {
-        while (on)
+        while (FlashingOn)
         {
             if (toggle && !obj.activeInHierarchy)
             {
@@ -2387,6 +2339,25 @@ public class Reward2D : MonoBehaviour
                 obj.GetComponent<SpriteRenderer>().enabled = false;
                 await new WaitForSeconds((1f / freq) - PW);
             }
+        }
+    }
+
+    public async Task SequentialFlash(GameObject obj, int SequentialMode)
+    {
+        if (SequentialMode == 0)
+        {
+            obj.GetComponent<SpriteRenderer>().enabled = true;
+            await new WaitForSeconds(5);
+            obj.GetComponent<SpriteRenderer>().enabled = false;
+        } else if (SequentialMode == 1)
+        {
+
+            print("trying to flash ff");
+            obj.GetComponent<SpriteRenderer>().enabled = true;
+            await new WaitForSeconds(3);
+            obj.GetComponent<SpriteRenderer>().enabled = false;
+            await new WaitForSeconds(2);
+            obj.GetComponent<SpriteRenderer>().enabled = true;
         }
     }
 
