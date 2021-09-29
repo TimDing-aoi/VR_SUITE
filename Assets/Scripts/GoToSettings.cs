@@ -278,7 +278,7 @@ public class GoToSettings : MonoBehaviour
                     Debug.LogException(e, this);
                 }
             }
-            else if (obj.name == "Arena Mode")
+            else if (obj.name == "Arena Mode" || obj.name == "SingleFFSequential")
             {
                 PlayerPrefs.SetInt(obj.name, int.Parse(input.text));
             }

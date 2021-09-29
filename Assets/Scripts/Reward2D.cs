@@ -79,6 +79,7 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public float duty;
     // Pulse Width; how long in seconds it stays on during one period
     private float PW;
+    private float SequentialOnTime;
     public GameObject player;
     public AudioSource audioSource;
     public AudioClip winSound;
@@ -120,6 +121,7 @@ public class Reward2D : MonoBehaviour
     private bool isFlowToggle;
     private bool isGaussian;
     private int isArena;
+    private bool SingleFFSequential;
     private float currentAmp = 0;
     private float currentAmpDur = 0;
     private Vector3 currentDirection;
@@ -388,19 +390,6 @@ public class Reward2D : MonoBehaviour
         mesh = arrow.GetComponent<MeshRenderer>();
         mesh.enabled = false;
 
-        //string fireflyLocationCSVPath = "C:\\Users\\lab\\Desktop\\fireflyPoints.csv";
-
-        //using (var reader = new StreamReader(fireflyLocationCSVPath))
-        //{
-        //    while (!reader.EndOfStream)
-        //    {
-        //        var line = reader.ReadLine();
-        //        var values = line.Split(',');
-
-        //        fixedLocations.Add(new Vector2(float.Parse(values[0]), float.Parse(values[1])));
-        //    }
-        //}
-
         ntrials = (int)PlayerPrefs.GetFloat("Num Trials");
         if (ntrials == 0) ntrials = 9999;
         seed = UnityEngine.Random.Range(1, 10000);
@@ -576,6 +565,7 @@ public class Reward2D : MonoBehaviour
         isGaussian = PlayerPrefs.GetInt("Gaussian Perturbation ON") == 1;
         isFlowToggle = PlayerPrefs.GetInt("Optic Flow OnOff") == 1;
         isArena = PlayerPrefs.GetInt("Arena Mode");
+        SingleFFSequential = PlayerPrefs.GetInt("SingleFFSequential") == 1;
 
         //print(isFlowToggle);
         //print(isGaussian);
@@ -683,6 +673,7 @@ public class Reward2D : MonoBehaviour
         timeout = PlayerPrefs.GetFloat("Timeout");
         path = PlayerPrefs.GetString("Path");
         rewardAmt = PlayerPrefs.GetFloat("Reward");
+        SequentialOnTime = PlayerPrefs.GetFloat("SequentialOnTime");
         trialNum = 0;
 
         player.transform.position = new Vector3(0.0f, p_height, 0.0f);
@@ -1323,7 +1314,19 @@ public class Reward2D : MonoBehaviour
                 case Modes.ON:
                     foreach (GameObject FF in pooledFF)
                     {
-                        flashTask = SequentialFlash(FF, 1);
+                        foreach (GameObject FF1 in pooledFF)
+                        {
+                            if (SingleFFSequential)
+                            {
+                                FF1.SetActive(false);
+                            }
+                        }
+                        FF.SetActive(true);
+                        await new WaitForSeconds(SequentialOnTime);
+                    }
+                    foreach (GameObject FF in pooledFF)
+                    {
+                        FF.SetActive(true);
                     }
                     break;
                 case Modes.Flash:
@@ -1374,7 +1377,19 @@ public class Reward2D : MonoBehaviour
                         onDur.Add(lifeSpan);
                         foreach (GameObject FF in pooledFF)
                         {
-                            flashTask = SequentialFlash(FF, 1);
+                            FF.SetActive(false);
+                        }
+                        foreach (GameObject FF in pooledFF)
+                        {
+                            foreach (GameObject FF1 in pooledFF)
+                            {
+                                if (SingleFFSequential)
+                                {
+                                    FF1.SetActive(false);
+                                }
+                            }
+                            FF.SetActive(true);
+                            await new WaitForSeconds(SequentialOnTime);
                         }
                         await new WaitForSeconds(lifeSpan);
                         foreach (GameObject FF in pooledFF)
@@ -2339,25 +2354,6 @@ public class Reward2D : MonoBehaviour
                 obj.GetComponent<SpriteRenderer>().enabled = false;
                 await new WaitForSeconds((1f / freq) - PW);
             }
-        }
-    }
-
-    public async Task SequentialFlash(GameObject obj, int SequentialMode)
-    {
-        if (SequentialMode == 0)
-        {
-            obj.GetComponent<SpriteRenderer>().enabled = true;
-            await new WaitForSeconds(5);
-            obj.GetComponent<SpriteRenderer>().enabled = false;
-        } else if (SequentialMode == 1)
-        {
-
-            print("trying to flash ff");
-            obj.GetComponent<SpriteRenderer>().enabled = true;
-            await new WaitForSeconds(3);
-            obj.GetComponent<SpriteRenderer>().enabled = false;
-            await new WaitForSeconds(2);
-            obj.GetComponent<SpriteRenderer>().enabled = true;
         }
     }
 
