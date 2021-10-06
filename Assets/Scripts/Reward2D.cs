@@ -642,7 +642,7 @@ public class Reward2D : MonoBehaviour
                 obj.SetActive(true);
                 //Nasta Need to add a delay here to create sequential flash
                 obj.GetComponent<SpriteRenderer>().enabled = true;
-                Debug.Log("reads multiple ff");
+                //Debug.Log("reads multiple ff");
                 if (multiMode == 1)
                 {
                     switch (i)
@@ -921,6 +921,7 @@ public class Reward2D : MonoBehaviour
                 float z;
                 Vector3 location = Vector3.zero;
                 float direction = 0.0f;
+                string collidername = "null";
                 var left = new SingleEyeData();
                 var right = new SingleEyeData();
                 var combined = new CombinedEyeData();
@@ -939,6 +940,8 @@ public class Reward2D : MonoBehaviour
 
                     location = tuple.Item1;
                     direction = tuple.Item2;
+                    collidername = tuple.Item3;
+                    //print(collidername);
 
                     if (Camera.main.gameObject.activeInHierarchy)
                     {
@@ -983,7 +986,7 @@ public class Reward2D : MonoBehaviour
                 
                 
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
+                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                        trialNum,
                        Time.realtimeSinceStartup,
                        (int)currPhase,
@@ -999,7 +1002,8 @@ public class Reward2D : MonoBehaviour
                        location.ToString("F8").Trim(toTrim).Replace(" ", ""),
                        direction,
                        string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
-                       string.Join(",", left.eye_openness, right.eye_openness)));
+                       string.Join(",", left.eye_openness, right.eye_openness),
+                       collidername));
 
                 Console.WriteLine("{0} chars: {1}", sb.Length, sb.ToString());
 
@@ -1084,7 +1088,7 @@ public class Reward2D : MonoBehaviour
                     ffPositions[i] = position;
                     //tooClose = false;
 
-                    Debug.Log(tooClose);
+                    //Debug.Log(tooClose);
 
                 } while (tooClose);
             }
@@ -1318,15 +1322,15 @@ public class Reward2D : MonoBehaviour
                         {
                             if (SingleFFSequential)
                             {
-                                FF1.SetActive(false);
+                                FF1.GetComponent<SpriteRenderer>().enabled = false;
                             }
                         }
-                        FF.SetActive(true);
+                        FF.GetComponent<SpriteRenderer>().enabled = true;
                         await new WaitForSeconds(SequentialOnTime);
                     }
                     foreach (GameObject FF in pooledFF)
                     {
-                        FF.SetActive(true);
+                        FF.GetComponent<SpriteRenderer>().enabled = true;
                     }
                     break;
                 case Modes.Flash:
@@ -1341,8 +1345,19 @@ public class Reward2D : MonoBehaviour
                     {
                         foreach (GameObject FF in pooledFF)
                         {
-                            FF.SetActive(true);
-                            // Add alwaysON for all fireflies
+                            foreach (GameObject FF1 in pooledFF)
+                            {
+                                if (SingleFFSequential)
+                                {
+                                    FF1.GetComponent<SpriteRenderer>().enabled = false;
+                                }
+                            }
+                            FF.GetComponent<SpriteRenderer>().enabled = true;
+                            await new WaitForSeconds(SequentialOnTime);
+                        }
+                        foreach (GameObject FF in pooledFF)
+                        {
+                            FF.GetComponent<SpriteRenderer>().enabled = true;
                         }
                     }
                     else
@@ -1377,7 +1392,7 @@ public class Reward2D : MonoBehaviour
                         onDur.Add(lifeSpan);
                         foreach (GameObject FF in pooledFF)
                         {
-                            FF.SetActive(false);
+                            FF.GetComponent<SpriteRenderer>().enabled = false;
                         }
                         foreach (GameObject FF in pooledFF)
                         {
@@ -1385,16 +1400,16 @@ public class Reward2D : MonoBehaviour
                             {
                                 if (SingleFFSequential)
                                 {
-                                    FF1.SetActive(false);
+                                    FF1.GetComponent<SpriteRenderer>().enabled = false;
                                 }
                             }
-                            FF.SetActive(true);
+                            FF.GetComponent<SpriteRenderer>().enabled = true;
                             await new WaitForSeconds(SequentialOnTime);
                         }
                         await new WaitForSeconds(lifeSpan);
                         foreach (GameObject FF in pooledFF)
                         {
-                            FF.SetActive(false);
+                            FF.GetComponent<SpriteRenderer>().enabled = false;
                         }
                     }
                     break;
@@ -1537,7 +1552,7 @@ public class Reward2D : MonoBehaviour
         }
         phase = Phases.trial;
         currPhase = Phases.trial;
-        Debug.Log("Begin Phase End.");
+        //Debug.Log("Begin Phase End.");
     }
 
     /// <summary>
@@ -1648,7 +1663,7 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Check()
     {
-        Debug.Log(loopCount);
+        //Debug.Log(loopCount);
 
         string ffPosStr = "";
 
@@ -1736,7 +1751,7 @@ public class Reward2D : MonoBehaviour
                 
             }
 
-            Debug.Log(ffPosStr.Substring(1));
+            //Debug.Log(ffPosStr.Substring(1));
 
             distance = Vector3.Distance(pPos, pooledFF[loopCount].transform.position);
             //print(distance);
@@ -2428,18 +2443,20 @@ public class Reward2D : MonoBehaviour
     /// <param name="origin"></param> Vector3 describing origin of ray
     /// <param name="direction"></param> Vector3 describing direction of ray
     /// <returns></returns>
-    public (Vector3, float) CalculateConvergenceDistanceAndCoords(Vector3 origin, Vector3 direction, int layerMask)
+    public (Vector3, float, string) CalculateConvergenceDistanceAndCoords(Vector3 origin, Vector3 direction, int layerMask)
     {
+        string collidername = "null";
         Vector3 coords = Vector3.zero;
         float hit = Mathf.Infinity;
 
         if (Physics.Raycast(origin, Quaternion.AngleAxis(Vector3.SignedAngle(Vector3.forward, player.transform.forward, Vector3.up), Vector3.up) * direction, out RaycastHit hitInfo, Mathf.Infinity, layerMask))
         {
+            collidername = hitInfo.collider.name;
             coords = hitInfo.point;
             hit = hitInfo.distance;
         }
 
-        return (coords, hit);
+        return (coords, hit, collidername);
     }
 
 
