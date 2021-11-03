@@ -98,9 +98,10 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public float lifeSpan;
     [Tooltip("How many fireflies can appear at once")]
     [HideInInspector] public float nFF;
-    int multiMode=1;
+    int multiMode = 0;
     readonly public List<float> velocities = new List<float>();
     readonly public List<float> v_ratios = new List<float>();
+    readonly public List<float> v_noises = new List<float>();
     readonly public List<Vector3> directions = new List<Vector3>()
     {
         Vector3.left,
@@ -117,6 +118,7 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> toggleRatios = new List<float>();
     private bool isFlowToggle;
     private bool isGaussian;
+    bool isMoving2FF = false;
     private float currentAmp = 0;
     private float currentAmpDur = 0;
     private Vector3 currentDirection;
@@ -190,8 +192,9 @@ public class Reward2D : MonoBehaviour
     readonly List<float> max_v = new List<float>();
     readonly List<float> max_w = new List<float>();
 
-    // Firefly velocity
+    // Firefly velocity & SD
     readonly List<float> fv = new List<float>();
+    readonly List<float> fvSD = new List<float>();
 
     // Distances from player to firefly
     readonly List<string> dist = new List<string>();
@@ -296,7 +299,10 @@ public class Reward2D : MonoBehaviour
 
     [HideInInspector] public float initialD = 0.0f;
 
+    private Vector3 direction = new Vector3();
     private float velocity;
+    private float noise_SD;
+    private float velocity_Noised;
 
     public GameObject arrow;
     private MeshRenderer mesh;
@@ -410,6 +416,8 @@ public class Reward2D : MonoBehaviour
         checkMax = PlayerPrefs.GetFloat("Maximum Wait to Check");
         interMin = PlayerPrefs.GetFloat("Minimum Intertrial Wait");
         interMax = PlayerPrefs.GetFloat("Maximum Intertrial Wait");
+        print(checkMax);
+        print(checkMin);
         c_min = Tcalc(checkMin, c_lambda);
         c_max = Tcalc(checkMax, c_lambda);
         i_min = Tcalc(interMin, c_lambda);
@@ -419,11 +427,22 @@ public class Reward2D : MonoBehaviour
         minDrawDistance = PlayerPrefs.GetFloat("Minimum Firefly Distance");
         maxDrawDistance = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
-        nFF = PlayerPrefs.GetFloat("Number of Fireflies");
+        if (isMoving2FF)
+        {
+            nFF = 20;
+        }
+        else
+        {
+            nFF = PlayerPrefs.GetFloat("Number of Fireflies");
+        }
 
         for (int i = 0; i < nFF; i++)
         {
             distances.Add(0.0f);
+            if (isMoving2FF)
+            {
+                distances[i] = 5;
+            }
         }
         //Nasta Added for sequential
         // Get ranges based on number of ff
@@ -548,6 +567,18 @@ public class Reward2D : MonoBehaviour
         v_ratios.Add(PlayerPrefs.GetFloat("VR11"));
         v_ratios.Add(PlayerPrefs.GetFloat("VR12"));
 
+        v_noises.Add(PlayerPrefs.GetFloat("VN1"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN2"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN3"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN4"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN5"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN6"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN7"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN8"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN9"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN10"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN11"));
+        v_noises.Add(PlayerPrefs.GetFloat("VN12"));
         for (int i = 1; i < 12; i++)
         {
             v_ratios[i] = v_ratios[i] + v_ratios[i - 1];
@@ -908,7 +939,19 @@ public class Reward2D : MonoBehaviour
             //Nasta Add Ends
             if (isMoving && nFF < 2)
             {
+                System.Random randNoise = new System.Random();
+                double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                double u2 = 1.0 - randNoise.NextDouble();
+                double randStdNormal = noise_SD * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                             Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+                                                           //double randNormal =
+                                                           //mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+                print(randStdNormal);
+                Vector3 temp = move;
+                move = move + (direction * (float)randStdNormal);
+                velocity_Noised = velocity + (float)randStdNormal;
                 firefly.transform.position += move * Time.deltaTime;
+                move = temp;
             }
 
             if (isEnd)
@@ -918,9 +961,12 @@ public class Reward2D : MonoBehaviour
                 {
                     onDur.Add(endTime[endTime.Count - 1] - beginTime[beginTime.Count - 1]);
                 }
-                checkTimeStrList.Add(checkTimeString.Substring(1));
-                checkTimeString = "";
-                isEnd = false;
+                if (multiMode == 1)
+                {
+                    checkTimeStrList.Add(checkTimeString.Substring(1));
+                    checkTimeString = "";
+                    isEnd = false;
+                }
             }
 
             //if (nFF > 1)
@@ -1018,7 +1064,7 @@ public class Reward2D : MonoBehaviour
                        SharedJoystick.cleanVel,
                        SharedJoystick.cleanRot,
                        transformedFFPos,
-                       velocity,
+                       velocity_Noised,
                        string.Join(",", x, y, z),
                        string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
                        location.ToString("F8").Trim(toTrim).Replace(" ", ""),
@@ -1252,64 +1298,75 @@ public class Reward2D : MonoBehaviour
             {
                 //v1
                 velocity = velocities[0];
+                noise_SD = v_noises[0];
             }
             else if (r > v_ratios[0] && r <= v_ratios[1])
             {
                 //v2
                 velocity = velocities[1];
+                noise_SD = v_noises[1];
             }
             else if (r > v_ratios[1] && r <= v_ratios[2])
             {
                 //v3
                 velocity = velocities[2];
+                noise_SD = v_noises[2];
             }
             else if (r > v_ratios[2] && r <= v_ratios[3])
             {
                 //v4
                 velocity = velocities[3];
+                noise_SD = v_noises[3];
             }
             else if (r > v_ratios[3] && r <= v_ratios[4])
             {
                 //v5
                 velocity = velocities[4];
+                noise_SD = v_noises[4];
             }
             else if (r > v_ratios[4] && r <= v_ratios[5])
             {
                 //v6
                 velocity = velocities[5];
+                noise_SD = v_noises[5];
             }
             else if (r > v_ratios[5] && r <= v_ratios[6])
             {
                 //v7
                 velocity = velocities[6];
+                noise_SD = v_noises[6];
             }
             else if (r > v_ratios[6] && r <= v_ratios[7])
             {
                 //v8
                 velocity = velocities[7];
+                noise_SD = v_noises[7];
             }
             else if (r > v_ratios[7] && r <= v_ratios[8])
             {
                 //v9
                 velocity = velocities[8];
+                noise_SD = v_noises[8];
             }
             else if (r > v_ratios[8] && r <= v_ratios[9])
             {
                 //v10
                 velocity = velocities[9];
+                noise_SD = v_noises[9];
             }
             else if (r > v_ratios[9] && r <= v_ratios[10])
             {
                 //v11
                 velocity = velocities[10];
+                noise_SD = v_noises[10];
             }
             else
             {
                 //v12
                 velocity = velocities[11];
+                noise_SD = v_noises[11];
             }
 
-            var direction = new Vector3();
             if (LRFB)
             {
                 direction = player.transform.right;
@@ -1318,12 +1375,14 @@ public class Reward2D : MonoBehaviour
             {
                 direction = player.transform.forward;
             }
-            fv.Add(velocity);
             move = direction * velocity;
+            fv.Add(velocity);
+            fvSD.Add(noise_SD);
         }
         else
         {
             fv.Add(0.0f);
+            fvSD.Add(0.0f);
         }
 
 
@@ -2061,12 +2120,18 @@ public class Reward2D : MonoBehaviour
                 do
                 {
                     tooClose = false;
+
                     float r_i = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
+                    if (isMoving2FF)
+                    {
+                        r_i = 10;
+                    }
                     float angle_i = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
                     if (LR != 0.5f)
                     {
                         float side_i = rand.NextDouble() < LR ? 1 : -1;
-                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle_i * side_i, Vector3.up) * player.transform.forward * r_i;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + 
+                            Quaternion.AngleAxis(angle_i * side_i, Vector3.up) * player.transform.forward * r_i;
                     }
                     else
                     {
@@ -2482,16 +2547,16 @@ public class Reward2D : MonoBehaviour
 
                 if (nFF > 1 && multiMode == 1)
                 {
-                    firstLine = string.Format("n,max_v,max_w,ffv,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}{1}{2}{3}rewarded,timeout,beginTime,{4}endTime,checkWait,interWait", ffPosStr, cPosStr, cRotStr, distStr, checkStr);
+                    firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}{1}{2}{3}rewarded,timeout,beginTime,{4}endTime,checkWait,interWait", ffPosStr, cPosStr, cRotStr, distStr, checkStr);
                 }
                 else
                 {
-                    firstLine = string.Format("n,max_v,max_w,ffv,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait", ffPosStr, distStr);
+                    firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait", ffPosStr, distStr);
                 }
             }
             else
             {
-                firstLine = "n,max_v,max_w,ffv,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait," + PlayerPrefs.GetString("Name") + "," + PlayerPrefs.GetString("Date") + "," + PlayerPrefs.GetInt("Run Number").ToString("D3");
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait," + PlayerPrefs.GetString("Name") + "," + PlayerPrefs.GetString("Date") + "," + PlayerPrefs.GetInt("Run Number").ToString("D3");
             }
 
             csvDisc.AppendLine(firstLine);
@@ -2515,6 +2580,7 @@ public class Reward2D : MonoBehaviour
                 max_v.Count,
                 max_w.Count,
                 fv.Count,
+                fvSD.Count,
                 onDur.Count,
             };
             if (ptb != 2)
@@ -2558,11 +2624,12 @@ public class Reward2D : MonoBehaviour
                 {
                     //     firstLine = string.Format("n,max_v,max_w,ffv,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}timeout,beginTime,{2}rewardTime,endTime,checkWait,interWait", ffPosStr, distStr, checkStr);
 
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
                         onDur[i],
                         origin[i],
                         heading[i],
@@ -2586,11 +2653,12 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
                         onDur[i],
                         origin[i],
                         heading[i],
@@ -2614,11 +2682,12 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
                         onDur[i],
                         answer[i],
                         origin[i],
@@ -3018,6 +3087,54 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("VR12");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("VR12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN11");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN11").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN12");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN12").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
