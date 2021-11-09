@@ -39,6 +39,8 @@ using static AlloEgoJoystick;
 using UnityEngine.SceneManagement;
 using System;
 using UnityEngine.XR;
+using TMPro;
+using System.Linq;
 
 public class Reward2D : MonoBehaviour
 {
@@ -49,6 +51,11 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public int lineOnOff = 0;
     public GameObject marker;
     public GameObject panel;
+
+    //Stochastic FF variables
+    public GameObject scoring;
+    private float score2FF;
+
     public Camera Lcam;
     public Camera Rcam;
     public GameObject FP;
@@ -78,6 +85,10 @@ public class Reward2D : MonoBehaviour
     // Pulse Width; how long in seconds it stays on during one period
     private float PW;
     public GameObject player;
+    public GameObject FPS;
+    private Vector3 initialPposition;
+    private Vector3 initialPforward;
+    private float initialRotation;
     public AudioSource audioSource;
     public AudioClip winSound;
     public AudioClip neutralSound;
@@ -118,7 +129,6 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> toggleRatios = new List<float>();
     private bool isFlowToggle;
     private bool isGaussian;
-    bool isMoving2FF = false;
     private float currentAmp = 0;
     private float currentAmpDur = 0;
     private Vector3 currentDirection;
@@ -242,6 +252,15 @@ public class Reward2D : MonoBehaviour
     readonly List<float> tautau = new List<float>();
     readonly List<float> filterTau = new List<float>();
 
+    //moving2FF task data
+    readonly List<float> scores2FF = new List<float>();
+    readonly List<float> sigma1s = new List<float>();
+    readonly List<float> sigma2s = new List<float>();
+    readonly List<float> means2ff = new List<float>();
+    readonly List<int> N2ff = new List<int>();
+    readonly List<float> deltaTs = new List<float>();
+    readonly List<float> spawnradius = new List<float>();
+
     [HideInInspector] public float FrameTimeElement = 0;
 
     [HideInInspector] public float delayTime = .2f;
@@ -283,6 +302,7 @@ public class Reward2D : MonoBehaviour
     private bool isFull = false;
 
     public bool isBegin = false;
+    public bool isTrial = false;
     private bool isCheck = false;
     private bool isEnd = false;
 
@@ -303,6 +323,15 @@ public class Reward2D : MonoBehaviour
     private float velocity;
     private float noise_SD;
     private float velocity_Noised;
+
+    //Stochastic FF Variables
+    private float sigma1;
+    private float sigma2;
+    private float mean;
+    private float stochasticRadius;
+    private float LootDeltaT;
+    private int StochasticFFN;
+    bool isMoving2FF;
 
     public GameObject arrow;
     private MeshRenderer mesh;
@@ -342,6 +371,7 @@ public class Reward2D : MonoBehaviour
     float rotationThreshold;
 
     float timeSinceLastFixedUpdate;
+    float timeSinceLastFFloot;
 
     List<Vector2> fixedLocations = new List<Vector2>();
 
@@ -427,9 +457,17 @@ public class Reward2D : MonoBehaviour
         minDrawDistance = PlayerPrefs.GetFloat("Minimum Firefly Distance");
         maxDrawDistance = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
+        sigma1 = PlayerPrefs.GetFloat("Sigma1");
+        sigma2 = PlayerPrefs.GetFloat("Sigma2");
+        mean = PlayerPrefs.GetFloat("Means");
+        stochasticRadius = PlayerPrefs.GetFloat("FFRadius");
+        StochasticFFN = (int)PlayerPrefs.GetFloat("NFFperSigma");
+        isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
+        LootDeltaT = PlayerPrefs.GetFloat("LootDeltaT");
+        print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
         if (isMoving2FF)
         {
-            nFF = 20;
+            nFF = StochasticFFN * 2;
         }
         else
         {
@@ -439,10 +477,6 @@ public class Reward2D : MonoBehaviour
         for (int i = 0; i < nFF; i++)
         {
             distances.Add(0.0f);
-            if (isMoving2FF)
-            {
-                distances[i] = 5;
-            }
         }
         //Nasta Added for sequential
         // Get ranges based on number of ff
@@ -499,9 +533,9 @@ public class Reward2D : MonoBehaviour
             }
         }
         //Nasta Add ends
-        Debug.Log("This is ranges");
-        Debug.Log(string.Join(",", ranges));
-        Debug.Log(ffPositions.Count);
+        //Debug.Log("This is ranges");
+        //Debug.Log(string.Join(",", ranges));
+        //Debug.Log(ffPositions.Count);
 
 
         LR = 0.5f;//PlayerPrefs.GetFloat("Left Right");
@@ -678,7 +712,7 @@ public class Reward2D : MonoBehaviour
                 obj.SetActive(true);
                 //Nasta Need to add a delay here to create sequential flash
                 obj.GetComponent<SpriteRenderer>().enabled = true;
-                Debug.Log("reads multiple ff");
+                //Debug.Log("reads multiple ff");
                 if (multiMode == 1)
                 {
                     switch (i)
@@ -717,9 +751,18 @@ public class Reward2D : MonoBehaviour
         contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
 
         string firstLine = "";
-        if (ptb == 2)
+        if (ptb == 2 && !isMoving2FF)
         {
             firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen\n";
+        }
+        else if (isMoving2FF)
+        {
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen";
+            for (int i = 0; i < nFF; i++)
+            {
+                firstLine = firstLine + ",FF" + i + "x" + ",FF" + i + "z";
+            }
+            firstLine = firstLine + "\n";
         }
         else
         {
@@ -729,6 +772,7 @@ public class Reward2D : MonoBehaviour
   
         programT0 = Time.realtimeSinceStartup;
         timeSinceLastFixedUpdate = Time.realtimeSinceStartup;
+        timeSinceLastFFloot = Time.realtimeSinceStartup;
         currPhase = Phases.begin;
         phase = Phases.begin;
 
@@ -909,8 +953,43 @@ public class Reward2D : MonoBehaviour
             //    checkTime.Add(Time.realtimeSinceStartup - programT0);
             //    isCheck = false;
             //}
-
-
+            if (isTrial)
+            {
+                if(tNow - timeSinceLastFFloot >= (Time.fixedDeltaTime)*LootDeltaT && LootDeltaT != 0){
+                    if (isMoving2FF)
+                    {
+                        //print("looting");
+                        Vector3 positioni;
+                        positioni.y = 0.0001f;
+                        Vector3 positionj;
+                        positionj.y = 0.0001f;
+                        float ri = stochasticRadius + (float)rand.NextDouble();
+                        float rj = stochasticRadius + (float)rand.NextDouble();
+                        double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - rand.NextDouble();
+                        int i = rand.Next(0, StochasticFFN);
+                        int j = rand.Next(StochasticFFN, 2*StochasticFFN);
+                        //print(i);
+                        //print(j);
+                        double randStdNormali = mean + sigma1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        double randStdNormalj = -mean + sigma2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        float anglei = (1 + (float)randStdNormali) * (maxPhi - minPhi) / 2 + minPhi;
+                        float anglej = (1 + (float)randStdNormalj) * (maxPhi - minPhi) / 2 + minPhi;
+                        //print(randStdNormal);
+                        positioni = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(anglei, Vector3.up) * initialPforward * ri;
+                        positionj = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(anglej, Vector3.up) * initialPforward * rj;
+                        pooledFF[i].transform.position = positioni;
+                        pooledFF[j].transform.position = positionj;
+                        ffPositions[i] = positioni;
+                        ffPositions[i] = positionj;
+                        timeSinceLastFFloot = tNow;
+                    }
+                }
+            }
 
             //Nasta Added for sequential
             if (isCheck)
@@ -946,7 +1025,7 @@ public class Reward2D : MonoBehaviour
                              Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
                                                            //double randNormal =
                                                            //mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
-                print(randStdNormal);
+                //print(randStdNormal);
                 Vector3 temp = move;
                 move = move + (direction * (float)randStdNormal);
                 velocity_Noised = velocity + (float)randStdNormal;
@@ -1072,8 +1151,18 @@ public class Reward2D : MonoBehaviour
                        string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
                        string.Join(",", left.eye_openness, right.eye_openness)));
 
-                if (ptb == 2)
+                if (ptb == 2 && !isMoving2FF)
                 {
+                    sb.Append("\n");
+                }
+                else if (isMoving2FF)
+                {
+                    string ffPosStr = "";
+                    foreach (GameObject FF in pooledFF)
+                    {
+                        ffPosStr = ffPosStr + "," + FF.transform.position.x + "," + FF.transform.position.z;
+                    }
+                    sb.Append(ffPosStr);
                     sb.Append("\n");
                 }
                 else
@@ -1160,6 +1249,7 @@ public class Reward2D : MonoBehaviour
         }
         else if (nFF > 1 && multiMode == 2)
         {
+            FPS.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
             for (int i = 0; i < nFF; i++)
             {
                 bool tooClose;
@@ -1180,8 +1270,34 @@ public class Reward2D : MonoBehaviour
                     }
                     position.y = 0.0001f;
                     if (i > 0) for (int k = 0; k < i; k++) { if (Vector3.Distance(position, pooledFF[k].transform.position) <= separation) tooClose = true; } // || Mathf.Abs(position.x - pooledFF[k - 1].transform.position.x) >= 0.5f || Mathf.Abs(position.z - pooledFF[k - 1].transform.position.z) <= 0.5f) tooClose = true; }
+                    if (isMoving2FF)
+                    {
+                        //print("2FF");
+                        r = stochasticRadius + (float)rand.NextDouble();
+                        double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - rand.NextDouble();
+                        double randStdNormal = 0;
+                        if (i < StochasticFFN)
+                        {
+                            randStdNormal = mean + sigma1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        }
+                        else
+                        {
+                            randStdNormal = -mean + sigma2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        }
+                        angle = (1 + (float)randStdNormal) * (maxPhi - minPhi) / 2 + minPhi;
+                        //print(randStdNormal);
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * r;
+                        tooClose = false;
+                    }
                     pooledFF[i].transform.position = position;
                     ffPositions[i] = position;
+                    initialPposition = player.transform.position;
+                    initialPforward = player.transform.forward;
+                    initialRotation = FPS.transform.rotation.y;
                 } while (tooClose);
             }
         }
@@ -1391,6 +1507,7 @@ public class Reward2D : MonoBehaviour
 
         if (nFF > 1)
         {
+            //print(mode.ToString());
             switch (mode)
             {
                 case Modes.ON:
@@ -1595,7 +1712,7 @@ public class Reward2D : MonoBehaviour
         }
         phase = Phases.trial;
         currPhase = Phases.trial;
-        Debug.Log("Begin Phase End.");
+        //Debug.Log("Begin Phase End.");
     }
 
     /// <summary>
@@ -1605,6 +1722,7 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Trial()
     {
+        isTrial = true;
         // Debug.Log("Trial Phase Start.");
 
         source = new CancellationTokenSource();
@@ -1694,6 +1812,7 @@ public class Reward2D : MonoBehaviour
         move = new Vector3(0.0f, 0.0f, 0.0f);
         velocity = 0.0f;
         line.SetActive(false);
+        isTrial = false;
         phase = Phases.check;
         currPhase = Phases.check;
         // Debug.Log("Trial Phase End.");
@@ -1706,7 +1825,7 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Check()
     {
-        Debug.Log(loopCount);
+        //Debug.Log(loopCount);
 
         string ffPosStr = "";
 
@@ -1727,7 +1846,7 @@ public class Reward2D : MonoBehaviour
         if (!isTimeout)
         {
             //source = new CancellationTokenSource();
-            // Debug.Log("Check Phase Start.");
+            //Debug.Log("Check Phase Start.");
 
             float delay = c_lambda * Mathf.Exp(-c_lambda * ((float)rand.NextDouble() * (c_max - c_min) + c_min));
             // Debug.Log("firefly delay: " + delay);
@@ -1805,7 +1924,7 @@ public class Reward2D : MonoBehaviour
                 proximity = true;
             }
         }
-        else if (nFF > 1 && multiMode == 2)
+        else if (nFF > 1 && multiMode == 2 && !isMoving2FF)
         {
             foreach (GameObject FF in pooledFF)
             {
@@ -1819,11 +1938,46 @@ public class Reward2D : MonoBehaviour
                 distances.Add(distance);
             }
         }
+        else if (isMoving2FF)
+        {
+            float meanangle1 = (1 + mean) * (maxPhi - minPhi) / 2 + minPhi;
+            float meanangle2 = (1 - mean) * (maxPhi - minPhi) / 2 + minPhi;
+            float r = stochasticRadius + 0.5f;
+            Vector3 meanposition1;
+            meanposition1.y = 0.0001f;
+            Vector3 meanposition2;
+            meanposition2.y = 0.0001f;
+            meanposition1 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(meanangle1, Vector3.up) * initialPforward * r;
+            meanposition2 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(meanangle2, Vector3.up) * initialPforward * r;
+            Vector3 meanA1 = meanposition1 - initialPposition;            meanA1.y = 0; meanA1.z = 0;
+            float meanD1 = meanA1.magnitude;
+            Vector3 meanA2 = meanposition2 - initialPposition;            meanA2.y = 0; meanA2.z = 0;
+            float meanD2 = -meanA2.magnitude;
+            Vector3 meanAP = pPos - initialPposition;            meanAP.y = 0; meanAP.z = 0;
+            float meanDP = meanAP.magnitude;
+            float score1 = (float)Math.Exp(-Math.Pow((meanDP - meanD1), 2)/25);
+            float score2 = (float)Math.Exp(-Math.Pow((meanDP - meanD2), 2)/25);
+            List<float> values = new List<float>();
+            for (float i = minPhi; i < maxPhi; i = i + 0.1f)
+            {
+                values.Add((float)Math.Exp(-Math.Pow((i - meanD1), 2) / 25) + (float)Math.Exp(-Math.Pow((i - meanD2), 2) / 25));
+            }
+            float maxima = (from x in values orderby x descending select x).First();
+            score2FF = (score1 + score2)/(maxima);
+            TextMeshPro textmeshPro = scoring.GetComponent<TextMeshPro>();
+            textmeshPro.SetText("You scored {0}\n", score2FF);
+            scoring.SetActive(true);
+            await new WaitForSeconds(2);
+            scoring.SetActive(false);
+            scores2FF.Add(score2FF);
+        }
         else
         {
             if (Vector3.Distance(pPos, firefly.transform.position) <= fireflyZoneRadius) proximity = true;
             distance = Vector3.Distance(pPos, firefly.transform.position);
-            //ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
+            ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
             distances.Add(distance);
         }
 
@@ -1893,6 +2047,10 @@ public class Reward2D : MonoBehaviour
         else
         {
             audioSource.clip = loseSound;
+            if (PlayerPrefs.GetInt("Feedback ON") == 0)
+            {
+                audioSource.clip = neutralSound;
+            }
             //juiceDuration.Add(0.0f);
             rewardTime.Add(0.0f);
             audioSource.Play();
@@ -2122,10 +2280,6 @@ public class Reward2D : MonoBehaviour
                     tooClose = false;
 
                     float r_i = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
-                    if (isMoving2FF)
-                    {
-                        r_i = 10;
-                    }
                     float angle_i = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
                     if (LR != 0.5f)
                     {
@@ -2135,11 +2289,30 @@ public class Reward2D : MonoBehaviour
                     }
                     else
                     {
-                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + 
+                            Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
                     }
                     position_i.y = 0.0001f;
-                    if (i > 0) for (int k = 0; k < i; k++) { if (Vector3.Distance(position_i, pooledFF[k].transform.position) <= 1.0f || Mathf.Abs(position_i.x - pooledFF[k - 1].transform.position.x) >= 0.5f || Mathf.Abs(position_i.z - pooledFF[k - 1].transform.position.z) <= 0.5f) tooClose = true; }
-                }
+                    if (i > 0)
+                        for (int k = 0; k < i; k++)
+                        { if (Vector3.Distance(position_i, pooledFF[k].transform.position) <= 1.0f || 
+                                Mathf.Abs(position_i.x - pooledFF[k - 1].transform.position.x) >= 0.5f || 
+                                Mathf.Abs(position_i.z - pooledFF[k - 1].transform.position.z) <= 0.5f) 
+                                tooClose = true; }
+                    if (isMoving2FF)
+                    {
+                        r_i = 10;
+                        tooClose = false;
+                        System.Random randFFdist = new System.Random();
+                        double u1 = 1.0 - randFFdist.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - randFFdist.NextDouble();
+                        double randStdNormal = 0.2 * noise_SD * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        angle_i = (1+(float)randStdNormal) * (maxPhi - minPhi)/2 + minPhi;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
+                    }
+                } 
                 while (tooClose);
                 posTemp.Add(position_i);
                 distTemp[i] = Vector3.Distance(player.transform.position, position_i);
@@ -2528,7 +2701,7 @@ public class Reward2D : MonoBehaviour
 
             StringBuilder csvDisc = new StringBuilder();
 
-            if (nFF > 1)
+            if (nFF > 1 && !isMoving2FF)
             {
                 string ffPosStr = "";
                 string cPosStr = "";
@@ -2553,6 +2726,10 @@ public class Reward2D : MonoBehaviour
                 {
                     firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait", ffPosStr, distStr);
                 }
+            }
+            else if (isMoving2FF)
+            {
+                firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,score,sigma1,sigma2,mean,NperSigma,deltaT,FFspawnRadius");
             }
             else
             {
@@ -2582,6 +2759,7 @@ public class Reward2D : MonoBehaviour
                 fv.Count,
                 fvSD.Count,
                 onDur.Count,
+                scores2FF.Count
             };
             if (ptb != 2)
             {
@@ -2649,7 +2827,7 @@ public class Reward2D : MonoBehaviour
                     totalScore += score[i];
                 }
             }
-            else if (ptb == 0 || ptb == 1)
+            else if (ptb == 0 && !isMoving2FF || ptb == 1 && !isMoving2FF)
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
@@ -2675,6 +2853,31 @@ public class Reward2D : MonoBehaviour
                         interWait[i], 
                         tautau[i],
                         filterTau[i]);
+                    csvDisc.AppendLine(line);
+                }
+            }
+            else if (isMoving2FF)
+            {
+                for (int i = 0; i < temp[0]; i++)
+                {
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
+                        n[i],
+                        max_v[i],
+                        max_w[i],
+                        fv[i],
+                        fvSD[i],
+                        onDur[i],
+                        origin[i],
+                        heading[i],
+                        cPos[i],
+                        cRot[i],
+                        scores2FF[i],
+                        sigma1,
+                        sigma2,
+                        mean,
+                        nFF / 2,
+                        LootDeltaT,
+                        stochasticRadius);
                     csvDisc.AppendLine(line);
                 }
             }
@@ -2932,8 +3135,8 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Frequency").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("DutyCycle");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Duty Cycle").ToString());
+            xmlWriter.WriteStartElement("MultiMode");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Multi Mode").ToString());
             xmlWriter.WriteEndElement();
 
             //xmlWriter.WriteStartElement("FireflyLifeSpan");
@@ -3394,6 +3597,41 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("TR12");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("TR12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteEndElement();
+
+
+            xmlWriter.WriteStartElement("Setting");
+            xmlWriter.WriteAttributeString("Type", "Stochastic Fire Flies Settings");
+
+            xmlWriter.WriteStartElement("StochasticFireFlies");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("Stochastic Fire Flies").ToString());
+            xmlWriter.WriteEndElement();
+
+
+            xmlWriter.WriteStartElement("Sigma1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();

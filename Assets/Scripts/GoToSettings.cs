@@ -256,7 +256,7 @@ public class GoToSettings : MonoBehaviour
     {
         try
         {
-            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff")
+            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies")
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<UnityEngine.UI.Toggle>().isOn ? 1 : 0);
             }
@@ -719,7 +719,7 @@ public class GoToSettings : MonoBehaviour
                 {
                     foreach (Transform children in child)
                     {
-                        if (children.name == "Gaussian Perturbation ON" || children.name == "Optic Flow OnOff")
+                        if (children.name == "Gaussian Perturbation ON" || children.name == "Optic Flow OnOff" || children.name == "Stochastic Fire Flies")
                         {
                             UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
                             foreach (XmlNode node in doc.DocumentElement.ChildNodes)
@@ -741,9 +741,11 @@ public class GoToSettings : MonoBehaviour
                             {
                                 foreach (XmlNode setting in node.ChildNodes)
                                 {
-                                    if (setting.Name == children.name.Replace(" ", ""))
+                                    if (setting.Name == children.name.Replace(" ", "") && field != null)
                                     {
+                                        //print(setting.Name);
                                         //print(children.name);
+                                        //print(field);
                                         field.text = setting.InnerText;
                                         PlayerPrefs.SetFloat(children.name, float.Parse(field.text));
                                     }
