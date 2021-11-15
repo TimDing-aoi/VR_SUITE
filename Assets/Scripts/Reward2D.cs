@@ -689,16 +689,21 @@ public class Reward2D : MonoBehaviour
 
         if (isMoving2FF)
         {
-            ratios.Add(PlayerPrefs.GetFloat("Ratio"));
-            ratios.Add(PlayerPrefs.GetFloat("Ratio2") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio3") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio4") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio5") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio6") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio7") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio8") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio9") + ratios.Sum());
-            ratios.Add(PlayerPrefs.GetFloat("Ratio10" + ratios.Sum()));
+            ratios.Clear();
+            ratios.Add(PlayerPrefs.GetFloat("Ratio1"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio2"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio3"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio4"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio5"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio6"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio7"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio8"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio9"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio10"));
+            for (int i = 1; i < 10; i++)
+            {
+                ratios[i] = ratios[i] + ratios[i - 1];
+            }
         }
         else
         {
@@ -707,11 +712,10 @@ public class Reward2D : MonoBehaviour
             ratios.Add(PlayerPrefs.GetFloat("R3"));
             ratios.Add(PlayerPrefs.GetFloat("R4"));
             ratios.Add(PlayerPrefs.GetFloat("R5"));
-        }
-
-        for (int i = 1; i < 5; i++)
-        {
-            ratios[i] = ratios[i] + ratios[i - 1];
+            for (int i = 1; i < 5; i++)
+            {
+                ratios[i] = ratios[i] + ratios[i - 1];
+            }
         }
 
         isGaussian = PlayerPrefs.GetInt("Gaussian Perturbation ON") == 1;
@@ -900,6 +904,10 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Update()
     {
+        for (int k = (int)StochasticFFN * 2; k < nFF; k++)
+        {
+            pooledFF[k].SetActive(false);
+        }
         phaseString = currPhase.ToString();
         //print(phaseString);
 
@@ -1364,15 +1372,15 @@ public class Reward2D : MonoBehaviour
                     {
                         float r = (float)rand.NextDouble();
 
-                        //if (r <= ratios[0])
-                        //{
+                        if (r <= ratios[0])
+                        {
                             sigma1 = sigma1s[0];
                             sigma2 = sigma2s[0];
                             mean = means2ff[0];
                             StochasticFFN = N2ff[0];
                             stochasticRadius = spawnradius[0];
                             LootDeltaT = deltaTs[0];
-                        /*}
+                        }
                         else if (r > ratios[0] && r <= ratios[1])
                         {
                             sigma1 = sigma1s[1];
@@ -1454,12 +1462,22 @@ public class Reward2D : MonoBehaviour
                             stochasticRadius = spawnradius[9];
                             LootDeltaT = deltaTs[9];
                         }
-                        /*print(sigma1);
+                        for(int k = (int)StochasticFFN * 2; k < nFF; k++)
+                        {
+                            pooledFF[k].SetActive(false);
+                        }
+
+                        /*print(StochasticFFN);
+                        print(sigma1);
                         print(sigma2);
                         print(mean);
-                        print(StochasticFFN);
                         print(stochasticRadius);
-                        print(LootDeltaT);*/
+                        print(LootDeltaT);
+                        /*foreach (var ratio in ratios)
+                        {
+                            print(ratio);
+                        }*/
+
                         radius = stochasticRadius + (float)rand.NextDouble();
                         double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
                         double u2 = 1.0 - rand.NextDouble();
