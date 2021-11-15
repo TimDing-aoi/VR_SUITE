@@ -1951,11 +1951,14 @@ public class Reward2D : MonoBehaviour
                             Quaternion.AngleAxis(meanangle1, Vector3.up) * initialPforward * r;
             meanposition2 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
                             Quaternion.AngleAxis(meanangle2, Vector3.up) * initialPforward * r;
-            Vector3 meanA1 = meanposition1 - initialPposition;            meanA1.y = 0; meanA1.z = 0;
+            Vector3 meanA1 = meanposition1 - initialPposition;
+            meanA1.y = 0; meanA1.z = 0;
             float meanD1 = meanA1.magnitude;
-            Vector3 meanA2 = meanposition2 - initialPposition;            meanA2.y = 0; meanA2.z = 0;
+            Vector3 meanA2 = meanposition2 - initialPposition;
+            meanA2.y = 0; meanA2.z = 0;
             float meanD2 = -meanA2.magnitude;
-            Vector3 meanAP = pPos - initialPposition;            meanAP.y = 0; meanAP.z = 0;
+            Vector3 meanAP = pPos - initialPposition;
+            meanAP.y = 0; meanAP.z = 0;
             float meanDP = meanAP.magnitude;
             float score1 = (float)Math.Exp(-Math.Pow((meanDP - meanD1), 2)/25);
             float score2 = (float)Math.Exp(-Math.Pow((meanDP - meanD2), 2)/25);
