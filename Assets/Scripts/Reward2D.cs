@@ -257,7 +257,7 @@ public class Reward2D : MonoBehaviour
     readonly List<float> sigma1s = new List<float>();
     readonly List<float> sigma2s = new List<float>();
     readonly List<float> means2ff = new List<float>();
-    readonly List<int> N2ff = new List<int>();
+    readonly List<float> N2ff = new List<float>();
     readonly List<float> deltaTs = new List<float>();
     readonly List<float> spawnradius = new List<float>();
 
@@ -330,7 +330,7 @@ public class Reward2D : MonoBehaviour
     private float mean;
     private float stochasticRadius;
     private float LootDeltaT;
-    private int StochasticFFN;
+    private float StochasticFFN;
     bool isMoving2FF;
 
     public GameObject arrow;
@@ -457,11 +457,74 @@ public class Reward2D : MonoBehaviour
         minDrawDistance = PlayerPrefs.GetFloat("Minimum Firefly Distance");
         maxDrawDistance = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
-        sigma1 = PlayerPrefs.GetFloat("Sigma1");
-        sigma2 = PlayerPrefs.GetFloat("Sigma2");
-        mean = PlayerPrefs.GetFloat("Means");
-        stochasticRadius = PlayerPrefs.GetFloat("FFRadius");
-        StochasticFFN = (int)PlayerPrefs.GetFloat("NFFperSigma");
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma1"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma12"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma13"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma14"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma15"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma16"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma17"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma18"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma19"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma110"));
+
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma2"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma22"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma23"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma24"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma25"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma26"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma27"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma28"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma29"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma210"));
+
+        means2ff.Add(PlayerPrefs.GetFloat("Means"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means2"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means3"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means4"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means5"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means6"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means7"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means8"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means9"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means10"));
+
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius2"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius3"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius4"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius5"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius6"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius7"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius8"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius9"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius10"));
+
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma2"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma3"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma4"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma5"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma6"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma7"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma8"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma9"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma10"));
+
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT2"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT3"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT4"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT5"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT6"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT7"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT8"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT9"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT10"));
+        
+        StochasticFFN = N2ff.Max();
+        print(StochasticFFN);
         isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
         LootDeltaT = PlayerPrefs.GetFloat("LootDeltaT");
         print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
@@ -624,11 +687,27 @@ public class Reward2D : MonoBehaviour
         durations.Add(PlayerPrefs.GetFloat("D4"));
         durations.Add(PlayerPrefs.GetFloat("D5"));
 
-        ratios.Add(PlayerPrefs.GetFloat("R1"));
-        ratios.Add(PlayerPrefs.GetFloat("R2"));
-        ratios.Add(PlayerPrefs.GetFloat("R3"));
-        ratios.Add(PlayerPrefs.GetFloat("R4"));
-        ratios.Add(PlayerPrefs.GetFloat("R5"));
+        if (isMoving2FF)
+        {
+            ratios.Add(PlayerPrefs.GetFloat("Ratio"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio2") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio3") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio4") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio5") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio6") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio7") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio8") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio9") + ratios.Sum());
+            ratios.Add(PlayerPrefs.GetFloat("Ratio10" + ratios.Sum()));
+        }
+        else
+        {
+            ratios.Add(PlayerPrefs.GetFloat("R1"));
+            ratios.Add(PlayerPrefs.GetFloat("R2"));
+            ratios.Add(PlayerPrefs.GetFloat("R3"));
+            ratios.Add(PlayerPrefs.GetFloat("R4"));
+            ratios.Add(PlayerPrefs.GetFloat("R5"));
+        }
 
         for (int i = 1; i < 5; i++)
         {
@@ -699,6 +778,13 @@ public class Reward2D : MonoBehaviour
             mode = Modes.Fixed;
             // lifeSpan = PlayerPrefs.GetFloat("Firefly Life Span");
         }
+
+        sigma1 = sigma1s[0];
+        sigma2 = sigma2s[0];
+        mean = means2ff[0];
+        StochasticFFN = N2ff[0];
+        stochasticRadius = spawnradius[0];
+        LootDeltaT = deltaTs[0];
 
         // Nasta added this for sequential
         if (nFF > 1)
@@ -947,6 +1033,10 @@ public class Reward2D : MonoBehaviour
                     n.Add(trialNum);
                     isBegin = false;
                 }
+                var tempFFPos = firefly.transform.position - player_origin;
+                var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
+                string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
+                ffPos.Add(transformedFFPos);
             }
             //else if (isCheck)
             //{
@@ -967,8 +1057,8 @@ public class Reward2D : MonoBehaviour
                         float rj = stochasticRadius + (float)rand.NextDouble();
                         double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
                         double u2 = 1.0 - rand.NextDouble();
-                        int i = rand.Next(0, StochasticFFN);
-                        int j = rand.Next(StochasticFFN, 2*StochasticFFN);
+                        int i = rand.Next(0, (int)StochasticFFN);
+                        int j = rand.Next((int)StochasticFFN, 2* (int)StochasticFFN);
                         //print(i);
                         //print(j);
                         double randStdNormali = mean + sigma1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
@@ -1038,7 +1128,7 @@ public class Reward2D : MonoBehaviour
                 endTime.Add(Time.realtimeSinceStartup - programT0);
                 if (toggle)
                 {
-                    onDur.Add(endTime[endTime.Count - 1] - beginTime[beginTime.Count - 1]);
+                    onDur.Add(lifeSpan);
                 }
                 if (multiMode == 1)
                 {
@@ -1257,23 +1347,120 @@ public class Reward2D : MonoBehaviour
                 {
                     tooClose = false;
                     Vector3 position;
-                    float r = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
+                    float radius = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
                     float angle = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
                     if (LR != 0.5f)
                     {
                         float side = rand.NextDouble() < LR ? 1 : -1;
-                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle * side, Vector3.up) * player.transform.forward * r;
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle * side, Vector3.up) * player.transform.forward * radius;
                     }
                     else
                     {
-                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * r;
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * radius;
                     }
                     position.y = 0.0001f;
                     if (i > 0) for (int k = 0; k < i; k++) { if (Vector3.Distance(position, pooledFF[k].transform.position) <= separation) tooClose = true; } // || Mathf.Abs(position.x - pooledFF[k - 1].transform.position.x) >= 0.5f || Mathf.Abs(position.z - pooledFF[k - 1].transform.position.z) <= 0.5f) tooClose = true; }
                     if (isMoving2FF)
                     {
-                        //print("2FF");
-                        r = stochasticRadius + (float)rand.NextDouble();
+                        float r = (float)rand.NextDouble();
+
+                        //if (r <= ratios[0])
+                        //{
+                            sigma1 = sigma1s[0];
+                            sigma2 = sigma2s[0];
+                            mean = means2ff[0];
+                            StochasticFFN = N2ff[0];
+                            stochasticRadius = spawnradius[0];
+                            LootDeltaT = deltaTs[0];
+                        /*}
+                        else if (r > ratios[0] && r <= ratios[1])
+                        {
+                            sigma1 = sigma1s[1];
+                            sigma2 = sigma2s[1];
+                            mean = means2ff[1];
+                            StochasticFFN = N2ff[1];
+                            stochasticRadius = spawnradius[1];
+                            LootDeltaT = deltaTs[1];
+                        }
+                        else if (r > ratios[1] && r <= ratios[2])
+                        {
+                            sigma1 = sigma1s[2];
+                            sigma2 = sigma2s[2];
+                            mean = means2ff[2];
+                            StochasticFFN = N2ff[2];
+                            stochasticRadius = spawnradius[2];
+                            LootDeltaT = deltaTs[2];
+                        }
+                        else if (r > ratios[2] && r <= ratios[3])
+                        {
+                            sigma1 = sigma1s[3];
+                            sigma2 = sigma2s[3];
+                            mean = means2ff[3];
+                            StochasticFFN = N2ff[3];
+                            stochasticRadius = spawnradius[3];
+                            LootDeltaT = deltaTs[3];
+                        }
+                        else if (r > ratios[3] && r <= ratios[4])
+                        {
+                            sigma1 = sigma1s[4];
+                            sigma2 = sigma2s[4];
+                            mean = means2ff[4];
+                            StochasticFFN = N2ff[4];
+                            stochasticRadius = spawnradius[4];
+                            LootDeltaT = deltaTs[4];
+                        }
+                        else if (r > ratios[4] && r <= ratios[5])
+                        {
+                            sigma1 = sigma1s[5];
+                            sigma2 = sigma2s[5];
+                            mean = means2ff[5];
+                            StochasticFFN = N2ff[5];
+                            stochasticRadius = spawnradius[5];
+                            LootDeltaT = deltaTs[5];
+                        }
+                        else if (r > ratios[5] && r <= ratios[6])
+                        {
+                            sigma1 = sigma1s[6];
+                            sigma2 = sigma2s[6];
+                            mean = means2ff[6];
+                            StochasticFFN = N2ff[6];
+                            stochasticRadius = spawnradius[6];
+                            LootDeltaT = deltaTs[6];
+                        }
+                        else if (r > ratios[6] && r <= ratios[7])
+                        {
+                            sigma1 = sigma1s[7];
+                            sigma2 = sigma2s[7];
+                            mean = means2ff[7];
+                            StochasticFFN = N2ff[7];
+                            stochasticRadius = spawnradius[7];
+                            LootDeltaT = deltaTs[7];
+                        }
+                        else if (r > ratios[7] && r <= ratios[8])
+                        {
+                            sigma1 = sigma1s[8];
+                            sigma2 = sigma2s[8];
+                            mean = means2ff[8];
+                            StochasticFFN = N2ff[8];
+                            stochasticRadius = spawnradius[8];
+                            LootDeltaT = deltaTs[8];
+                        }
+                        else if (r > ratios[8] && r <= ratios[9])
+                        {
+                            sigma1 = sigma1s[9];
+                            sigma2 = sigma2s[9];
+                            mean = means2ff[9];
+                            StochasticFFN = N2ff[9];
+                            stochasticRadius = spawnradius[9];
+                            LootDeltaT = deltaTs[9];
+                        }
+                        /*print(sigma1);
+                        print(sigma2);
+                        print(mean);
+                        print(StochasticFFN);
+                        print(stochasticRadius);
+                        print(LootDeltaT);*/
+                        radius = stochasticRadius + (float)rand.NextDouble();
                         double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
                         double u2 = 1.0 - rand.NextDouble();
                         double randStdNormal = 0;
@@ -1290,7 +1477,7 @@ public class Reward2D : MonoBehaviour
                         angle = (1 + (float)randStdNormal) * (maxPhi - minPhi) / 2 + minPhi;
                         //print(randStdNormal);
                         position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) +
-                            Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * r;
+                            Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * radius;
                         tooClose = false;
                     }
                     pooledFF[i].transform.position = position;
@@ -1804,7 +1991,7 @@ public class Reward2D : MonoBehaviour
 
             if (toggle && multiMode != 1)
             {
-                onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
+                //onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
             }
         }
         //Nasta Add ends
@@ -1951,11 +2138,14 @@ public class Reward2D : MonoBehaviour
                             Quaternion.AngleAxis(meanangle1, Vector3.up) * initialPforward * r;
             meanposition2 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
                             Quaternion.AngleAxis(meanangle2, Vector3.up) * initialPforward * r;
-            Vector3 meanA1 = meanposition1 - initialPposition;            meanA1.y = 0; meanA1.z = 0;
+            Vector3 meanA1 = meanposition1 - initialPposition;
+            meanA1.y = 0; meanA1.z = 0;
             float meanD1 = meanA1.magnitude;
-            Vector3 meanA2 = meanposition2 - initialPposition;            meanA2.y = 0; meanA2.z = 0;
+            Vector3 meanA2 = meanposition2 - initialPposition;
+            meanA2.y = 0; meanA2.z = 0;
             float meanD2 = -meanA2.magnitude;
-            Vector3 meanAP = pPos - initialPposition;            meanAP.y = 0; meanAP.z = 0;
+            Vector3 meanAP = pPos - initialPposition;
+            meanAP.y = 0; meanAP.z = 0;
             float meanDP = meanAP.magnitude;
             float score1 = (float)Math.Exp(-Math.Pow((meanDP - meanD1), 2)/25);
             float score2 = (float)Math.Exp(-Math.Pow((meanDP - meanD2), 2)/25);
@@ -1968,9 +2158,12 @@ public class Reward2D : MonoBehaviour
             score2FF = (score1 + score2)/(maxima);
             TextMeshPro textmeshPro = scoring.GetComponent<TextMeshPro>();
             textmeshPro.SetText("You scored {0}\n", score2FF);
-            scoring.SetActive(true);
-            await new WaitForSeconds(2);
-            scoring.SetActive(false);
+            if (PlayerPrefs.GetInt("Feedback") == 1)
+            {
+                scoring.SetActive(true);
+                await new WaitForSeconds(2);
+                scoring.SetActive(false);
+            }
             scores2FF.Add(score2FF);
         }
         else
@@ -2186,7 +2379,7 @@ public class Reward2D : MonoBehaviour
         {
             timedout.Add(isTimeout ? 1 : 0);
             score.Add(isReward && proximity ? 1 : 0);
-            ffPos.Add(ffPosStr);
+            //ffPos.Add(ffPosStr);
             dist.Add(distances[0].ToString("F5"));
             cPos.Add(pos.ToString("F5").Trim(toTrim).Replace(" ", ""));
             cRot.Add(rot.ToString("F5").Trim(toTrim).Replace(" ", ""));
@@ -2733,7 +2926,7 @@ public class Reward2D : MonoBehaviour
             }
             else
             {
-                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait," + PlayerPrefs.GetString("Name") + "," + PlayerPrefs.GetString("Date") + "," + PlayerPrefs.GetInt("Run Number").ToString("D3");
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,checkWait,interWait,Gaussamp,Gaussdur,GaussSD,flowdur,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
 
             csvDisc.AppendLine(firstLine);
@@ -2758,8 +2951,7 @@ public class Reward2D : MonoBehaviour
                 max_w.Count,
                 fv.Count,
                 fvSD.Count,
-                onDur.Count,
-                scores2FF.Count
+                onDur.Count
             };
             if (ptb != 2)
             {
@@ -2775,7 +2967,10 @@ public class Reward2D : MonoBehaviour
                 temp.Add(gaussSD.Count);
                 temp.Add(flowDur.Count);
             }
-
+            if (isMoving2FF)
+            {
+                temp.Add(scores2FF.Count);
+            }
             
             //nasta added
             if (nFF > 1 && multiMode == 1)
@@ -3632,6 +3827,266 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("FFRadius");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma12");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma22");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma22").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma13");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma13").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma23");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma23").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma14");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma14").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma24");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma24").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma15");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma15").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma25");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma25").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma16");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma16").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma26");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma26").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma17");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma17").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma27");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma27").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma18");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma18").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma28");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma28").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma19");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma19").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma29");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma29").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma110");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma110").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma210");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma210").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Feedback");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("Feedback").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();

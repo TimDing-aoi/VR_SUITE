@@ -19,6 +19,7 @@ public class GoToSettings : MonoBehaviour
     public GameObject obj;
     public GameObject settingMenu1;
     public GameObject settingMenu2;
+    public GameObject settingMenu3;
     public UnityEngine.UI.Button saveButton;
     public UnityEngine.UI.Button loadButton;
     private TMP_InputField input;
@@ -256,7 +257,7 @@ public class GoToSettings : MonoBehaviour
     {
         try
         {
-            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies")
+            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies" || obj.name == "Feedback")
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<UnityEngine.UI.Toggle>().isOn ? 1 : 0);
             }
@@ -336,10 +337,25 @@ public class GoToSettings : MonoBehaviour
         }
     }
 
-    public void SwitchPage()
+    public void SwitchPageMain()
     {
-        settingMenu1.SetActive(!settingMenu1.activeInHierarchy);
-        settingMenu2.SetActive(!settingMenu2.activeInHierarchy);
+        settingMenu1.SetActive(true);
+        settingMenu2.SetActive(false);
+        settingMenu3.SetActive(false);
+    }
+
+    public void SwitchPageJP()
+    {
+        settingMenu1.SetActive(false);
+        settingMenu2.SetActive(true);
+        settingMenu3.SetActive(false);
+    }
+
+    public void SwitchPageSFF()
+    {
+        settingMenu1.SetActive(false);
+        settingMenu2.SetActive(false);
+        settingMenu3.SetActive(true);
     }
 
     public void SwitchVel()
@@ -719,14 +735,14 @@ public class GoToSettings : MonoBehaviour
                 {
                     foreach (Transform children in child)
                     {
-                        if (children.name == "Gaussian Perturbation ON" || children.name == "Optic Flow OnOff" || children.name == "Stochastic Fire Flies")
+                        if (children.name == "Gaussian Perturbation ON" || children.name == "Optic Flow OnOff" || children.name == "Stochastic Fire Flies" || children.name == "Feedback")
                         {
                             UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
                             foreach (XmlNode node in doc.DocumentElement.ChildNodes)
                             {
                                 foreach (XmlNode setting in node.ChildNodes)
                                 {
-                                    if (setting.Name == children.name.Replace(" ", ""))
+                                    if (setting.Name == children.name.Replace(" ", "") && toggle.isOn != null)
                                     {
                                         toggle.isOn = int.Parse(setting.InnerText) == 1;
                                         PlayerPrefs.SetInt(children.name, toggle.isOn ? 1 : 0);
@@ -755,6 +771,50 @@ public class GoToSettings : MonoBehaviour
                     }
                 }
                 settingMenu2.SetActive(false);
+            }
+            if (!settingMenu3.activeInHierarchy)
+            {
+                settingMenu3.SetActive(true);
+                foreach (Transform child in settingMenu3.transform)
+                {
+                    foreach (Transform children in child)
+                    {
+                        if (children.name == "Stochastic Fire Flies" || children.name == "Feedback")
+                        {
+                            UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
+                            foreach (XmlNode node in doc.DocumentElement.ChildNodes)
+                            {
+                                foreach (XmlNode setting in node.ChildNodes)
+                                {
+                                    if (setting.Name == children.name.Replace(" ", "") && toggle.isOn != null)
+                                    {
+                                        toggle.isOn = int.Parse(setting.InnerText) == 1;
+                                        PlayerPrefs.SetInt(children.name, toggle.isOn ? 1 : 0);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            TMP_InputField field = children.GetComponent<TMP_InputField>();
+                            foreach (XmlNode node in doc.DocumentElement.ChildNodes)
+                            {
+                                foreach (XmlNode setting in node.ChildNodes)
+                                {
+                                    if (setting.Name == children.name.Replace(" ", "") && field != null)
+                                    {
+                                        //print(setting.Name);
+                                        //print(children.name);
+                                        //print(field);
+                                        field.text = setting.InnerText;
+                                        PlayerPrefs.SetFloat(children.name, float.Parse(field.text));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                settingMenu3.SetActive(false);
             }
         }
         catch (Exception e)
