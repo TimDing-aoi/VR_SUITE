@@ -55,6 +55,7 @@ public class Reward2D : MonoBehaviour
     //Stochastic FF variables
     public GameObject scoring;
     private float score2FF;
+    private float totalScore = 0;
 
     public Camera Lcam;
     public Camera Rcam;
@@ -260,6 +261,12 @@ public class Reward2D : MonoBehaviour
     readonly List<float> N2ff = new List<float>();
     readonly List<float> deltaTs = new List<float>();
     readonly List<float> spawnradius = new List<float>();
+    readonly List<float> sigma1data = new List<float>();
+    readonly List<float> sigma2data = new List<float>();
+    readonly List<float> meansdata = new List<float>();
+    readonly List<float> N2ffdata = new List<float>();
+    readonly List<float> deltaTdata = new List<float>();
+    readonly List<float> spawnRdata = new List<float>();
 
     [HideInInspector] public float FrameTimeElement = 0;
 
@@ -1467,6 +1474,12 @@ public class Reward2D : MonoBehaviour
                             pooledFF[k].SetActive(false);
                         }
 
+                        sigma1data.Add(sigma1);
+                        sigma2data.Add(sigma2);
+                        meansdata.Add(mean);
+                        spawnRdata.Add(stochasticRadius);
+                        deltaTdata.Add(LootDeltaT);
+                        N2ffdata.Add(StochasticFFN);
                         /*print(StochasticFFN);
                         print(sigma1);
                         print(sigma2);
@@ -2175,7 +2188,8 @@ public class Reward2D : MonoBehaviour
             float maxima = (from x in values orderby x descending select x).First();
             score2FF = (score1 + score2)/(maxima);
             TextMeshPro textmeshPro = scoring.GetComponent<TextMeshPro>();
-            textmeshPro.SetText("You scored {0}\n", score2FF);
+            totalScore = totalScore + score2FF;
+            textmeshPro.SetText("Total Score:{0}\nLast Trial:{1} ", (float)Math.Round((decimal)totalScore, 1), (float)Math.Round((decimal)score2FF, 1));
             if (PlayerPrefs.GetInt("Feedback") == 1)
             {
                 scoring.SetActive(true);
@@ -2988,6 +3002,12 @@ public class Reward2D : MonoBehaviour
             if (isMoving2FF)
             {
                 temp.Add(scores2FF.Count);
+                temp.Add(sigma1data.Count);
+                temp.Add(sigma2data.Count);
+                temp.Add(spawnRdata.Count);
+                temp.Add(N2ffdata.Count);
+                temp.Add(deltaTdata.Count);
+                temp.Add(meansdata.Count);
             }
             
             //nasta added
@@ -3085,12 +3105,12 @@ public class Reward2D : MonoBehaviour
                         cPos[i],
                         cRot[i],
                         scores2FF[i],
-                        sigma1,
-                        sigma2,
-                        mean,
-                        nFF / 2,
-                        LootDeltaT,
-                        stochasticRadius);
+                        sigma1data[i],
+                        sigma2data[i],
+                        meansdata[i],
+                        N2ffdata[i],
+                        deltaTdata[i],
+                        spawnRdata[i]);
                     csvDisc.AppendLine(line);
                 }
             }
@@ -3847,8 +3867,8 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("Ratio");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio").ToString());
+            xmlWriter.WriteStartElement("Ratio1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio1").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteStartElement("Sigma12");
