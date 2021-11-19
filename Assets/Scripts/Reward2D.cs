@@ -48,7 +48,7 @@ public class Reward2D : MonoBehaviour
 
     public GameObject firefly;
     public GameObject line;
-    [HideInInspector] public int lineOnOff = 0;
+    [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
 
@@ -56,7 +56,7 @@ public class Reward2D : MonoBehaviour
     public GameObject scoring;
     private float score2FF;
     private float totalScore = 0;
-
+    private float timeCounter = 0;
     public Camera Lcam;
     public Camera Rcam;
     public GameObject FP;
@@ -339,6 +339,7 @@ public class Reward2D : MonoBehaviour
     private float LootDeltaT;
     private float StochasticFFN;
     bool isMoving2FF;
+    private float winscore;
 
     public GameObject arrow;
     private MeshRenderer mesh;
@@ -534,7 +535,8 @@ public class Reward2D : MonoBehaviour
         print(StochasticFFN);
         isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
         LootDeltaT = PlayerPrefs.GetFloat("LootDeltaT");
-        print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
+        //print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
+        winscore = PlayerPrefs.GetFloat("WinScore");
         if (isMoving2FF)
         {
             nFF = StochasticFFN * 2;
@@ -623,7 +625,7 @@ public class Reward2D : MonoBehaviour
         fireflySize = PlayerPrefs.GetFloat("Size");
         firefly.transform.localScale = new Vector3(fireflySize, fireflySize, 1);
         ratio = PlayerPrefs.GetFloat("Ratio");
-        lineOnOff = (int)PlayerPrefs.GetFloat("Line OnOff");
+        lineOnOff = 1;//(int)PlayerPrefs.GetFloat("Line OnOff");
         line.transform.localScale = new Vector3(10000f, 0.125f * p_height * 10, 1);
         if (lineOnOff == 1)
         {
@@ -632,6 +634,17 @@ public class Reward2D : MonoBehaviour
         else
         {
             line.SetActive(false);
+        }
+
+        drawLine(30, 200);
+
+        if (isMoving2FF)
+        {
+            scoring.SetActive(true);
+        }
+        else
+        {
+            scoring.SetActive(false);
         }
 
         if (ptb != 2)
@@ -1134,8 +1147,15 @@ public class Reward2D : MonoBehaviour
                 Vector3 temp = move;
                 move = move + (direction * (float)randStdNormal);
                 velocity_Noised = velocity + (float)randStdNormal;
-                firefly.transform.position += move * Time.deltaTime;
+                //firefly.transform.position += move * Time.deltaTime;
                 move = temp;
+                timeCounter += 0.0005f; // multiply all this with some speed variable (* speed);
+                float x = 30 * Mathf.Cos(timeCounter);
+                float y = 0;
+                float z = 30 * Mathf.Sin(timeCounter);
+                print(x);
+                print(z);
+                firefly.transform.position = new Vector3(x, y, z);
             }
 
             if (isEnd)
@@ -1354,6 +1374,7 @@ public class Reward2D : MonoBehaviour
         }
         else if (nFF > 1 && multiMode == 2)
         {
+            player.transform.position = Vector3.up * p_height;
             FPS.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
             for (int i = 0; i < nFF; i++)
             {
@@ -2197,6 +2218,11 @@ public class Reward2D : MonoBehaviour
                 scoring.SetActive(false);
             }
             scores2FF.Add(score2FF);
+            if (score2FF > winscore)
+            {
+                isReward = true;
+                proximity = true;
+            }
         }
         else
         {
@@ -2249,6 +2275,15 @@ public class Reward2D : MonoBehaviour
                     //juiceTime = 0;
                     //Debug.Log("Juice: " + DateTime.Now.ToLongTimeString());
                 }
+            }
+            else if (isMoving2FF)
+            {
+                audioSource.clip = winSound;
+                if (PlayerPrefs.GetInt("Feedback ON") == 0)
+                {
+                    audioSource.clip = neutralSound;
+                }
+                audioSource.Play();
             }
             else
             {
@@ -2904,18 +2939,34 @@ public class Reward2D : MonoBehaviour
         return (coords, hit);
     }
 
+    void drawLine(float radius, int segments)
+    {
+        LineRenderer lr;
+        lr = line.GetComponent<LineRenderer>();
+        Vector3[] points = new Vector3[segments + 1];
+        for (int i = 0; i < segments; i++)
+        {
+            float angle = ((float)i / (float)segments) * 360 * Mathf.Deg2Rad;
+            float x = Mathf.Sin(angle) * radius;
+            float z = Mathf.Cos(angle) * radius;
+            points[i] = new Vector3(x, 0f, z);
+        }
+        points[segments] = points[0];
+        lr.positionCount = segments + 1;
+        lr.SetPositions(points);
+    }
 
-/// <summary>
-/// If you provide filepaths beforehand, the program will save all of your data as .csv files.
-/// 
-/// I did something weird where I saved the rotation/position data as strings; I did this
-/// because the number of columns that the .csv file will have will vary depending on the
-/// number of FF. Each FF has it's own position and distance from the player, and that data
-/// has to be saved along with everything else, and I didn't want to allocate memory for all
-/// the maximum number of FF if not every experiment will have 5 FF, so concatenating all of
-/// the available FF positions and distances into one string and then adding each string as
-/// one entry in a list was my best idea.
-/// </summary>
+    /// <summary>
+    /// If you provide filepaths beforehand, the program will save all of your data as .csv files.
+    /// 
+    /// I did something weird where I saved the rotation/position data as strings; I did this
+    /// because the number of columns that the .csv file will have will vary depending on the
+    /// number of FF. Each FF has it's own position and distance from the player, and that data
+    /// has to be saved along with everything else, and I didn't want to allocate memory for all
+    /// the maximum number of FF if not every experiment will have 5 FF, so concatenating all of
+    /// the available FF positions and distances into one string and then adding each string as
+    /// one entry in a list was my best idea.
+    /// </summary>
     public void Save()
     { 
         try
@@ -4125,6 +4176,10 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("Feedback");
             xmlWriter.WriteString(PlayerPrefs.GetInt("Feedback").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("WinScore");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("WinScore").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();

@@ -195,6 +195,11 @@ public class AlloEgoJoystick : MonoBehaviour
             moveX = joystick.x.ReadValue();
             moveY = joystick.y.ReadValue();
 
+            if (PlayerPrefs.GetFloat("Fixed Y Speed") != 0)
+            {
+                moveY = PlayerPrefs.GetFloat("Fixed Y Speed");
+            }
+
             if (moveX < 0.0f)
             {
                 moveX += 1.0f;
