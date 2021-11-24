@@ -1429,12 +1429,14 @@ MonoBehaviour:
   QueueLength: 1
   moveX: 0
   moveY: 0
+  circX: 0
   press: 0
   currentSpeed: 0
   currentRot: 0
   RotSpeed: 0
   MaxSpeed: 0
   seed: 0
+  FF: {fileID: 0}
   ptb: 0
   gainVel: 0
   gainRot: 0

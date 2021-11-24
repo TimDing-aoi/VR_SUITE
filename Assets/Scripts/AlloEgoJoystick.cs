@@ -29,6 +29,7 @@ public class AlloEgoJoystick : MonoBehaviour
 
     public float moveX;
     public float moveY;
+    public float circX;
     public int press;
     [ShowOnly] public float currentSpeed = 0.0f;
     [ShowOnly] public float currentRot = 0.0f;
@@ -57,6 +58,10 @@ public class AlloEgoJoystick : MonoBehaviour
     float[] y = new float[count + 1];
     ulong[] xcomp;
     float aDivY0;
+
+    private float timeCounter = 0;
+    private float stopCounter = 0;
+    public GameObject FF;
 
     [HideInInspector] public bool ptb;
 
@@ -110,6 +115,8 @@ public class AlloEgoJoystick : MonoBehaviour
     {
         seed = UnityEngine.Random.Range(1, 10000);
         rand = new System.Random(seed);
+
+        circX = 0;
 
         ptb = PlayerPrefs.GetInt("Type") != 2;
 
@@ -195,11 +202,6 @@ public class AlloEgoJoystick : MonoBehaviour
             moveX = joystick.x.ReadValue();
             moveY = joystick.y.ReadValue();
 
-            if (PlayerPrefs.GetFloat("Fixed Y Speed") != 0)
-            {
-                moveY = PlayerPrefs.GetFloat("Fixed Y Speed");
-            }
-
             if (moveX < 0.0f)
             {
                 moveX += 1.0f;
@@ -242,6 +244,9 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             prevY = moveY;
 
+            float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
+            float maxR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
+
             if (ptb)
             {
                 ProcessNoise();
@@ -249,15 +254,52 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             else
             {
-                currentSpeed = moveY * MaxSpeed;
+                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0 && moveY * timeCounter > (minR + maxR) / 2 + 5)
+                {
+                    currentSpeed = 0;
+                }
+                else
+                {
+                    currentSpeed = moveY * MaxSpeed;
+                }
                 currentRot = moveX * RotSpeed;
                 cleanVel = currentSpeed;
                 cleanRot = currentRot;
             }
             //transform.position = transform.position + transform.forward * currentSpeed * Time.fixedDeltaTime;
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
-            transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
-            transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+            if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                moveY = PlayerPrefs.GetFloat("FixedYSpeed");
+                //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 + 1)
+                {
+                    //print("out of ring");
+                    moveY = 0;
+                    timeCounter = 0;
+                }
+                else
+                {
+                    timeCounter += 0.005f;
+                    circX -= moveX * (float)Math.PI / 180;
+                    float x = Mathf.Cos(circX);
+                    float z = Mathf.Sin(circX);
+                    transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                    FF = GameObject.Find("Firefly");
+                    /*transform.LookAt(new Vector3(0f,0f,0f));
+                    transform.Rotate(0f, 180f, 0f);*/
+                    Vector3 lookatpos = transform.position * 2;
+                    transform.LookAt(lookatpos);
+                    transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                    //timeCounter += 0.005f;
+                    //print(circX);
+                }
+            }
+            else
+            {
+                transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
+                transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+            }
         }
         catch (Exception e)
         {
