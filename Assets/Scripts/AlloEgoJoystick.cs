@@ -254,15 +254,22 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             else
             {
-                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0 && moveY * timeCounter > (minR + maxR) / 2 + 5)
+                currentRot = moveX * RotSpeed;
+                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
-                    currentSpeed = 0;
+                    if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2)
+                    {
+                        currentSpeed = 0.0f;
+                    }
+                    else
+                    {
+                        currentSpeed = 1.0f;
+                    }
                 }
                 else
                 {
                     currentSpeed = moveY * MaxSpeed;
                 }
-                currentRot = moveX * RotSpeed;
                 cleanVel = currentSpeed;
                 cleanRot = currentRot;
             }
@@ -272,11 +279,12 @@ public class AlloEgoJoystick : MonoBehaviour
             {
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 + 1)
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2)
                 {
                     //print("out of ring");
                     moveY = 0;
                     timeCounter = 0;
+                    circX = 0;
                 }
                 else
                 {

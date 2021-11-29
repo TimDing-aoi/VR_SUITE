@@ -1153,11 +1153,12 @@ public class Reward2D : MonoBehaviour
                 //print(randStdNormal);
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
-                    timeCounter += 0.0005f; // multiply all this with some speed variable (* speed);
+                    //print(timeCounter);
+                    timeCounter += velocity_Noised * 0.001f;
                     velocity_Noised = velocity + (float)randStdNormal;
-                    float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter + velocity_Noised * 0.001f) / 2;
+                    float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                     float y = 0.0001f;
-                    float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter + velocity_Noised * 0.001f) / 2;
+                    float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
                     //print(x);
                     //print(z);
                     firefly.transform.position = new Vector3(x, y, z);
@@ -1344,8 +1345,10 @@ public class Reward2D : MonoBehaviour
         currPhase = Phases.begin;
         isBegin = true;
         loopCount = 0;
-
-
+        
+        if (lineOnOff == 1) line.SetActive(true);
+        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        player.transform.position = Vector3.up * p_height;
         //Nasta Added for sequential
 
         if (nFF > 1 && multiMode == 1)
@@ -1571,9 +1574,9 @@ public class Reward2D : MonoBehaviour
             position.y = 0.0001f;
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
                 float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
                 position = new Vector3(x, y, z);
             }
             firefly.transform.position = position;
@@ -1619,9 +1622,6 @@ public class Reward2D : MonoBehaviour
         {
             await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold); // Used to be rb.velocity.magnitude
         }
-
-        
-        if (lineOnOff == 1) line.SetActive(true);
 
         // Here, I do something weird to the Vector3. "F8" is how many digits I want when I
         // convert to string, Trim takes off the parenthesis at the beginning and end of 
@@ -1669,7 +1669,6 @@ public class Reward2D : MonoBehaviour
             //if ((float)rand.NextDouble() < moveRatio)
             //{
             float r = (float)rand.NextDouble();
-
             if (r <= v_ratios[0])
             {
                 //v1
@@ -2510,10 +2509,13 @@ public class Reward2D : MonoBehaviour
                 answer.Add(0);
             }
 
-            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-            player.transform.position = Vector3.up * p_height;
+            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+            {
+                player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                player.transform.position = Vector3.up * p_height;
+            }
 
-            if (!proximity && (PlayerPrefs.GetInt("Feedback ON") == 1))
+            if (!proximity && (PlayerPrefs.GetInt("Feedback ON") == 1) && PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
                 currPhase = Phases.feedback;
                 firefly.SetActive(true);
@@ -2541,7 +2543,7 @@ public class Reward2D : MonoBehaviour
             // Debug.Log("Check Phase End.");
         }
 
-
+        timeCounter = 0;
     }
 
     void SetFireflyLocation()
