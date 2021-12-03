@@ -244,6 +244,9 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             prevY = moveY;
 
+            //print(moveX);
+            //print(moveY);
+
             float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
             float maxR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
@@ -273,6 +276,8 @@ public class AlloEgoJoystick : MonoBehaviour
                 cleanVel = currentSpeed;
                 cleanRot = currentRot;
             }
+            //print(currentSpeed);
+            //print(currentRot);
             //transform.position = transform.position + transform.forward * currentSpeed * Time.fixedDeltaTime;
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
