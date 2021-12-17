@@ -261,7 +261,7 @@ public class GoToSettings : MonoBehaviour
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<UnityEngine.UI.Toggle>().isOn ? 1 : 0);
             }
-            else if (obj.name == "Eye Mode" || obj.name == "FP Mode" || obj.name == "Perturbation" || obj.name == "Type")
+            else if (obj.name == "Eye Mode" || obj.name == "FP Mode" || obj.name == "Perturbation" || obj.name == "Type" || obj.name == "CameraMode")
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<TMP_Dropdown>().value);
             }

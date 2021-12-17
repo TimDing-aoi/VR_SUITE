@@ -27,20 +27,23 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections;
 using ViveSR.anipal.Eye;
-using UnityEngine;
 using static AlloEgoJoystick;
 using UnityEngine.SceneManagement;
 using System;
 using UnityEngine.XR;
 using TMPro;
 using System.Linq;
+using DentedPixel;
 
 public class Reward2D : MonoBehaviour
 {
@@ -76,7 +79,7 @@ public class Reward2D : MonoBehaviour
     }
     private Modes mode;
     // Toggle for whether trial is an always on trial or not
-    private bool toggle;
+    public bool toggle;
     [Tooltip("Ratio of trials that will have fireflies always on")]
     [HideInInspector] public float ratio;
     [Tooltip("Frequency of flashing firefly (Flashing Firefly Only)")]
@@ -267,6 +270,9 @@ public class Reward2D : MonoBehaviour
     readonly List<float> N2ffdata = new List<float>();
     readonly List<float> deltaTdata = new List<float>();
     readonly List<float> spawnRdata = new List<float>();
+
+    public GameObject timebar;
+    public GameObject timebarback;
 
     [HideInInspector] public float FrameTimeElement = 0;
 
@@ -1114,6 +1120,10 @@ public class Reward2D : MonoBehaviour
                         timeSinceLastFFloot = tNow;
                     }
                 }
+                Vector3 barScale = timebar.transform.localScale;
+                float playerdist = Vector3.Distance(player.transform.position, new Vector3(0f, 0f, 0f));
+                print(playerdist);
+                timebar.transform.localScale = new Vector3(playerdist/30, barScale.y, barScale.z);
             }
 
             //Nasta Added for sequential
@@ -1983,6 +1993,8 @@ public class Reward2D : MonoBehaviour
     {
         isTrial = true;
         // Debug.Log("Trial Phase Start.");
+        timebar.SetActive(true);
+        timebarback.SetActive(true);
 
         source = new CancellationTokenSource();
 
@@ -2071,6 +2083,8 @@ public class Reward2D : MonoBehaviour
         move = new Vector3(0.0f, 0.0f, 0.0f);
         velocity = 0.0f;
         line.SetActive(false);
+        timebar.SetActive(false);
+        timebarback.SetActive(false);
         isTrial = false;
         phase = Phases.check;
         currPhase = Phases.check;
@@ -2268,6 +2282,36 @@ public class Reward2D : MonoBehaviour
         //print(string.Format("isReward: {0}", isReward));
 
         //Nasta Added sequential
+        if (isMoving)
+        {
+            currPhase = Phases.question;
+
+            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+
+            panel.SetActive(true);
+
+            await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
+
+            if (SharedJoystick.currentRot < 0.0f)
+            {
+                // no
+                answer.Add(0);
+            }
+            else
+            {
+                // yes
+                answer.Add(1);
+            }
+
+            panel.SetActive(false);
+
+            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+        }
+        else
+        {
+            answer.Add(0);
+        }
+
         if (isReward && proximity)
         {
             if (nFF > 1 && multiMode == 1)
@@ -2478,36 +2522,6 @@ public class Reward2D : MonoBehaviour
             isTimeout = false;
             //player.transform.position = Vector3.up * p_height;
             //player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-
-            if (isMoving)
-            {
-                currPhase = Phases.question;
-
-                await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
-
-                panel.SetActive(true);
-
-                await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
-
-                if (SharedJoystick.currentRot < 0.0f)
-                {
-                    // no
-                    answer.Add(0);
-                }
-                else
-                {
-                    // yes
-                    answer.Add(1);
-                }
-
-                panel.SetActive(false);
-
-                await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
-            }
-            else
-            {
-                answer.Add(0);
-            }
 
             if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
@@ -2807,6 +2821,7 @@ public class Reward2D : MonoBehaviour
         CancellationTokenSource source = new CancellationTokenSource();
 
         firefly.SetActive(true);
+        line.SetActive(true);
 
         var t = Task.Run(async () =>
         {
@@ -2816,10 +2831,12 @@ public class Reward2D : MonoBehaviour
         if (await Task.WhenAny(t, Task.Run(async () => { await new WaitUntil(() => currPhase == Phases.check); })) == t)
         {
             firefly.SetActive(false);
+            line.SetActive(false);
         }
         else
         {
             firefly.SetActive(false);
+            line.SetActive(false);
         }
 
         source.Cancel();
@@ -2828,7 +2845,7 @@ public class Reward2D : MonoBehaviour
     public async void OnOff(GameObject obj, float time)
     {
         CancellationTokenSource source = new CancellationTokenSource();
-
+        
         firefly.SetActive(true);
 
         var t = Task.Run(async () =>

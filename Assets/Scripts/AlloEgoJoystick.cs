@@ -105,6 +105,8 @@ public class AlloEgoJoystick : MonoBehaviour
     private float prevX;
     private float prevY;
 
+    private Vector3 previouspos;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -116,6 +118,7 @@ public class AlloEgoJoystick : MonoBehaviour
         seed = UnityEngine.Random.Range(1, 10000);
         rand = new System.Random(seed);
 
+        previouspos = new Vector3(0f, 0f, 0f);
         circX = 0;
 
         ptb = PlayerPrefs.GetInt("Type") != 2;
@@ -283,8 +286,7 @@ public class AlloEgoJoystick : MonoBehaviour
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
-                //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2)
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle)
                 {
                     //print("out of ring");
                     moveY = 0;
@@ -293,19 +295,41 @@ public class AlloEgoJoystick : MonoBehaviour
                 }
                 else
                 {
+                    int cammode = 1;
                     timeCounter += 0.005f;
                     circX -= moveX * (float)Math.PI / 180;
                     float x = Mathf.Cos(circX);
                     float z = Mathf.Sin(circX);
                     transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
                     FF = GameObject.Find("Firefly");
-                    /*transform.LookAt(new Vector3(0f,0f,0f));
-                    transform.Rotate(0f, 180f, 0f);*/
-                    Vector3 lookatpos = transform.position * 2;
-                    transform.LookAt(lookatpos);
+                    float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
+                    if (SharedReward.toggle)
+                    {
+                        speedMultiplier = 1;
+                    }
+                    if (cammode == 0)
+                    {
+                        transform.LookAt(new Vector3(0f, 0f, 0f));
+                        transform.Rotate(0f, 180f, 0f);
+                    }
+                    else if (cammode == 1)
+                    {
+                        Vector3 lookatpos = transform.position * 2;
+                        transform.LookAt(lookatpos);
+                        transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
+                    }
+                    else if (cammode == 2)
+                    {
+                        Vector3 lookatpos = 2 * transform.position - previouspos;
+                        transform.LookAt(lookatpos);
+                    }
                     transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                    //
                     //timeCounter += 0.005f;
                     //print(circX);
+                    //Vector3 lookatpos = 2 * transform.position - previouspos;
+                    //transform.LookAt(lookatpos);
+                    previouspos = transform.position;
                 }
             }
             else
