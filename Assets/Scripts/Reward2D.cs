@@ -1123,7 +1123,7 @@ public class Reward2D : MonoBehaviour
                 Vector3 barScale = timebar.transform.localScale;
                 float playerdist = Vector3.Distance(player.transform.position, new Vector3(0f, 0f, 0f));
                 print(playerdist);
-                timebar.transform.localScale = new Vector3(1 - playerdist/30, barScale.y, barScale.z);
+                timebar.transform.localScale = new Vector3(playerdist/30, barScale.y, barScale.z);
             }
 
             //Nasta Added for sequential
