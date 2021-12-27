@@ -1171,7 +1171,12 @@ public class Reward2D : MonoBehaviour
                     float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
                     //print(x);
                     //print(z);
-                    firefly.transform.position = new Vector3(x, y, z);
+                    float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
+                    float maxR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
+                    if (Vector3.Distance(new Vector3(0f, 0f, 0f), player.transform.position) <= (minR + maxR) / 2)
+                    {
+                        firefly.transform.position = new Vector3(x, y, z);
+                    }
                 }
                 else
                 {

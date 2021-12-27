@@ -298,8 +298,8 @@ public class AlloEgoJoystick : MonoBehaviour
                     int cammode = 1;
                     timeCounter += 0.005f;
                     circX -= moveX * (float)Math.PI / 180;
-                    float x = Mathf.Cos(circX);
-                    float z = Mathf.Sin(circX);
+                    float x = Mathf.Cos(circX/timeCounter);
+                    float z = Mathf.Sin(circX/timeCounter);
                     transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
                     FF = GameObject.Find("Firefly");
                     float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
