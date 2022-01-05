@@ -296,12 +296,11 @@ public class AlloEgoJoystick : MonoBehaviour
                 else
                 {
                     int cammode = 1;
-                    timeCounter += 0.005f;
-                    circX -= moveX * (float)Math.PI / 180;
-                    float x = Mathf.Cos(circX/timeCounter);
-                    float z = Mathf.Sin(circX/timeCounter);
-                    transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
-                    FF = GameObject.Find("Firefly");
+                    timeCounter += moveY * 0.01f;
+                    circX -= moveX * (float)Math.PI / (180 * timeCounter);
+                    float x = Mathf.Cos(circX);
+                    float z = Mathf.Sin(circX);
+                    transform.position = new Vector3(timeCounter * x, 1f, timeCounter * z);
                     float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
                     if (SharedReward.toggle)
                     {
@@ -314,7 +313,7 @@ public class AlloEgoJoystick : MonoBehaviour
                     }
                     else if (cammode == 1)
                     {
-                        Vector3 lookatpos = transform.position * 2;
+                        Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
                         transform.LookAt(lookatpos);
                         transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
                     }
@@ -323,7 +322,6 @@ public class AlloEgoJoystick : MonoBehaviour
                         Vector3 lookatpos = 2 * transform.position - previouspos;
                         transform.LookAt(lookatpos);
                     }
-                    transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
                     //
                     //timeCounter += 0.005f;
                     //print(circX);
