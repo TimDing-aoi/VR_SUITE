@@ -105,8 +105,6 @@ public class AlloEgoJoystick : MonoBehaviour
     private float prevX;
     private float prevY;
 
-    private Vector3 previouspos;
-
     // Start is called before the first frame update
     void Awake()
     {
@@ -118,7 +116,6 @@ public class AlloEgoJoystick : MonoBehaviour
         seed = UnityEngine.Random.Range(1, 10000);
         rand = new System.Random(seed);
 
-        previouspos = new Vector3(0f, 0f, 0f);
         circX = 0;
 
         ptb = PlayerPrefs.GetInt("Type") != 2;
@@ -247,9 +244,6 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             prevY = moveY;
 
-            //print(moveX);
-            //print(moveY);
-
             float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
             float maxR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
@@ -279,56 +273,42 @@ public class AlloEgoJoystick : MonoBehaviour
                 cleanVel = currentSpeed;
                 cleanRot = currentRot;
             }
-            //print(currentSpeed);
-            //print(currentRot);
             //transform.position = transform.position + transform.forward * currentSpeed * Time.fixedDeltaTime;
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle)
+                //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
+
+                float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
+                if (SharedReward.toggle)
+                {
+                    speedMultiplier = 3 / (3 - 0.15f);
+                }
+
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle
+                    || SharedReward.motion_toggle)
                 {
                     //print("out of ring");
-                    moveX = 0;
                     moveY = 0;
                     timeCounter = 0;
                     circX = 0;
                 }
                 else
                 {
-                    int cammode = 2;
-                    timeCounter += moveY * 0.01f;
-                    circX -= moveX * (float)Math.PI / (180);
+                    timeCounter += 0.005f * speedMultiplier;
+                    circX -= moveX * (float)Math.PI / 180;
                     float x = Mathf.Cos(circX);
                     float z = Mathf.Sin(circX);
-                    transform.position = new Vector3(timeCounter * x, 1f, timeCounter * z);
-                    float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
-                    if (SharedReward.toggle)
-                    {
-                        speedMultiplier = 1;
-                    }
-                    if (cammode == 0) //Simply facing outward
-                    {
-                        transform.LookAt(new Vector3(0f, 0f, 0f));
-                        transform.Rotate(0f, 180f, 0f);
-                    }
-                    else if (cammode == 1) //Calculated Tangent
-                    {
-                        Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
-                        transform.LookAt(lookatpos);
-                        transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
-                    }
-                    else if (cammode == 2) //Numerical Tangent
-                    {
-                        Vector3 lookatpos = 2 * transform.position - previouspos;
-                        transform.LookAt(lookatpos);
-                    }
-                    //
+                    transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                    FF = GameObject.Find("Firefly");
+                    /*transform.LookAt(new Vector3(0f,0f,0f));
+                    transform.Rotate(0f, 180f, 0f);*/
+                    Vector3 lookatpos = transform.position * 2;
+                    transform.LookAt(lookatpos);
+                    transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
                     //timeCounter += 0.005f;
                     //print(circX);
-                    //Vector3 lookatpos = 2 * transform.position - previouspos;
-                    //transform.LookAt(lookatpos);
-                    previouspos = transform.position;
                 }
             }
             else
