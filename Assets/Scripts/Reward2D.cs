@@ -3506,6 +3506,10 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetInt("Moving ON").ToString());
             xmlWriter.WriteEndElement();
 
+            xmlWriter.WriteStartElement("SelfMotionOn");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("SelfMotionOn").ToString());
+            xmlWriter.WriteEndElement();
+
             //xmlWriter.WriteStartElement("RatioMoving");
             //xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio Moving").ToString());
             //xmlWriter.WriteEndElement();

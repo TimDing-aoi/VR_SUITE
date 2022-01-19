@@ -257,7 +257,9 @@ public class GoToSettings : MonoBehaviour
     {
         try
         {
-            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies" || obj.name == "Feedback")
+            if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || 
+                obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies" || obj.name == "Feedback" ||
+                obj.name == "SelfMotionOn")
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<UnityEngine.UI.Toggle>().isOn ? 1 : 0);
             }
@@ -528,7 +530,8 @@ public class GoToSettings : MonoBehaviour
                                     }
                                 }
                             }
-                            else if (children.name == "Perturbation On" || children.name == "Moving ON" || children.name == "Feedback ON" || children.name == "AboveBelow" || children.name == "VertHor" || children.name == "Full ON")
+                            else if (children.name == "Perturbation On" || children.name == "Moving ON" || children.name == "Feedback ON" || children.name == "AboveBelow" || 
+                                children.name == "VertHor" || children.name == "Full ON" || children.name == "SelfMotionOn")
                             {
                                 UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
                                 foreach (XmlNode node in doc.DocumentElement.ChildNodes)
@@ -664,7 +667,8 @@ public class GoToSettings : MonoBehaviour
                                     }
                                 }
                             }
-                            else if (children.name == "Perturbation On" || children.name == "Moving ON" || children.name == "Feedback ON" || children.name == "AboveBelow" || children.name == "VertHor" || children.name == "Full ON")
+                            else if (children.name == "Perturbation On" || children.name == "Moving ON" || children.name == "Feedback ON" || children.name == "AboveBelow" || children.name == "VertHor" ||
+                                children.name == "SelfMotionOn" || children.name == "Full ON")
                             {
                                 UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
                                 foreach (XmlNode node in doc.DocumentElement.ChildNodes)

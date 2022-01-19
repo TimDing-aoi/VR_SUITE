@@ -286,8 +286,9 @@ public class AlloEgoJoystick : MonoBehaviour
                     speedMultiplier = 3 / (3 - 0.15f);
                 }
 
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle
-                    || SharedReward.motion_toggle)
+                bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle && !self_motion
+                    || SharedReward.motion_toggle && !self_motion)
                 {
                     //print("out of ring");
                     moveY = 0;
