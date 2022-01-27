@@ -289,15 +289,16 @@ public class AlloEgoJoystick : MonoBehaviour
                 if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle)
                 {
                     //print("out of ring");
+                    moveX = 0;
                     moveY = 0;
                     timeCounter = 0;
                     circX = 0;
                 }
                 else
                 {
-                    int cammode = 1;
+                    int cammode = 2;
                     timeCounter += moveY * 0.01f;
-                    circX -= moveX * (float)Math.PI / (180 * timeCounter);
+                    circX -= moveX * (float)Math.PI / (180);
                     float x = Mathf.Cos(circX);
                     float z = Mathf.Sin(circX);
                     transform.position = new Vector3(timeCounter * x, 1f, timeCounter * z);
@@ -306,18 +307,18 @@ public class AlloEgoJoystick : MonoBehaviour
                     {
                         speedMultiplier = 1;
                     }
-                    if (cammode == 0)
+                    if (cammode == 0) //Simply facing outward
                     {
                         transform.LookAt(new Vector3(0f, 0f, 0f));
                         transform.Rotate(0f, 180f, 0f);
                     }
-                    else if (cammode == 1)
+                    else if (cammode == 1) //Calculated Tangent
                     {
                         Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
                         transform.LookAt(lookatpos);
                         transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
                     }
-                    else if (cammode == 2)
+                    else if (cammode == 2) //Numerical Tangent
                     {
                         Vector3 lookatpos = 2 * transform.position - previouspos;
                         transform.LookAt(lookatpos);

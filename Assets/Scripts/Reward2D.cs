@@ -407,9 +407,9 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Start()
     {
-        UnityEngine.XR.InputTracking.disablePositionalTracking = true;
-        UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Lcam, true);
-        UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Rcam, true);
+        //UnityEngine.XR.InputTracking.disablePositionalTracking = true;
+        //UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Lcam, true);
+        //UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Rcam, true);
 
         Lcam.ResetProjectionMatrix();
         Rcam.ResetProjectionMatrix();
@@ -1122,7 +1122,7 @@ public class Reward2D : MonoBehaviour
                 }
                 Vector3 barScale = timebar.transform.localScale;
                 float playerdist = Vector3.Distance(player.transform.position, new Vector3(0f, 0f, 0f));
-                print(playerdist);
+                //print(playerdist);
                 timebar.transform.localScale = new Vector3(1 - playerdist/30, barScale.y, barScale.z);
             }
 
@@ -2094,7 +2094,7 @@ public class Reward2D : MonoBehaviour
         isTrial = false;
         phase = Phases.check;
         currPhase = Phases.check;
-        // Debug.Log("Trial Phase End.");
+        Debug.Log("Trial Phase End.");
     }
 
     /// <summary>
