@@ -60,7 +60,7 @@ public class AlloEgoJoystick : MonoBehaviour
     float aDivY0;
 
     private float timeCounter = 0;
-    private float stopCounter = 0;
+    private float hbobCounter = 0;
     public GameObject FF;
 
     [HideInInspector] public bool ptb;
@@ -295,14 +295,15 @@ public class AlloEgoJoystick : MonoBehaviour
                     //print("out of ring");
                     moveY = 0;
                     timeCounter = 0;
+                    hbobCounter = 0;
                     circX = 0;
                 }
                 else if (self_motion && SharedReward.trial_start_phase) //Selfmotion Habituation OR Observation
                 {
-                    timeCounter += 0.005f * speedMultiplier;
+                    hbobCounter += 0.005f * speedMultiplier;
                     print("starting with self mo");
                     moveY = PlayerPrefs.GetFloat("FixedYSpeed");
-                    float x = -5 + moveY * timeCounter;
+                    float x = -5 + moveY * hbobCounter;
                     transform.position = new Vector3(x, 1f, 0f);
                     circX = 0;
                 }

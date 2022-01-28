@@ -1857,7 +1857,10 @@ public class Reward2D : MonoBehaviour
             {
 
                 case Modes.ON:
-                    firefly.SetActive(true);
+                    if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                    {
+                        firefly.SetActive(true);
+                    }
                     break;
                 case Modes.Flash:
                     on = true;
@@ -2020,6 +2023,10 @@ public class Reward2D : MonoBehaviour
             timeCounter = 0;
             firefly.SetActive(true);
             await new WaitForSeconds(0.15f); //Observation
+            if (!toggle)
+            {
+                firefly.SetActive(false);
+            }
             trial_start_phase = false;
         }
         else if (is_gitter && !self_motion)
@@ -2036,6 +2043,10 @@ public class Reward2D : MonoBehaviour
             timeCounter = 0;
             firefly.SetActive(true);
             await new WaitForSeconds(0.15f); //Observation
+            if (!toggle)
+            {
+                firefly.SetActive(false);
+            }
             motion_toggle = false;
             trial_start_phase = false;
         }
@@ -2861,7 +2872,10 @@ public class Reward2D : MonoBehaviour
     {
         CancellationTokenSource source = new CancellationTokenSource();
 
-        firefly.SetActive(true);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            firefly.SetActive(true);
+        }
 
         var t = Task.Run(async () =>
         {
