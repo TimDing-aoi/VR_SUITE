@@ -277,6 +277,8 @@ public class AlloEgoJoystick : MonoBehaviour
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
+                int cammode = 0;
+
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
 
@@ -287,29 +289,50 @@ public class AlloEgoJoystick : MonoBehaviour
                 }
 
                 bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.firefly.activeSelf && !SharedReward.toggle && !self_motion
-                    || SharedReward.motion_toggle && !self_motion)
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle) 
+                    //Out of circle(Feedback) OR No selfmotion's Habituation OR Observation
                 {
                     //print("out of ring");
                     moveY = 0;
                     timeCounter = 0;
                     circX = 0;
                 }
+                else if (self_motion && SharedReward.trial_start_phase) //Selfmotion Habituation OR Observation
+                {
+                    timeCounter += 0.005f * speedMultiplier;
+                    print("starting with self mo");
+                    moveY = PlayerPrefs.GetFloat("FixedYSpeed");
+                    float x = -5 + moveY * timeCounter;
+                    transform.position = new Vector3(x, 1f, 0f);
+                    circX = 0;
+                }
                 else
                 {
                     timeCounter += 0.005f * speedMultiplier;
-                    circX -= moveX * (float)Math.PI / 180;
+                    circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
+                    //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
                     float x = Mathf.Cos(circX);
                     float z = Mathf.Sin(circX);
+                    Vector3 previouspos = transform.position;
                     transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
                     FF = GameObject.Find("Firefly");
-                    /*transform.LookAt(new Vector3(0f,0f,0f));
-                    transform.Rotate(0f, 180f, 0f);*/
-                    Vector3 lookatpos = transform.position * 2;
-                    transform.LookAt(lookatpos);
+                    if (cammode == 0) //Simply facing outward
+                    {
+                        transform.LookAt(new Vector3(0f, 0f, 0f));
+                        transform.Rotate(0f, 180f, 0f);
+                    }
+                    else if (cammode == 1) //Calculated Tangent
+                    {
+                        Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
+                        transform.LookAt(lookatpos);
+                        transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
+                    }
+                    else if (cammode == 2) //Numerical Tangent
+                    {
+                        Vector3 lookatpos = 2 * transform.position - previouspos;
+                        transform.LookAt(lookatpos);
+                     }
                     transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
-                    //timeCounter += 0.005f;
-                    //print(circX);
                 }
             }
             else

@@ -79,6 +79,8 @@ public class Reward2D : MonoBehaviour
     public bool toggle;
     // Toggle for self motion
     public bool motion_toggle = false;
+    // Toggle for habituation/observation
+    public bool trial_start_phase = false;
 
     [Tooltip("Ratio of trials that will have fireflies always on")]
     [HideInInspector] public float ratio;
@@ -1157,11 +1159,11 @@ public class Reward2D : MonoBehaviour
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
                     //print(timeCounter);
-                    timeCounter += velocity_Noised * 0.001f;
-                    velocity_Noised = velocity + (float)randStdNormal;
-                    float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
+                    timeCounter += velocity * 0.001f;
+                    velocity_Noised = timeCounter + (float)randStdNormal * 0.001f;
+                    float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
                     float y = 0.0001f;
-                    float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
+                    float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(velocity_Noised) / 2;
                     //print(x);
                     //print(z);
                     firefly.transform.position = new Vector3(x, y, z);
@@ -1351,7 +1353,16 @@ public class Reward2D : MonoBehaviour
         
         if (lineOnOff == 1) line.SetActive(true);
         player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-        player.transform.position = Vector3.up * p_height;
+
+        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        if (self_motion)
+        {
+            player.transform.position = new Vector3(-5f, 1f, 0f);
+        }
+        else
+        {
+            player.transform.position = Vector3.up * p_height;
+        }
         //Nasta Added for sequential
 
         if (nFF > 1 && multiMode == 1)
@@ -1562,6 +1573,7 @@ public class Reward2D : MonoBehaviour
         }
         else
         {
+            firefly.SetActive(false);
             Vector3 position;
             float r = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
             float angle = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
@@ -1890,7 +1902,10 @@ public class Reward2D : MonoBehaviour
                         else
                         {
                             SetFireflyLocation();
-                            firefly.SetActive(true);
+                            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                            {
+                                firefly.SetActive(true);
+                            }
                         }
                         //Debug.Log("always on");
                     }
@@ -1989,11 +2004,40 @@ public class Reward2D : MonoBehaviour
 
         source = new CancellationTokenSource();
 
-        if(toggle && isMoving)
+        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
+
+        if (is_gitter && self_motion)
         {
+            trial_start_phase = true;
+            firefly.SetActive(false);
+            await new WaitForSeconds(0.35f); //Habituation
+            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+            float y = 0;
+            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+            Vector3 position = new Vector3(x, y, z);
+            firefly.transform.position = position;
+            timeCounter = 0;
+            firefly.SetActive(true);
+            await new WaitForSeconds(0.15f); //Observation
+            trial_start_phase = false;
+        }
+        else if (is_gitter && !self_motion)
+        {
+            trial_start_phase = true;
             motion_toggle = true;
-            await new WaitForSeconds(0.15f);
+            firefly.SetActive(false);
+            await new WaitForSeconds(0.35f); //Habituation
+            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+            float y = 0;
+            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+            Vector3 position = new Vector3(x, y, z);
+            firefly.transform.position = position;
+            timeCounter = 0;
+            firefly.SetActive(true);
+            await new WaitForSeconds(0.15f); //Observation
             motion_toggle = false;
+            trial_start_phase = false;
         }
 
         var t = Task.Run(async () => {
