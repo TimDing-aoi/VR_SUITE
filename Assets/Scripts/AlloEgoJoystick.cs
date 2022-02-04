@@ -278,6 +278,7 @@ public class AlloEgoJoystick : MonoBehaviour
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
                 int cammode = 0;
+                bool worldcentric = false;
 
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
@@ -309,31 +310,44 @@ public class AlloEgoJoystick : MonoBehaviour
                 }
                 else
                 {
-                    timeCounter += 0.005f * speedMultiplier;
-                    circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
-                    //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
-                    float x = Mathf.Cos(circX);
-                    float z = Mathf.Sin(circX);
-                    Vector3 previouspos = transform.position;
-                    transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
-                    FF = GameObject.Find("Firefly");
-                    if (cammode == 0) //Simply facing outward
+                    if (worldcentric)
                     {
-                        transform.LookAt(new Vector3(0f, 0f, 0f));
-                        transform.Rotate(0f, 180f, 0f);
+                        timeCounter += 0.005f * speedMultiplier;
+                        circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
+                                                              //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
+                        float x = Mathf.Cos(circX);
+                        float z = Mathf.Sin(circX);
+                        Vector3 previouspos = transform.position;
+                        transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                        FF = GameObject.Find("Firefly");
+                        if (cammode == 0) //Simply facing outward
+                        {
+                            transform.LookAt(new Vector3(0f, 0f, 0f));
+                            transform.Rotate(0f, 180f, 0f);
+                        }
+                        else if (cammode == 1) //Calculated Tangent
+                        {
+                            Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
+                            transform.LookAt(lookatpos);
+                            transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
+                        }
+                        else if (cammode == 2) //Numerical Tangent
+                        {
+                            Vector3 lookatpos = 2 * transform.position - previouspos;
+                            transform.LookAt(lookatpos);
+                        }
+                        transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
                     }
-                    else if (cammode == 1) //Calculated Tangent
+                    else
                     {
-                        Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
-                        transform.LookAt(lookatpos);
-                        transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
+                        float phi = 0.05f * moveX * 180f / (float)Math.PI;
+                        transform.Rotate(0.0f, phi, 0.0f, Space.Self);
+                        //transform.Rotate(0.0f, 1 / 90, 0.0f, Space.Self);
+                        print(transform.rotation.y);
+                        float x = transform.position.x + 0.05f * speedMultiplier * Mathf.Sin(transform.rotation.y * (float)Math.PI);
+                        float z = transform.position.z + 0.05f * speedMultiplier * Mathf.Cos(transform.rotation.y * (float)Math.PI);
+                        transform.position = new Vector3(x, 1f, z);
                     }
-                    else if (cammode == 2) //Numerical Tangent
-                    {
-                        Vector3 lookatpos = 2 * transform.position - previouspos;
-                        transform.LookAt(lookatpos);
-                     }
-                    transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
                 }
             }
             else
