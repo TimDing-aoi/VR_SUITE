@@ -1606,16 +1606,16 @@ public class Reward2D : MonoBehaviour
                 await new WaitForSeconds(0.1f);
                 for (int prep = 0; prep <= 30; prep++)
                 {
-                    print(prep);
-                    print(lr.materials[0].color);
+                    //print(prep);
+                    //print(lr.materials[0].color);
                     await new WaitForSeconds(0.006666666f);
                     lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
                 }
                 await new WaitForSeconds(0.1f);
                 for (int prep = 0; prep <= 30; prep++)
                 {
-                    print(prep);
-                    print(lr.materials[0].color);
+                    //print(prep);
+                    //print(lr.materials[0].color);
                     await new WaitForSeconds(0.006666666f);
                     lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
                 }
@@ -2075,18 +2075,27 @@ public class Reward2D : MonoBehaviour
         }
         else if (is_gitter && !self_motion)
         {
+            System.Random randNoise = new System.Random();
+            double randStdNormal = 25;
+            while(randStdNormal > 20)
+            {
+                double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                double u2 = 1.0 - randNoise.NextDouble();
+                randStdNormal = 10 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                             Math.Sin(2.0 * Math.PI * u2);
+            }
             trial_start_phase = true;
             motion_toggle = true;
             firefly.SetActive(false);
             await new WaitForSeconds(0.35f); //Habituation
             if (SharedJoystick.worldcentric)
             {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
                 float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)randStdNormal * Mathf.Deg2Rad) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
-                timeCounter = 0;
+                timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
                 firefly.SetActive(true);
             }
             else
@@ -2672,6 +2681,8 @@ public class Reward2D : MonoBehaviour
         }
 
         timeCounter = 0;
+        var liner = line.GetComponent<LineRenderer>();
+        liner.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
         line.SetActive(false);
     }
 

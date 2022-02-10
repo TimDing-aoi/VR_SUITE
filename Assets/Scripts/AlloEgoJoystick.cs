@@ -36,7 +36,7 @@ public class AlloEgoJoystick : MonoBehaviour
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
 
-    public bool worldcentric = true;
+    public bool worldcentric = false;
 
     //readonly List<float> t = new List<float>();
     //readonly List<bool> isPtb = new List<bool>();
@@ -343,6 +343,8 @@ public class AlloEgoJoystick : MonoBehaviour
                     }
                     else
                     {
+                        //print("Egocentric");
+
                         tmpCnt += 1;
                         if (tmpCnt > 250)
                         {
@@ -377,8 +379,8 @@ public class AlloEgoJoystick : MonoBehaviour
                         //print(yRot_rad);
 
                         // Calculate player location based on camera angle
-                        float x = transform.position.x + 0.05f * speedMultiplier * Mathf.Sin(yRot_rad);
-                        float z = transform.position.z + 0.05f * speedMultiplier * Mathf.Cos(yRot_rad);
+                        float x = transform.position.x + 0.005f * moveY * Mathf.Sin(yRot_rad);
+                        float z = transform.position.z + 0.005f * moveY * Mathf.Cos(yRot_rad);
 
                         // Update player location based on new calculated values
                         transform.position = new Vector3(x, 1f, z);

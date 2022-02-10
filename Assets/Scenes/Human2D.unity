@@ -479,11 +479,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 115409361}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4d4c76e63944cba8c7d00f56334b98c, type: 3}
+  m_Script: {fileID: 11500000, guid: 03b6ba28be4dbfa4f8d2569b617e8548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TheFont: {fileID: 0}
-  SpawnType: 0
+  target: {fileID: 1036612974}
+  cam: {fileID: 201228393}
+  offset: 0.02
 --- !u!1 &147508002
 GameObject:
   m_ObjectHideFlags: 0
@@ -1435,8 +1436,9 @@ MonoBehaviour:
   currentRot: 0
   RotSpeed: 0
   MaxSpeed: 0
+  worldcentric: 0
   seed: 0
-  FF: {fileID: 0}
+  FF: {fileID: 306717868}
   ptb: 0
   gainVel: 0
   gainRot: 0
@@ -3090,7 +3092,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0308a1af4b58be146947cb7f05f0b7cd, type: 2}
+  - {fileID: 2100000, guid: 9a24c79493e44ba4e92e3e52715c5eef, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8834,6 +8836,8 @@ MonoBehaviour:
   fireflySize: 0
   fireflyZoneRadius: 0.5
   toggle: 0
+  motion_toggle: 0
+  trial_start_phase: 0
   ratio: 0
   freq: 0
   duty: 0
@@ -8859,8 +8863,6 @@ MonoBehaviour:
   p_height: 0
   phase: 0
   isQuestion: 0
-  timebar: {fileID: 1284182058}
-  timebarback: {fileID: 615432901}
   FrameTimeElement: 0
   delayTime: 0.2
   Detector: 0
@@ -8970,6 +8972,7 @@ GameObject:
   - component: {fileID: 1284182059}
   - component: {fileID: 1284182061}
   - component: {fileID: 1284182060}
+  - component: {fileID: 1284182062}
   m_Layer: 0
   m_Name: time
   m_TagString: Untagged
@@ -8986,7 +8989,7 @@ RectTransform:
   m_GameObject: {fileID: 1284182058}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 615432902}
   m_RootOrder: 0
@@ -9033,6 +9036,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1284182058}
   m_CullTransparentMesh: 0
+--- !u!114 &1284182062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1284182058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 209b23946e12b3c4ab674b5de88a536d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slider: {fileID: 0}
+  displayText: {fileID: 0}
 --- !u!1 &1322368775
 GameObject:
   m_ObjectHideFlags: 0
