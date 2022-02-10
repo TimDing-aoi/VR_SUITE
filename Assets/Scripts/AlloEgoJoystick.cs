@@ -36,6 +36,8 @@ public class AlloEgoJoystick : MonoBehaviour
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
 
+    public bool worldcentric = true;
+
     //readonly List<float> t = new List<float>();
     //readonly List<bool> isPtb = new List<bool>();
     //readonly List<float> rawX = new List<float>();
@@ -61,6 +63,8 @@ public class AlloEgoJoystick : MonoBehaviour
 
     private float timeCounter = 0;
     private float hbobCounter = 0;
+    private float tmpCnt = 0.0f;
+
     public GameObject FF;
 
     [HideInInspector] public bool ptb;
@@ -278,7 +282,6 @@ public class AlloEgoJoystick : MonoBehaviour
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
                 int cammode = 0;
-                bool worldcentric = false;
 
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
@@ -290,8 +293,8 @@ public class AlloEgoJoystick : MonoBehaviour
                 }
 
                 bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle) 
-                    //Out of circle(Feedback) OR No selfmotion's Habituation OR Observation
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle)
+                //Out of circle(Feedback) OR Preparation OR No selfmotion's Habituation & Observation 
                 {
                     //print("out of ring");
                     moveY = 0;
@@ -299,22 +302,22 @@ public class AlloEgoJoystick : MonoBehaviour
                     hbobCounter = 0;
                     circX = 0;
                 }
-                else if (self_motion && SharedReward.trial_start_phase) //Selfmotion Habituation OR Observation
+                else if (self_motion && SharedReward.trial_start_phase) //Selfmotion Habituation OR Observation OR Preparation
                 {
                     hbobCounter += 0.005f * speedMultiplier;
-                    print("starting with self mo");
                     moveY = PlayerPrefs.GetFloat("FixedYSpeed");
-                    float x = -5 + moveY * hbobCounter;
+                    float x = (-36+hbobCounter) * moveY;
                     transform.position = new Vector3(x, 1f, 0f);
                     circX = 0;
                 }
                 else
                 {
+                    
                     if (worldcentric)
                     {
                         timeCounter += 0.005f * speedMultiplier;
                         circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
-                                                              //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
+                        //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
                         float x = Mathf.Cos(circX);
                         float z = Mathf.Sin(circX);
                         Vector3 previouspos = transform.position;
@@ -340,13 +343,46 @@ public class AlloEgoJoystick : MonoBehaviour
                     }
                     else
                     {
-                        float phi = 0.05f * moveX * 180f / (float)Math.PI;
+                        tmpCnt += 1;
+                        if (tmpCnt > 250)
+                        {
+                            tmpCnt = 0;
+                        }
+
+                        // set values
+                        float maxJoyRotDeg = 50.0f; // deg/s
+                        float maxJoyRotRad = 30.0f; // rad/s
+                        float frameRate = 120.0f; // frame rate
+                        float joyConvRateDeg = maxJoyRotDeg / frameRate;
+                        float joyConvRateRad = maxJoyRotRad / frameRate;
+
+                        // Read input from joystick 
+
+                        // for rad/s 
+                        float phi = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
+
+                        // for deg/s
+                        //float phi = joyConvRateDeg * moveX; // moveX consider to be in degree
+
+
+                        // Rotate the camele based on joystick input
                         transform.Rotate(0.0f, phi, 0.0f, Space.Self);
-                        //transform.Rotate(0.0f, 1 / 90, 0.0f, Space.Self);
-                        print(transform.rotation.y);
-                        float x = transform.position.x + 0.05f * speedMultiplier * Mathf.Sin(transform.rotation.y * (float)Math.PI);
-                        float z = transform.position.z + 0.05f * speedMultiplier * Mathf.Cos(transform.rotation.y * (float)Math.PI);
+
+                        // Read camre rotation (deg and radian)
+                        float yRot_deg = transform.rotation.eulerAngles.y;
+                        float yRot_rad = yRot_deg * Mathf.Deg2Rad;
+
+                        // Pritn camera rotation
+                        //print(yRot_deg);
+                        //print(yRot_rad);
+
+                        // Calculate player location based on camera angle
+                        float x = transform.position.x + 0.05f * speedMultiplier * Mathf.Sin(yRot_rad);
+                        float z = transform.position.z + 0.05f * speedMultiplier * Mathf.Cos(yRot_rad);
+
+                        // Update player location based on new calculated values
                         transform.position = new Vector3(x, 1f, z);
+                       
                     }
                 }
             }

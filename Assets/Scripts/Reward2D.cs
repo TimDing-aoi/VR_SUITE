@@ -1155,12 +1155,13 @@ public class Reward2D : MonoBehaviour
                              Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
                                                            //double randNormal =
                                                            //mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+                                                           
                 //print(randStdNormal);
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
-                    //print(timeCounter);
-                    timeCounter += velocity * 0.001f;
-                    velocity_Noised = timeCounter + (float)randStdNormal * 0.001f;
+                    //print(timeCounter);                          
+                    timeCounter += velocity * Mathf.Deg2Rad / 120;
+                    velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                     float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
                     float y = 0.0001f;
                     float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(velocity_Noised) / 2;
@@ -1350,8 +1351,7 @@ public class Reward2D : MonoBehaviour
         currPhase = Phases.begin;
         isBegin = true;
         loopCount = 0;
-        
-        if (lineOnOff == 1) line.SetActive(true);
+
         player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
         bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
@@ -1596,6 +1596,37 @@ public class Reward2D : MonoBehaviour
             }
             firefly.transform.position = position;
             ffPositions.Add(position);
+
+            if (lineOnOff == 1 && PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                line.SetActive(true);
+                LineRenderer lr;
+                motion_toggle = true;
+                lr = line.GetComponent<LineRenderer>();
+                await new WaitForSeconds(0.1f);
+                for (int prep = 0; prep <= 30; prep++)
+                {
+                    print(prep);
+                    print(lr.materials[0].color);
+                    await new WaitForSeconds(0.006666666f);
+                    lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
+                }
+                await new WaitForSeconds(0.1f);
+                for (int prep = 0; prep <= 30; prep++)
+                {
+                    print(prep);
+                    print(lr.materials[0].color);
+                    await new WaitForSeconds(0.006666666f);
+                    lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
+                }
+                await new WaitForSeconds(0.05f);
+                motion_toggle = false;
+                line.SetActive(false);
+            }
+            else if (lineOnOff == 1)
+            {
+                line.SetActive(true);
+            }
         }
         //Nasta Add ends
 
@@ -2015,14 +2046,27 @@ public class Reward2D : MonoBehaviour
             trial_start_phase = true;
             firefly.SetActive(false);
             await new WaitForSeconds(0.35f); //Habituation
-            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
-            float y = 0;
-            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
-            Vector3 position = new Vector3(x, y, z);
-            firefly.transform.position = position;
-            timeCounter = 0;
-            firefly.SetActive(true);
-            await new WaitForSeconds(0.15f); //Observation
+            if (SharedJoystick.worldcentric)
+            {
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+                float y = 0;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+                Vector3 position = new Vector3(x, y, z);
+                firefly.transform.position = position;
+                timeCounter = Mathf.PI / 2;
+                firefly.SetActive(true);
+            }
+            else
+            {
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
+                float y = 0;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
+                Vector3 position = new Vector3(x, y, z);
+                firefly.transform.position = position;
+                timeCounter = Mathf.PI / 2;
+                firefly.SetActive(true);
+            }
+            await new WaitForSeconds(0.3f); //Observation
             if (!toggle)
             {
                 firefly.SetActive(false);
@@ -2035,14 +2079,27 @@ public class Reward2D : MonoBehaviour
             motion_toggle = true;
             firefly.SetActive(false);
             await new WaitForSeconds(0.35f); //Habituation
-            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
-            float y = 0;
-            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
-            Vector3 position = new Vector3(x, y, z);
-            firefly.transform.position = position;
-            timeCounter = 0;
-            firefly.SetActive(true);
-            await new WaitForSeconds(0.15f); //Observation
+            if (SharedJoystick.worldcentric)
+            {
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+                float y = 0;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+                Vector3 position = new Vector3(x, y, z);
+                firefly.transform.position = position;
+                timeCounter = 0;
+                firefly.SetActive(true);
+            }
+            else
+            {
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
+                float y = 0;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
+                Vector3 position = new Vector3(x, y, z);
+                firefly.transform.position = position;
+                timeCounter = Mathf.PI / 2;
+                firefly.SetActive(true);
+            }
+            await new WaitForSeconds(0.3f); //Observation
             if (!toggle)
             {
                 firefly.SetActive(false);
@@ -2334,6 +2391,11 @@ public class Reward2D : MonoBehaviour
 
         if (isMoving)
         {
+            line.SetActive(true);
+            LineRenderer lr;
+            lr = line.GetComponent<LineRenderer>();
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+
             currPhase = Phases.question;
 
             await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
@@ -2610,6 +2672,7 @@ public class Reward2D : MonoBehaviour
         }
 
         timeCounter = 0;
+        line.SetActive(false);
     }
 
     void SetFireflyLocation()
