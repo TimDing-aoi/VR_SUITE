@@ -116,9 +116,24 @@ public class Reward2D : MonoBehaviour
     [Tooltip("How many fireflies can appear at once")]
     [HideInInspector] public float nFF;
     int multiMode = 0;
-    readonly public List<float> velocities = new List<float>();
-    readonly public List<float> v_ratios = new List<float>();
-    readonly public List<float> v_noises = new List<float>();
+
+    readonly public List<float> velocities = new List<float> { 0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f };
+    readonly public List<float> v_ratios = new List<float> {0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f};
+    readonly public List<float> v_noises = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+
+
+    private float beginTimeTmp = 0.0f;
+    private float endTimeTmp = 0.0f;
+
     readonly public List<Vector3> directions = new List<Vector3>()
     {
         Vector3.left,
@@ -406,6 +421,8 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Start()
     {
+       
+
         UnityEngine.XR.InputTracking.disablePositionalTracking = true;
         UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Lcam, true);
         UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Rcam, true);
@@ -670,48 +687,55 @@ public class Reward2D : MonoBehaviour
             rotationThreshold = 1.0f;
         }
 
-        velocities.Add(PlayerPrefs.GetFloat("V1"));
-        velocities.Add(PlayerPrefs.GetFloat("V2"));
-        velocities.Add(PlayerPrefs.GetFloat("V3"));
-        velocities.Add(PlayerPrefs.GetFloat("V4"));
-        velocities.Add(PlayerPrefs.GetFloat("V5"));
-        velocities.Add(PlayerPrefs.GetFloat("V6"));
-        velocities.Add(PlayerPrefs.GetFloat("V7"));
-        velocities.Add(PlayerPrefs.GetFloat("V8"));
-        velocities.Add(PlayerPrefs.GetFloat("V9"));
-        velocities.Add(PlayerPrefs.GetFloat("V10"));
-        velocities.Add(PlayerPrefs.GetFloat("V11"));
-        velocities.Add(PlayerPrefs.GetFloat("V12"));
+        //velocities.Add(PlayerPrefs.GetFloat("V1"));
+        //velocities.Add(PlayerPrefs.GetFloat("V2"));
+        //velocities.Add(PlayerPrefs.GetFloat("V3"));
+        //velocities.Add(PlayerPrefs.GetFloat("V4"));
+        //velocities.Add(PlayerPrefs.GetFloat("V5"));
+        //velocities.Add(PlayerPrefs.GetFloat("V6"));
+        //velocities.Add(PlayerPrefs.GetFloat("V7"));
+        //velocities.Add(PlayerPrefs.GetFloat("V8"));
+        //velocities.Add(PlayerPrefs.GetFloat("V9"));
+        //velocities.Add(PlayerPrefs.GetFloat("V10"));
+        //velocities.Add(PlayerPrefs.GetFloat("V11"));
+        //velocities.Add(PlayerPrefs.GetFloat("V12"));
 
-        v_ratios.Add(PlayerPrefs.GetFloat("VR1"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR2"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR3"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR4"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR5"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR6"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR7"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR8"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR9"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR10"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR11"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR12"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR1"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR2"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR3"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR4"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR5"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR6"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR7"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR8"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR9"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR10"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR11"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR12"));
 
-        v_noises.Add(PlayerPrefs.GetFloat("VN1"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN2"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN3"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN4"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN5"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN6"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN7"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN8"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN9"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN10"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN11"));
-        v_noises.Add(PlayerPrefs.GetFloat("VN12"));
-        for (int i = 1; i < 12; i++)
+        //v_noises.Add(PlayerPrefs.GetFloat("VN1"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN2"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN3"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN4"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN5"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN6"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN7"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN8"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN9"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN10"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN11"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN12"));
+
+        print(string.Join(", ", v_ratios));
+
+        for (int i = 1; i < 44; i++)
         {
             v_ratios[i] = v_ratios[i] + v_ratios[i - 1];
         }
+
+        print(string.Join(", ", velocities));
+        print(string.Join(", ", v_noises));
+        print(string.Join(", ", v_ratios));
 
         durations.Add(PlayerPrefs.GetFloat("D1"));
         durations.Add(PlayerPrefs.GetFloat("D2"));
@@ -981,6 +1005,7 @@ public class Reward2D : MonoBehaviour
                         toggle = rand.NextDouble() <= ratio;
                     }
                     currentTask = Begin();
+                    beginTimeTmp = Time.realtimeSinceStartup;
                     break;
 
 
@@ -1006,6 +1031,13 @@ public class Reward2D : MonoBehaviour
                         }
                     }
                     currentTask = Check();
+                    endTimeTmp = Time.realtimeSinceStartup;
+                    print("EndTime");
+                    print(endTimeTmp - beginTimeTmp);
+                    print("timeCounterShared");
+                    print(AlloEgoJoystick.SharedJoystick.timeCounterShared);
+                    print("framCounterShared");
+                    print(AlloEgoJoystick.SharedJoystick.frameCounterShared);
                     break;
 
                 case Phases.none:
@@ -1721,72 +1753,86 @@ public class Reward2D : MonoBehaviour
                 velocity = velocities[0];
                 noise_SD = v_noises[0];
             }
-            else if (r > v_ratios[0] && r <= v_ratios[1])
-            {
-                //v2
-                velocity = velocities[1];
-                noise_SD = v_noises[1];
+            else {
+                for (int i = 1; i < 44; i++)
+                {
+                    if (r > v_ratios[i-1] && r <= v_ratios[i])
+                    {
+                        velocity = velocities[i];
+                        noise_SD = v_noises[i];
+                    }
+                }
             }
-            else if (r > v_ratios[1] && r <= v_ratios[2])
-            {
-                //v3
-                velocity = velocities[2];
-                noise_SD = v_noises[2];
-            }
-            else if (r > v_ratios[2] && r <= v_ratios[3])
-            {
-                //v4
-                velocity = velocities[3];
-                noise_SD = v_noises[3];
-            }
-            else if (r > v_ratios[3] && r <= v_ratios[4])
-            {
-                //v5
-                velocity = velocities[4];
-                noise_SD = v_noises[4];
-            }
-            else if (r > v_ratios[4] && r <= v_ratios[5])
-            {
-                //v6
-                velocity = velocities[5];
-                noise_SD = v_noises[5];
-            }
-            else if (r > v_ratios[5] && r <= v_ratios[6])
-            {
-                //v7
-                velocity = velocities[6];
-                noise_SD = v_noises[6];
-            }
-            else if (r > v_ratios[6] && r <= v_ratios[7])
-            {
-                //v8
-                velocity = velocities[7];
-                noise_SD = v_noises[7];
-            }
-            else if (r > v_ratios[7] && r <= v_ratios[8])
-            {
-                //v9
-                velocity = velocities[8];
-                noise_SD = v_noises[8];
-            }
-            else if (r > v_ratios[8] && r <= v_ratios[9])
-            {
-                //v10
-                velocity = velocities[9];
-                noise_SD = v_noises[9];
-            }
-            else if (r > v_ratios[9] && r <= v_ratios[10])
-            {
-                //v11
-                velocity = velocities[10];
-                noise_SD = v_noises[10];
-            }
-            else
-            {
-                //v12
-                velocity = velocities[11];
-                noise_SD = v_noises[11];
-            }
+
+            print(velocity);
+            print(noise_SD);
+
+            //else if (r > v_ratios[0] && r <= v_ratios[1])
+            //{
+            //    //v2
+            //    velocity = velocities[1];
+            //    noise_SD = v_noises[1];
+            //}
+            //else if (r > v_ratios[1] && r <= v_ratios[2])
+            //{
+            //    //v3
+            //    velocity = velocities[2];
+            //    noise_SD = v_noises[2];
+            //}
+            //else if (r > v_ratios[2] && r <= v_ratios[3])
+            //{
+            //    //v4
+            //    velocity = velocities[3];
+            //    noise_SD = v_noises[3];
+            //}
+            //else if (r > v_ratios[3] && r <= v_ratios[4])
+            //{
+            //    //v5
+            //    velocity = velocities[4];
+            //    noise_SD = v_noises[4];
+            //}
+            //else if (r > v_ratios[4] && r <= v_ratios[5])
+            //{
+            //    //v6
+            //    velocity = velocities[5];
+            //    noise_SD = v_noises[5];
+            //}
+            //else if (r > v_ratios[5] && r <= v_ratios[6])
+            //{
+            //    //v7
+            //    velocity = velocities[6];
+            //    noise_SD = v_noises[6];
+            //}
+            //else if (r > v_ratios[6] && r <= v_ratios[7])
+            //{
+            //    //v8
+            //    velocity = velocities[7];
+            //    noise_SD = v_noises[7];
+            //}
+            //else if (r > v_ratios[7] && r <= v_ratios[8])
+            //{
+            //    //v9
+            //    velocity = velocities[8];
+            //    noise_SD = v_noises[8];
+            //}
+            //else if (r > v_ratios[8] && r <= v_ratios[9])
+            //{
+            //    //v10
+            //    velocity = velocities[9];
+            //    noise_SD = v_noises[9];
+            //}
+            //else if (r > v_ratios[9] && r <= v_ratios[10])
+            //{
+            //    //v11
+            //    velocity = velocities[10];
+            //    noise_SD = v_noises[10];
+            //}
+            //else
+            //{
+            //    //v12
+            //    velocity = velocities[11];
+            //    noise_SD = v_noises[11];
+            //}
 
             if (LRFB)
             {

@@ -61,7 +61,10 @@ public class AlloEgoJoystick : MonoBehaviour
     ulong[] xcomp;
     float aDivY0;
 
+    public float timeCounterShared = 0;
     private float timeCounter = 0;
+    public float frameCounterShared = 0;
+    private float frameCounter = 0;
     private float hbobCounter = 0;
     private float tmpCnt = 0.0f;
 
@@ -297,8 +300,9 @@ public class AlloEgoJoystick : MonoBehaviour
                 //Out of circle(Feedback) OR Preparation OR No selfmotion's Habituation & Observation 
                 {
                     //print("out of ring");
-                    moveY = 0;
+                    moveY = 0;                    
                     timeCounter = 0;
+                    frameCounter = 0;
                     hbobCounter = 0;
                     circX = 0;
                 }
@@ -315,13 +319,60 @@ public class AlloEgoJoystick : MonoBehaviour
                     
                     if (worldcentric)
                     {
-                        timeCounter += 0.005f * speedMultiplier;
-                        circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
+                        float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                        //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
+                        // set values
+                        float maxJoyRotDeg = 50.0f; // deg/s
+                        float maxJoyRotRad = 30.0f; // rad/s
+                        float frameRate = 120.0f; // frame rate
+                        float joyConvRateDeg = maxJoyRotDeg / frameRate;
+                        float joyConvRateRad = maxJoyRotRad / frameRate;
+
+                        // Read input from joystick 
+
+                        // for rad/s 
+                        //float theta = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
+
+                        // for deg/s
+                        float theta = joyConvRateDeg * moveX; // moveX consider to be in degree; We use joyConvRate in Degree
+
+                        // transfering phi from deg to rad if its necessary
+                        theta = theta * Mathf.Deg2Rad;
+
+                        //timeCounter += 0.005f * speedMultiplier;
+                        frameCounter += 1;
+                        frameCounterShared = frameCounter;
+                        timeCounter += Time.smoothDeltaTime;
+                        timeCounterShared = timeCounter;
+                        //circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
+                        circX -= theta;//Unrealistic steering
                         //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
                         float x = Mathf.Cos(circX);
                         float z = Mathf.Sin(circX);
+
+                        tmpCnt += 1;
+                        if (tmpCnt > 120)
+                        {
+                            tmpCnt = 0;
+                            print("moveX");
+                            print(moveX);
+                            print("theta");
+                            print(theta);
+                            print("speedMultiplier");
+                            print(speedMultiplier);
+                            print("speedMultiplier2");
+                            print(0.005f * speedMultiplier);
+                            print("moveY");
+                            print(moveY);
+                            print("deltaTime");
+                            print(Time.smoothDeltaTime);
+                        }
+
+                        
+
                         Vector3 previouspos = transform.position;
-                        transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                        //transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 0f, fixedSpeed * timeCounter * z);
                         FF = GameObject.Find("Firefly");
                         if (cammode == 0) //Simply facing outward
                         {
@@ -339,17 +390,19 @@ public class AlloEgoJoystick : MonoBehaviour
                             Vector3 lookatpos = 2 * transform.position - previouspos;
                             transform.LookAt(lookatpos);
                         }
-                        transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                        //transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z); // Why twice??
                     }
                     else
                     {
                         //print("Egocentric");
+                        float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                        //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
 
-                        tmpCnt += 1;
-                        if (tmpCnt > 250)
-                        {
-                            tmpCnt = 0;
-                        }
+                        frameCounter += 1;
+                        frameCounterShared = frameCounter;
+                        timeCounter += Time.smoothDeltaTime;
+                        timeCounterShared = timeCounter;
 
                         // set values
                         float maxJoyRotDeg = 50.0f; // deg/s
@@ -361,11 +414,20 @@ public class AlloEgoJoystick : MonoBehaviour
                         // Read input from joystick 
 
                         // for rad/s 
-                        float phi = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
+                        //float phi = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
 
                         // for deg/s
-                        //float phi = joyConvRateDeg * moveX; // moveX consider to be in degree
+                        float phi = joyConvRateDeg * moveX; // moveX consider to be in degree
 
+                        tmpCnt += 1;
+                        if (tmpCnt > 120)
+                        {
+                            tmpCnt = 0;
+                            print("phi");
+                            print(phi);
+                            print("moveY");
+                            print(moveY);
+                        }
 
                         // Rotate the camele based on joystick input
                         transform.Rotate(0.0f, phi, 0.0f, Space.Self);
@@ -378,9 +440,17 @@ public class AlloEgoJoystick : MonoBehaviour
                         //print(yRot_deg);
                         //print(yRot_rad);
 
+                        float timeBetweenFrames = Time.smoothDeltaTime;
+
                         // Calculate player location based on camera angle
-                        float x = transform.position.x + 0.005f * moveY * Mathf.Sin(yRot_rad);
-                        float z = transform.position.z + 0.005f * moveY * Mathf.Cos(yRot_rad);
+                        //float x = transform.position.x + 0.005f * moveY * Mathf.Sin(yRot_rad);
+                        //float z = transform.position.z + 0.005f * moveY * Mathf.Cos(yRot_rad);
+
+                        //float x = transform.position.x + timeBetweenFrames * moveY * Mathf.Sin(yRot_rad);
+                        //float z = transform.position.z + timeBetweenFrames * moveY * Mathf.Cos(yRot_rad);
+
+                        float x = transform.position.x + timeBetweenFrames * fixedSpeed * Mathf.Sin(yRot_rad);
+                        float z = transform.position.z + timeBetweenFrames * fixedSpeed * Mathf.Cos(yRot_rad);
 
                         // Update player location based on new calculated values
                         transform.position = new Vector3(x, 1f, z);

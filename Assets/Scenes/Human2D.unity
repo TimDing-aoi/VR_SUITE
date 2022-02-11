@@ -1436,7 +1436,7 @@ MonoBehaviour:
   currentRot: 0
   RotSpeed: 0
   MaxSpeed: 0
-  worldcentric: 0
+  worldcentric: 1
   seed: 0
   FF: {fileID: 306717868}
   ptb: 0
