@@ -1438,6 +1438,8 @@ MonoBehaviour:
   MaxSpeed: 0
   worldcentric: 1
   seed: 0
+  timeCounterShared: 0
+  frameCounterShared: 0
   FF: {fileID: 306717868}
   ptb: 0
   gainVel: 0
