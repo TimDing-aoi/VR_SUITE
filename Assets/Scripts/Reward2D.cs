@@ -57,6 +57,10 @@ public class Reward2D : MonoBehaviour
     private float score2FF;
     private float totalScore = 0;
     private float timeCounter = 0;
+
+    //Gitter FF phase flag
+    public float GFFPhaseFlag = 0;
+
     public Camera Lcam;
     public Camera Rcam;
     public GameObject FP;
@@ -287,6 +291,14 @@ public class Reward2D : MonoBehaviour
     readonly List<float> N2ffdata = new List<float>();
     readonly List<float> deltaTdata = new List<float>();
     readonly List<float> spawnRdata = new List<float>();
+
+    //Gitter FF Time Stamps
+    readonly List<float> PreparationStart = new List<float>();
+    readonly List<float> HabituationStart = new List<float>();
+    readonly List<float> ObservationStart = new List<float>();
+    readonly List<float> ActionStart = new List<float>();
+    readonly List<float> SelfReportStart = new List<float>();
+    readonly List<float> FeedbackStart = new List<float>();
 
     [HideInInspector] public float FrameTimeElement = 0;
 
@@ -899,7 +911,7 @@ public class Reward2D : MonoBehaviour
         string firstLine = "";
         if (ptb == 2 && !isMoving2FF)
         {
-            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen\n";
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase\n";
         }
         else if (isMoving2FF)
         {
@@ -1311,7 +1323,7 @@ public class Reward2D : MonoBehaviour
                 
                 
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
+                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                        trialNum,
                        Time.realtimeSinceStartup,
                        (int)currPhase,
@@ -1327,7 +1339,8 @@ public class Reward2D : MonoBehaviour
                        location.ToString("F8").Trim(toTrim).Replace(" ", ""),
                        direction,
                        string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
-                       string.Join(",", left.eye_openness, right.eye_openness)));
+                       string.Join(",", left.eye_openness, right.eye_openness),
+                       GFFPhaseFlag));
 
                 if (ptb == 2 && !isMoving2FF)
                 {
@@ -1629,8 +1642,11 @@ public class Reward2D : MonoBehaviour
             firefly.transform.position = position;
             ffPositions.Add(position);
 
+            //preperation
             if (lineOnOff == 1 && PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
+                GFFPhaseFlag = 1;
+                PreparationStart.Add(Time.realtimeSinceStartup);
                 line.SetActive(true);
                 LineRenderer lr;
                 motion_toggle = true;
@@ -2089,9 +2105,13 @@ public class Reward2D : MonoBehaviour
 
         if (is_gitter && self_motion)
         {
+            GFFPhaseFlag = 2;
+            HabituationStart.Add(Time.realtimeSinceStartup);
             trial_start_phase = true;
             firefly.SetActive(false);
             await new WaitForSeconds(0.35f); //Habituation
+            GFFPhaseFlag = 3;
+            ObservationStart.Add(Time.realtimeSinceStartup);
             if (SharedJoystick.worldcentric)
             {
                 float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
@@ -2121,6 +2141,8 @@ public class Reward2D : MonoBehaviour
         }
         else if (is_gitter && !self_motion)
         {
+            GFFPhaseFlag = 2;
+            HabituationStart.Add(Time.realtimeSinceStartup);
             System.Random randNoise = new System.Random();
             double randStdNormal = 25;
             while(randStdNormal > 20)
@@ -2134,6 +2156,8 @@ public class Reward2D : MonoBehaviour
             motion_toggle = true;
             firefly.SetActive(false);
             await new WaitForSeconds(0.35f); //Habituation
+            GFFPhaseFlag = 3;
+            ObservationStart.Add(Time.realtimeSinceStartup);
             if (SharedJoystick.worldcentric)
             {
                 float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
@@ -2163,6 +2187,9 @@ public class Reward2D : MonoBehaviour
             trial_start_phase = false;
         }
 
+        //Action
+        GFFPhaseFlag = 4;
+        ActionStart.Add(Time.realtimeSinceStartup);
         var t = Task.Run(async () => {
             await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
         }, source.Token);
@@ -2261,6 +2288,9 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Check()
     {
+        // Self Report
+        GFFPhaseFlag = 5;
+        SelfReportStart.Add(Time.realtimeSinceStartup);
         //Debug.Log(loopCount);
 
         string ffPosStr = "";
@@ -2479,7 +2509,9 @@ public class Reward2D : MonoBehaviour
             answer.Add(0);
         }
 
-
+        // Feedback
+        GFFPhaseFlag = 6;
+        FeedbackStart.Add(Time.realtimeSinceStartup);
         //Nasta Added sequential
         if (isReward && proximity)
         {
@@ -3219,6 +3251,10 @@ public class Reward2D : MonoBehaviour
             {
                 firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,score,sigma1,sigma2,mean,NperSigma,deltaT,FFspawnRadius");
             }
+            else if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
+            }
             else
             {
                 firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,checkWait,interWait,Gaussamp,Gaussdur,GaussSD,flowdur,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
@@ -3272,7 +3308,16 @@ public class Reward2D : MonoBehaviour
                 temp.Add(deltaTdata.Count);
                 temp.Add(meansdata.Count);
             }
-            
+            if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                temp.Add(PreparationStart.Count);
+                temp.Add(HabituationStart.Count);
+                temp.Add(ObservationStart.Count);
+                temp.Add(ActionStart.Count);
+                temp.Add(SelfReportStart.Count);
+                temp.Add(FeedbackStart.Count);
+            }
+
             //nasta added
             if (nFF > 1 && multiMode == 1)
             {
@@ -3283,12 +3328,12 @@ public class Reward2D : MonoBehaviour
                 temp.Add(checkTime.Count);
             }
 
-            //for (int i = 0; i < temp.Count; i++)
-            //{
-            //    print(temp[i]);
-            //}
-
             temp.Sort();
+            for (int i = 0; i < temp.Count; i++)
+            {
+                print(string.Format("temp{0}", i));
+                print(temp[i]);
+            }
 
             var totalScore = 0;
 
@@ -3374,6 +3419,38 @@ public class Reward2D : MonoBehaviour
                         N2ffdata[i],
                         deltaTdata[i],
                         spawnRdata[i]);
+                    csvDisc.AppendLine(line);
+                }
+            }
+            else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                for (int i = 0; i < temp[0]; i++)
+                {
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
+                        n[i],
+                        max_v[i],
+                        max_w[i],
+                        fv[i],
+                        fvSD[i],
+                        onDur[i],
+                        answer[i],
+                        origin[i],
+                        heading[i],
+                        ffPos[i],
+                        cPos[i],
+                        cRot[i],
+                        dist[i],
+                        score[i],
+                        timedout[i],
+                        beginTime[i],
+                        checkTime[i],
+                        endTime[i],
+                        PreparationStart[i],
+                        HabituationStart[i],
+                        ObservationStart[i],
+                        ActionStart[i],
+                        SelfReportStart[i],
+                        FeedbackStart[i]);
                     csvDisc.AppendLine(line);
                 }
             }
