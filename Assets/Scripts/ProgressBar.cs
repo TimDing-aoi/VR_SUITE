@@ -4,6 +4,8 @@ using static Reward2D;
 
 public class ProgressBar : FillBar
 {
+    public Canvas bar_canvas;
+
     void Start()
     {
 
@@ -11,6 +13,15 @@ public class ProgressBar : FillBar
 
     void Update()
     {
+        float onoff = SharedReward.GFFPhaseFlag;
+        if (onoff != 4)
+        {
+            bar_canvas.enabled = false;
+        }
+        else
+        {
+            bar_canvas.enabled = true;
+        }
         float progress = Vector3.Distance(new Vector3(0f, 0f, 0f), SharedReward.player.transform.position) / 30;
         if (progress > 1)
         {

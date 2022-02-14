@@ -103,6 +103,7 @@
     <Compile Include="Assets\LeanTween\Framework\LeanTest.cs" />
     <Compile Include="Assets\LeanTween\Framework\LeanTween.cs" />
     <Compile Include="Assets\LeanTween\Framework\LeanTweenExt.cs" />
+    <Compile Include="Assets\RecordControllerInput.cs" />
     <Compile Include="Assets\Scripts\ActivateCam.cs" />
     <Compile Include="Assets\Scripts\AlloEgoJoystick.cs" />
     <Compile Include="Assets\Scripts\Arena.cs" />

@@ -738,16 +738,16 @@ public class Reward2D : MonoBehaviour
         //v_noises.Add(PlayerPrefs.GetFloat("VN11"));
         //v_noises.Add(PlayerPrefs.GetFloat("VN12"));
 
-        print(string.Join(", ", v_ratios));
+        //print(string.Join(", ", v_ratios));
 
         for (int i = 1; i < 44; i++)
         {
             v_ratios[i] = v_ratios[i] + v_ratios[i - 1];
         }
 
-        print(string.Join(", ", velocities));
-        print(string.Join(", ", v_noises));
-        print(string.Join(", ", v_ratios));
+        //print(string.Join(", ", velocities));
+        //print(string.Join(", ", v_noises));
+        //print(string.Join(", ", v_ratios));
 
         durations.Add(PlayerPrefs.GetFloat("D1"));
         durations.Add(PlayerPrefs.GetFloat("D2"));
@@ -1044,12 +1044,12 @@ public class Reward2D : MonoBehaviour
                     }
                     currentTask = Check();
                     endTimeTmp = Time.realtimeSinceStartup;
-                    print("EndTime");
+                    /*print("EndTime");
                     print(endTimeTmp - beginTimeTmp);
                     print("timeCounterShared");
                     print(AlloEgoJoystick.SharedJoystick.timeCounterShared);
                     print("framCounterShared");
-                    print(AlloEgoJoystick.SharedJoystick.frameCounterShared);
+                    print(AlloEgoJoystick.SharedJoystick.frameCounterShared);*/
                     break;
 
                 case Phases.none:
@@ -1780,8 +1780,8 @@ public class Reward2D : MonoBehaviour
                 }
             }
 
-            print(velocity);
-            print(noise_SD);
+            /*print(velocity);
+            print(noise_SD);*/
 
             //else if (r > v_ratios[0] && r <= v_ratios[1])
             //{
@@ -2450,6 +2450,21 @@ public class Reward2D : MonoBehaviour
                 isReward = true;
                 proximity = true;
             }
+        }
+        else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            float player_degree = Mathf.Acos(player.transform.position.x / 30) * Mathf.Rad2Deg;
+            float FF_Degree = Mathf.Acos(firefly.transform.position.x / 30) * Mathf.Rad2Deg;
+            float degree_score = Mathf.Abs(player_degree - FF_Degree);
+            if(degree_score <= 5)
+            {
+                proximity = true;
+            }
+            print(degree_score);
+            print(player_degree);
+            print(FF_Degree);
+            ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
+            distances.Add(degree_score);
         }
         else
         {

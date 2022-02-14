@@ -30,13 +30,14 @@ public class AlloEgoJoystick : MonoBehaviour
     public float moveX;
     public float moveY;
     public float circX;
+    public float circXlast;
     public int press;
     [ShowOnly] public float currentSpeed = 0.0f;
     [ShowOnly] public float currentRot = 0.0f;
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
 
-    public bool worldcentric = false;
+    public bool worldcentric = true;
 
     //readonly List<float> t = new List<float>();
     //readonly List<bool> isPtb = new List<bool>();
@@ -354,7 +355,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         if (tmpCnt > 120)
                         {
                             tmpCnt = 0;
-                            print("moveX");
+                            /*print("moveX");
                             print(moveX);
                             print("theta");
                             print(theta);
@@ -365,7 +366,7 @@ public class AlloEgoJoystick : MonoBehaviour
                             print("moveY");
                             print(moveY);
                             print("deltaTime");
-                            print(Time.smoothDeltaTime);
+                            print(Time.smoothDeltaTime);*/
                         }
 
                         
@@ -391,7 +392,8 @@ public class AlloEgoJoystick : MonoBehaviour
                             transform.LookAt(lookatpos);
                         }
                         //transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
-                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z); // Why twice??
+                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z);
+                        circXlast = circX;
                     }
                     else
                     {
