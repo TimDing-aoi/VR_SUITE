@@ -297,8 +297,8 @@ public class AlloEgoJoystick : MonoBehaviour
                 }
 
                 bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle)
-                //Out of circle(Feedback) OR Preparation OR No selfmotion's Habituation & Observation 
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle || SharedReward.isTimeout)
+                //Out of circle(Feedback) OR Preparation OR No selfmotion's Habituation & Observation OR Timed Out
                 {
                     //print("out of ring");
                     moveY = 0;                    
