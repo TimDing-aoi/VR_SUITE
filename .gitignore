@@ -94,30 +94,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-Assets/AssetBundles.meta
-Assembly-CSharp-firstpass.csproj
-Assembly-CSharp.csproj
-Assembly-CSharp-Editor.csproj
-Assembly-CSharp-Editor-firstpass.csproj
-InputSystem.Samples.Visualizers.csproj
-Assets/SteamVR_Resources/Resources/SteamVR_Settings.asset
-SteamVR.csproj
-SteamVR_Editor.csproj
-SteamVR_Input_Editor.csproj
-SteamVR_Windows_EditorHelper.csproj
-Unity.InputSystem.RebindingUI.csproj
-Unity.PlasticSCM.Editor.csproj
-VR_Suite.sln
-Assembly-CSharp-firstpass.csproj
-Assembly-CSharp.csproj
-Assembly-CSharp-Editor.csproj
-Assembly-CSharp-Editor-firstpass.csproj
-InputSystem.Samples.Visualizers.csproj
-Assets/SteamVR_Resources/Resources/SteamVR_Settings.asset
-SteamVR.csproj
-SteamVR_Editor.csproj
-SteamVR_Input_Editor.csproj
-SteamVR_Windows_EditorHelper.csproj
-Unity.InputSystem.RebindingUI.csproj
-Unity.PlasticSCM.Editor.csproj
-VR_Suite.sln
