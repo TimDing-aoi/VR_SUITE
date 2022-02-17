@@ -290,29 +290,61 @@ public class AlloEgoJoystick : MonoBehaviour
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
 
-                float speedMultiplier = 3 / (3 - SharedReward.lifeSpan);
-                if (SharedReward.toggle)
-                {
-                    speedMultiplier = 3 / (3 - 0.15f);
-                }
-
                 bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR+maxR)/2 || SharedReward.motion_toggle)
-                //Out of circle(Feedback) OR Preparation OR No selfmotion's Habituation & Observation 
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2 || !self_motion && SharedReward.GFFPhaseFlag == 1
+                    || !self_motion && SharedReward.GFFPhaseFlag == 2 || !self_motion && SharedReward.GFFPhaseFlag == 3 || SharedReward.isTimeout)
+                //Out of circle(Feedback) OR No selfmotion's Preparation & Habituation & Observation OR Timed Out
                 {
                     //print("out of ring");
+                    if (worldcentric)
+                    {
+                        transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                    }
                     moveY = 0;                    
                     timeCounter = 0;
                     frameCounter = 0;
                     hbobCounter = 0;
                     circX = 0;
                 }
-                else if (self_motion && SharedReward.trial_start_phase) //Selfmotion Habituation OR Observation OR Preparation
+                else if (self_motion && SharedReward.GFFPhaseFlag == 1)
+                    //Selmotion preperation
                 {
-                    hbobCounter += 0.005f * speedMultiplier;
-                    moveY = PlayerPrefs.GetFloat("FixedYSpeed");
-                    float x = (-36+hbobCounter) * moveY;
-                    transform.position = new Vector3(x, 1f, 0f);
+                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                    float offset = fixedSpeed * 0.65f; //Offset for the player at start
+                    transform.position = new Vector3(-offset, 0f, 0f);
+                    if (cammode == 0) //Simply facing outward
+                    {
+                        transform.LookAt(new Vector3(0f, 0f, 0f));
+                    }
+                    transform.position = new Vector3(-offset, 1f, 0f);
+                    circX = 0;
+                }
+                else if (self_motion && SharedReward.GFFPhaseFlag == 2 || self_motion && SharedReward.GFFPhaseFlag == 3) 
+                //Selfmotion Habituation & Observation
+                {
+                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                    float offset = fixedSpeed * 0.65f; //Offset for the player at start
+                    float frameRate = 120.0f;
+                    hbobCounter += fixedSpeed/frameRate;
+                    float x = offset - hbobCounter;
+                    if (worldcentric)
+                    {
+                        transform.position = new Vector3(-x, 0f, 0f);
+                        if (cammode == 0) //Simply facing outward
+                        {
+                            transform.LookAt(new Vector3(0f, 0f, 0f));
+                        }
+                        transform.position = new Vector3(-x, 1f, 0f);
+                    }
+                    else
+                    {
+                        transform.position = new Vector3(0f, 0f, -x);
+                        if (cammode == 0) //Simply facing outward
+                        {
+                            transform.LookAt(new Vector3(0f, 0f, 0f));
+                        }
+                        transform.position = new Vector3(0f, 1f, -x);
+                    }
                     circX = 0;
                 }
                 else
@@ -323,7 +355,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                         //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
                         // set values
-                        float maxJoyRotDeg = 50.0f; // deg/s
+                        float maxJoyRotDeg = 50.0f;// 59.0f; // deg/s
                         float maxJoyRotRad = 30.0f; // rad/s
                         float frameRate = 120.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
@@ -407,8 +439,8 @@ public class AlloEgoJoystick : MonoBehaviour
                         timeCounterShared = timeCounter;
 
                         // set values
-                        float maxJoyRotDeg = 50.0f; // deg/s
-                        float maxJoyRotRad = 30.0f; // rad/s
+                        float maxJoyRotDeg = 74.0f;// 85f; // deg/s
+                        float maxJoyRotRad = 1000.0f; // rad/s
                         float frameRate = 120.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
                         float joyConvRateRad = maxJoyRotRad / frameRate;
@@ -431,7 +463,7 @@ public class AlloEgoJoystick : MonoBehaviour
                             print(moveY);
                         }
 
-                        // Rotate the camele based on joystick input
+                        // Rotate the camera based on joystick input
                         transform.Rotate(0.0f, phi, 0.0f, Space.Self);
 
                         // Read camre rotation (deg and radian)

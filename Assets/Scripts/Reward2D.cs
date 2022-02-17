@@ -195,7 +195,7 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public Phases phase;
 
     private Vector3 pPos;
-    private bool isTimeout = false;
+    public bool isTimeout = false;
 
     // Trial number
     readonly List<int> n = new List<int>();
@@ -1120,7 +1120,7 @@ public class Reward2D : MonoBehaviour
                 var tempFFPos = firefly.transform.position - player_origin;
                 var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
                 string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
-                ffPos.Add(transformedFFPos);
+                //ffPos.Add(transformedFFPos);
             }
             //else if (isCheck)
             //{
@@ -1402,7 +1402,10 @@ public class Reward2D : MonoBehaviour
         bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
         if (self_motion)
         {
-            player.transform.position = new Vector3(-5f, 1f, 0f);
+            float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+            float offset = fixedSpeed * 0.65f; //Offset for the player at start
+            player.transform.position = new Vector3(-offset, 1f, 0f);
+            player.transform.LookAt(new Vector3(0f, 0f, 0f));
         }
         else
         {
@@ -1642,39 +1645,6 @@ public class Reward2D : MonoBehaviour
             firefly.transform.position = position;
             ffPositions.Add(position);
 
-            //preperation
-            if (lineOnOff == 1 && PlayerPrefs.GetFloat("FixedYSpeed") != 0)
-            {
-                GFFPhaseFlag = 1;
-                PreparationStart.Add(Time.realtimeSinceStartup);
-                line.SetActive(true);
-                LineRenderer lr;
-                motion_toggle = true;
-                lr = line.GetComponent<LineRenderer>();
-                await new WaitForSeconds(0.1f);
-                for (int prep = 0; prep <= 30; prep++)
-                {
-                    //print(prep);
-                    //print(lr.materials[0].color);
-                    await new WaitForSeconds(0.006666666f);
-                    lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
-                }
-                await new WaitForSeconds(0.1f);
-                for (int prep = 0; prep <= 30; prep++)
-                {
-                    //print(prep);
-                    //print(lr.materials[0].color);
-                    await new WaitForSeconds(0.006666666f);
-                    lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
-                }
-                await new WaitForSeconds(0.05f);
-                motion_toggle = false;
-                line.SetActive(false);
-            }
-            else if (lineOnOff == 1)
-            {
-                line.SetActive(true);
-            }
         }
         //Nasta Add ends
 
@@ -2103,49 +2073,48 @@ public class Reward2D : MonoBehaviour
         bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
         bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
-        if (is_gitter && self_motion)
+        //preperation
+        if (lineOnOff == 1 && is_gitter)
         {
+            GFFPhaseFlag = 1;
+            PreparationStart.Add(Time.realtimeSinceStartup);
+            line.SetActive(true);
+            LineRenderer lr;
+            motion_toggle = true;
+            lr = line.GetComponent<LineRenderer>();
+            await new WaitForSeconds(0.1f);
+            for (int prep = 0; prep < 20; prep++)
+            {
+                //print(prep);
+                //print(lr.materials[0].color);
+                await new WaitForSeconds(0.01f);
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
+            }
+            //Habituation
             GFFPhaseFlag = 2;
             HabituationStart.Add(Time.realtimeSinceStartup);
-            trial_start_phase = true;
-            firefly.SetActive(false);
-            await new WaitForSeconds(0.35f); //Habituation
-            GFFPhaseFlag = 3;
-            ObservationStart.Add(Time.realtimeSinceStartup);
-            if (SharedJoystick.worldcentric)
+            await new WaitForSeconds(0.1f);
+            for (int prep = 0; prep < 20; prep++)
             {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
-                float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
-                Vector3 position = new Vector3(x, y, z);
-                firefly.transform.position = position;
-                timeCounter = Mathf.PI / 2;
-                firefly.SetActive(true);
+                //print(prep);
+                //print(lr.materials[0].color);
+                await new WaitForSeconds(0.01f);
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
             }
-            else
-            {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
-                float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
-                Vector3 position = new Vector3(x, y, z);
-                firefly.transform.position = position;
-                timeCounter = Mathf.PI / 2;
-                firefly.SetActive(true);
-            }
-            await new WaitForSeconds(0.3f); //Observation
-            if (!toggle)
-            {
-                firefly.SetActive(false);
-            }
-            trial_start_phase = false;
+            await new WaitForSeconds(0.05f);
+            motion_toggle = false;
+            line.SetActive(false);
         }
-        else if (is_gitter && !self_motion)
+        else if (lineOnOff == 1)
         {
-            GFFPhaseFlag = 2;
-            HabituationStart.Add(Time.realtimeSinceStartup);
+            line.SetActive(true);
+        }
+
+        if (is_gitter)
+        {
             System.Random randNoise = new System.Random();
             double randStdNormal = 25;
-            while(randStdNormal > 20)
+            while (randStdNormal > 20)
             {
                 double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
                 double u2 = 1.0 - randNoise.NextDouble();
@@ -2155,9 +2124,6 @@ public class Reward2D : MonoBehaviour
             trial_start_phase = true;
             motion_toggle = true;
             firefly.SetActive(false);
-            await new WaitForSeconds(0.35f); //Habituation
-            GFFPhaseFlag = 3;
-            ObservationStart.Add(Time.realtimeSinceStartup);
             if (SharedJoystick.worldcentric)
             {
                 float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
@@ -2178,6 +2144,8 @@ public class Reward2D : MonoBehaviour
                 timeCounter = Mathf.PI / 2;
                 firefly.SetActive(true);
             }
+            ObservationStart.Add(Time.realtimeSinceStartup);
+            GFFPhaseFlag = 3;
             await new WaitForSeconds(0.3f); //Observation
             if (!toggle)
             {
@@ -2460,9 +2428,9 @@ public class Reward2D : MonoBehaviour
             {
                 proximity = true;
             }
-            print(degree_score);
-            print(player_degree);
-            print(FF_Degree);
+            //print(degree_score);
+            //print(player_degree);
+            //print(FF_Degree);
             ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
             distances.Add(degree_score);
         }
@@ -2726,7 +2694,7 @@ public class Reward2D : MonoBehaviour
         {
             timedout.Add(isTimeout ? 1 : 0);
             score.Add(isReward && proximity ? 1 : 0);
-            //ffPos.Add(ffPosStr);
+            ffPos.Add(ffPosStr);
             dist.Add(distances[0].ToString("F5"));
             cPos.Add(pos.ToString("F5").Trim(toTrim).Replace(" ", ""));
             cRot.Add(rot.ToString("F5").Trim(toTrim).Replace(" ", ""));
