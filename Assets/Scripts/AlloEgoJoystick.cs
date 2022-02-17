@@ -310,7 +310,7 @@ public class AlloEgoJoystick : MonoBehaviour
                     //Selmotion preperation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    float offset = fixedSpeed * 0.65f; //Offset for the player at start
+                    float offset = fixedSpeed * 0.9f; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
                     {
@@ -323,7 +323,7 @@ public class AlloEgoJoystick : MonoBehaviour
                 //Selfmotion Habituation & Observation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    float offset = fixedSpeed * 0.65f; //Offset for the player at start
+                    float offset = fixedSpeed * 0.9f; //Offset for the player at start
                     float frameRate = 120.0f;
                     hbobCounter += fixedSpeed/frameRate;
                     float x = offset - hbobCounter;
