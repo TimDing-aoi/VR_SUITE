@@ -2136,9 +2136,11 @@ public class Reward2D : MonoBehaviour
             }
             else
             {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
+                //float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
                 float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
+                //float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
                 timeCounter = Mathf.PI / 2;
