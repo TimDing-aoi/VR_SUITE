@@ -60,6 +60,8 @@ public class Reward2D : MonoBehaviour
 
     //Gitter FF phase flag
     public float GFFPhaseFlag = 0;
+    public float FFnoise = 0;
+    readonly public List<float> FFnoiseList = new List<float>();
 
     public Camera Lcam;
     public Camera Rcam;
@@ -911,7 +913,7 @@ public class Reward2D : MonoBehaviour
         string firstLine = "";
         if (ptb == 2 && !isMoving2FF)
         {
-            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase\n";
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise\n";
         }
         else if (isMoving2FF)
         {
@@ -1221,6 +1223,8 @@ public class Reward2D : MonoBehaviour
                     firefly.transform.position += move * Time.deltaTime;
                     move = temp;
                 }
+                FFnoise = (float)randStdNormal;
+                FFnoiseList.Add(FFnoise);
             }
 
             if (isEnd)
@@ -1323,7 +1327,7 @@ public class Reward2D : MonoBehaviour
                 
                 
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
+                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17}",
                        trialNum,
                        Time.realtimeSinceStartup,
                        (int)currPhase,
@@ -1340,7 +1344,8 @@ public class Reward2D : MonoBehaviour
                        direction,
                        string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
                        string.Join(",", left.eye_openness, right.eye_openness),
-                       GFFPhaseFlag));
+                       GFFPhaseFlag,
+                       FFnoise));
 
                 if (ptb == 2 && !isMoving2FF)
                 {
