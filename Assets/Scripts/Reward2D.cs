@@ -2143,7 +2143,7 @@ public class Reward2D : MonoBehaviour
                 float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
-                timeCounter = Mathf.PI / 2;
+                timeCounter = (float)randStdNormal * Mathf.Deg2Rad + Mathf.PI / 2;
                 firefly.SetActive(true);
             }
             ObservationStart.Add(Time.realtimeSinceStartup);
