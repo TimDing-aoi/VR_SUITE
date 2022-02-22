@@ -206,11 +206,13 @@ public class AlloEgoJoystick : MonoBehaviour
     {
         try
         {
-            CTIJoystick joystick = CTIJoystick.current;
-            moveX = joystick.x.ReadValue();
-            moveY = joystick.y.ReadValue();
+            //CTIJoystick joystick = CTIJoystick.current;
+            //moveX = joystick.x.ReadValue();
+            //moveY = joystick.y.ReadValue();
+            moveX = Input.GetAxis("Vertical");
+            moveY = 1.0f;
 
-            if (moveX < 0.0f)
+            /*if (moveX < 0.0f)
             {
                 moveX += 1.0f;
             }
@@ -249,7 +251,7 @@ public class AlloEgoJoystick : MonoBehaviour
                 {
                     moveY += 1.0f;
                 }
-            }
+            }*/
             prevY = moveY;
 
             float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
