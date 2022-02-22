@@ -126,15 +126,35 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> velocities = new List<float> { 0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
             0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
             0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
-            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f };
-    readonly public List<float> v_ratios = new List<float> {0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f};
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f};
+    readonly public List<float> v_ratios = new List<float> {0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f};
     readonly public List<float> v_noises = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
             2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+    readonly public List<int> selfMotionList = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 
     private float beginTimeTmp = 0.0f;
@@ -363,6 +383,7 @@ public class Reward2D : MonoBehaviour
     private Vector3 direction = new Vector3();
     private float velocity;
     private float noise_SD;
+    public bool selfMotion;
     private float velocity_Noised;
 
     //Stochastic FF Variables
@@ -1404,7 +1425,122 @@ public class Reward2D : MonoBehaviour
 
         player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        if (isMoving && nFF < 2)
+        {
+            //print("setting moving FF params");
+            //if ((float)rand.NextDouble() < moveRatio)
+            //{
+            float r = (float)rand.NextDouble();
+            if (r <= v_ratios[0])
+            {
+                //v1
+                velocity = velocities[0];
+                noise_SD = v_noises[0];
+                selfMotion = selfMotionList[0] == 1;
+            }
+            else
+            {
+                for (int i = 1; i < 44; i++)
+                {
+                    if (r > v_ratios[i - 1] && r <= v_ratios[i])
+                    {
+                        velocity = velocities[i];
+                        noise_SD = v_noises[i];
+                        selfMotion = selfMotionList[i] == 1;
+                    }
+                }
+            }
+
+            /*print(velocity);
+            print(noise_SD);*/
+
+            //else if (r > v_ratios[0] && r <= v_ratios[1])
+            //{
+            //    //v2
+            //    velocity = velocities[1];
+            //    noise_SD = v_noises[1];
+            //}
+            //else if (r > v_ratios[1] && r <= v_ratios[2])
+            //{
+            //    //v3
+            //    velocity = velocities[2];
+            //    noise_SD = v_noises[2];
+            //}
+            //else if (r > v_ratios[2] && r <= v_ratios[3])
+            //{
+            //    //v4
+            //    velocity = velocities[3];
+            //    noise_SD = v_noises[3];
+            //}
+            //else if (r > v_ratios[3] && r <= v_ratios[4])
+            //{
+            //    //v5
+            //    velocity = velocities[4];
+            //    noise_SD = v_noises[4];
+            //}
+            //else if (r > v_ratios[4] && r <= v_ratios[5])
+            //{
+            //    //v6
+            //    velocity = velocities[5];
+            //    noise_SD = v_noises[5];
+            //}
+            //else if (r > v_ratios[5] && r <= v_ratios[6])
+            //{
+            //    //v7
+            //    velocity = velocities[6];
+            //    noise_SD = v_noises[6];
+            //}
+            //else if (r > v_ratios[6] && r <= v_ratios[7])
+            //{
+            //    //v8
+            //    velocity = velocities[7];
+            //    noise_SD = v_noises[7];
+            //}
+            //else if (r > v_ratios[7] && r <= v_ratios[8])
+            //{
+            //    //v9
+            //    velocity = velocities[8];
+            //    noise_SD = v_noises[8];
+            //}
+            //else if (r > v_ratios[8] && r <= v_ratios[9])
+            //{
+            //    //v10
+            //    velocity = velocities[9];
+            //    noise_SD = v_noises[9];
+            //}
+            //else if (r > v_ratios[9] && r <= v_ratios[10])
+            //{
+            //    //v11
+            //    velocity = velocities[10];
+            //    noise_SD = v_noises[10];
+            //}
+            //else
+            //{
+            //    //v12
+            //    velocity = velocities[11];
+            //    noise_SD = v_noises[11];
+            //}
+
+            if (LRFB)
+            {
+                direction = player.transform.right;
+            }
+            else
+            {
+                direction = player.transform.forward;
+            }
+            move = direction * velocity;
+            fv.Add(velocity);
+            fvSD.Add(noise_SD);
+        }
+        else
+        {
+            fv.Add(0.0f);
+            fvSD.Add(0.0f);
+        }
+
+
+        bool self_motion = selfMotion;// PlayerPrefs.GetInt("SelfMotionOn") == 1;
         if (self_motion)
         {
             float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
@@ -1732,116 +1868,7 @@ public class Reward2D : MonoBehaviour
             flowDur.Add(0.0f);
         }
 
-        if (isMoving && nFF < 2)
-        {
-            //print("setting moving FF params");
-            //if ((float)rand.NextDouble() < moveRatio)
-            //{
-            float r = (float)rand.NextDouble();
-            if (r <= v_ratios[0])
-            {
-                //v1
-                velocity = velocities[0];
-                noise_SD = v_noises[0];
-            }
-            else {
-                for (int i = 1; i < 44; i++)
-                {
-                    if (r > v_ratios[i-1] && r <= v_ratios[i])
-                    {
-                        velocity = velocities[i];
-                        noise_SD = v_noises[i];
-                    }
-                }
-            }
-
-            /*print(velocity);
-            print(noise_SD);*/
-
-            //else if (r > v_ratios[0] && r <= v_ratios[1])
-            //{
-            //    //v2
-            //    velocity = velocities[1];
-            //    noise_SD = v_noises[1];
-            //}
-            //else if (r > v_ratios[1] && r <= v_ratios[2])
-            //{
-            //    //v3
-            //    velocity = velocities[2];
-            //    noise_SD = v_noises[2];
-            //}
-            //else if (r > v_ratios[2] && r <= v_ratios[3])
-            //{
-            //    //v4
-            //    velocity = velocities[3];
-            //    noise_SD = v_noises[3];
-            //}
-            //else if (r > v_ratios[3] && r <= v_ratios[4])
-            //{
-            //    //v5
-            //    velocity = velocities[4];
-            //    noise_SD = v_noises[4];
-            //}
-            //else if (r > v_ratios[4] && r <= v_ratios[5])
-            //{
-            //    //v6
-            //    velocity = velocities[5];
-            //    noise_SD = v_noises[5];
-            //}
-            //else if (r > v_ratios[5] && r <= v_ratios[6])
-            //{
-            //    //v7
-            //    velocity = velocities[6];
-            //    noise_SD = v_noises[6];
-            //}
-            //else if (r > v_ratios[6] && r <= v_ratios[7])
-            //{
-            //    //v8
-            //    velocity = velocities[7];
-            //    noise_SD = v_noises[7];
-            //}
-            //else if (r > v_ratios[7] && r <= v_ratios[8])
-            //{
-            //    //v9
-            //    velocity = velocities[8];
-            //    noise_SD = v_noises[8];
-            //}
-            //else if (r > v_ratios[8] && r <= v_ratios[9])
-            //{
-            //    //v10
-            //    velocity = velocities[9];
-            //    noise_SD = v_noises[9];
-            //}
-            //else if (r > v_ratios[9] && r <= v_ratios[10])
-            //{
-            //    //v11
-            //    velocity = velocities[10];
-            //    noise_SD = v_noises[10];
-            //}
-            //else
-            //{
-            //    //v12
-            //    velocity = velocities[11];
-            //    noise_SD = v_noises[11];
-            //}
-
-            if (LRFB)
-            {
-                direction = player.transform.right;
-            }
-            else
-            {
-                direction = player.transform.forward;
-            }
-            move = direction * velocity;
-            fv.Add(velocity);
-            fvSD.Add(noise_SD);
-        }
-        else
-        {
-            fv.Add(0.0f);
-            fvSD.Add(0.0f);
-        }
+        
 
 
         
@@ -2075,7 +2102,7 @@ public class Reward2D : MonoBehaviour
 
         source = new CancellationTokenSource();
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        bool self_motion = selfMotion;// PlayerPrefs.GetInt("SelfMotionOn") == 1;
         bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
         //preperation
