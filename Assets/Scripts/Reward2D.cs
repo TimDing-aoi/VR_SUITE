@@ -1230,14 +1230,14 @@ public class Reward2D : MonoBehaviour
                     if (GFFPhaseFlag <= 4)
                     {
                         timeCounter += velocity * Mathf.Deg2Rad / 120;
+                        velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
+                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
+                        float y = 0.0001f;
+                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(velocity_Noised) / 2;
+                        //print(x);
+                        //print(z);
+                        firefly.transform.position = new Vector3(x, y, z);
                     }
-                    velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
-                    float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
-                    float y = 0.0001f;
-                    float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(velocity_Noised) / 2;
-                    //print(x);
-                    //print(z);
-                    firefly.transform.position = new Vector3(x, y, z);
                 }
                 else
                 {
