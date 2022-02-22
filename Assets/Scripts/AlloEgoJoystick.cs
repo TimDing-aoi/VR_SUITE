@@ -37,7 +37,7 @@ public class AlloEgoJoystick : MonoBehaviour
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
 
-    public bool worldcentric = true;
+    public bool worldcentric = false;
 
     //readonly List<float> t = new List<float>();
     //readonly List<bool> isPtb = new List<bool>();

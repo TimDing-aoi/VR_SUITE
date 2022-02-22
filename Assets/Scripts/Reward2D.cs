@@ -1226,8 +1226,11 @@ public class Reward2D : MonoBehaviour
                 //print(randStdNormal);
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
-                    //print(timeCounter);                          
-                    timeCounter += velocity * Mathf.Deg2Rad / 120;
+                    //print(timeCounter);
+                    if (GFFPhaseFlag <= 4)
+                    {
+                        timeCounter += velocity * Mathf.Deg2Rad / 120;
+                    }
                     velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                     float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
                     float y = 0.0001f;
