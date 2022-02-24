@@ -2434,8 +2434,9 @@ public class Reward2D : MonoBehaviour
         }
         else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
         {
-            float player_degree = Mathf.Acos(player.transform.position.x / 30) * Mathf.Rad2Deg;
-            float FF_Degree = Mathf.Acos(firefly.transform.position.x / 30) * Mathf.Rad2Deg;
+            float reward_radius = (maxDrawDistance + minDrawDistance) / 2;
+            float player_degree = Mathf.Acos(player.transform.position.x / reward_radius) * Mathf.Rad2Deg;
+            float FF_Degree = Mathf.Acos(firefly.transform.position.x / reward_radius) * Mathf.Rad2Deg;
             float degree_score = Mathf.Abs(player_degree - FF_Degree);
             if(degree_score <= 5)
             {
