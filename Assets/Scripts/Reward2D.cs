@@ -3422,7 +3422,7 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25}",
                         n[i],
                         max_v[i],
                         max_w[i],
@@ -3448,7 +3448,7 @@ public class Reward2D : MonoBehaviour
                         SelfReportStart[i],
                         FeedbackStart[i],
                         FFnoiseList[i],
-                        GFFTrueDegree[i]);
+                        GFFTrueDegree);
                     csvDisc.AppendLine(line);
                 }
             }
