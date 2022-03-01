@@ -1524,7 +1524,7 @@ MonoBehaviour:
   RotSpeed: 0
   MaxSpeed: 0
   phiShared: 0
-  worldcentric: 0
+  worldcentric: 1
   seed: 0
   timeCounterShared: 0
   frameCounterShared: 0
