@@ -348,7 +348,7 @@ public class Reward2D : MonoBehaviour
     private bool isCheck = false;
     private bool isEnd = false;
 
-    private Phases currPhase;
+    public Phases currPhase;
     [HideInInspector] public string phaseString;
 
     readonly private List<GameObject> pooledFF = new List<GameObject>();
@@ -914,7 +914,7 @@ public class Reward2D : MonoBehaviour
         string firstLine = "";
         if (ptb == 2 && !isMoving2FF)
         {
-            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree\n";
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared\n";
         }
         else if (isMoving2FF)
         {
@@ -1067,9 +1067,9 @@ public class Reward2D : MonoBehaviour
     }
 
     /// <summary>
-    /// Capture data at 120 Hz
+    /// Capture data at 90 Hz
     /// 
-    /// Set Unity's fixed timestep to 1/120 (0.00833333...) in order to get 120 Hz recording
+    /// Set Unity's fixed timestep to 1/90 (0.011111111...) in order to get 90 Hz recording
     /// Edit -> Project Settings -> Time -> Fixed Timestep
     /// </summary>
     public void FixedUpdate()
@@ -1209,7 +1209,7 @@ public class Reward2D : MonoBehaviour
                     //print(timeCounter);
                     if (GFFPhaseFlag <= 4)
                     {
-                        timeCounter += velocity * Mathf.Deg2Rad / 120;
+                        timeCounter += velocity * Mathf.Deg2Rad / 90;
                         velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                         float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
                         float y = 0.0001f;
@@ -1332,7 +1332,7 @@ public class Reward2D : MonoBehaviour
                 
                 
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18}",
+                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
                        trialNum,
                        Time.realtimeSinceStartup,
                        (int)currPhase,
@@ -1351,7 +1351,10 @@ public class Reward2D : MonoBehaviour
                        string.Join(",", left.eye_openness, right.eye_openness),
                        GFFPhaseFlag,
                        FFnoise,
-                       GFFTrueDegree));
+                       GFFTrueDegree,
+                       SharedJoystick.timeCounterShared,
+                       SharedJoystick.frameCounterShared,
+                       SharedJoystick.phiShared));
 
                 if (ptb == 2 && !isMoving2FF)
                 {
@@ -2084,6 +2087,8 @@ public class Reward2D : MonoBehaviour
         bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
         bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
+        int framcntTemp = 0;
+
         //preperation
         if (lineOnOff == 1 && is_gitter)
         {
@@ -2093,26 +2098,54 @@ public class Reward2D : MonoBehaviour
             LineRenderer lr;
             motion_toggle = true;
             lr = line.GetComponent<LineRenderer>();
-            await new WaitForSeconds(0.1f);
+            //await new WaitForSeconds(0.1f);
+            int frameRate = 90;
+            //int currentFrame = Time.frameCount;
+            int endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate);
+
+            framcntTemp = Time.frameCount;
+
+            //await new WaitForSecondsRealtime(0.1f);
+
+            await new WaitUntil(() => Time.frameCount == endFrame);
+
+            framcntTemp = Time.frameCount;
+
             for (int prep = 0; prep < 20; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
-                await new WaitForSeconds(0.01f);
+                //await new WaitForSeconds(0.01f);
+                //await new WaitForSecondsRealtime(0.01f);
+                endFrame = Time.frameCount + (int)Math.Ceiling(0.01f * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
             }
+            framcntTemp = Time.frameCount;
             //Habituation
             GFFPhaseFlag = 2;
             HabituationStart.Add(Time.realtimeSinceStartup);
-            await new WaitForSeconds(0.1f);
+            //await new WaitForSeconds(0.1f);
+            //await new WaitForSecondsRealtime(0.1f);
+            endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate) ; 
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            framcntTemp = Time.frameCount;
             for (int prep = 0; prep < 20; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
-                await new WaitForSeconds(0.01f);
+                //await new WaitForSeconds(0.01f);
+                //await new WaitForSecondsRealtime(0.01f);
+                endFrame = Time.frameCount + (int)Math.Ceiling(0.01f * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
             }
-            await new WaitForSeconds(0.05f);
+            framcntTemp = Time.frameCount;
+            //await new WaitForSeconds(0.05f);
+            //await new WaitForSecondsRealtime(0.05f);
+            endFrame = Time.frameCount + (int)Math.Ceiling(0.05f * frameRate);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            framcntTemp = Time.frameCount;
             motion_toggle = false;
             line.SetActive(false);
         }
@@ -2159,7 +2192,12 @@ public class Reward2D : MonoBehaviour
             }
             ObservationStart.Add(Time.realtimeSinceStartup);
             GFFPhaseFlag = 3;
-            await new WaitForSeconds(0.3f); //Observation
+            //await new WaitForSeconds(0.3f); //Observation
+            //await new WaitForSecondsRealtime(0.3f); //Observation
+            int frameRate = 90;
+            int endFrame = Time.frameCount + (int)Math.Ceiling(0.3f * frameRate);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            framcntTemp = Time.frameCount;
             if (!toggle)
             {
                 firefly.SetActive(false);
@@ -2175,20 +2213,24 @@ public class Reward2D : MonoBehaviour
             await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
         }, source.Token);
 
+
         var t1 = Task.Run(async () => {
-            await new WaitForSeconds(timeout); // Used to be rb.velocity.magnitude
+            //await new WaitForSeconds(timeout); // Used to be rb.velocity.magnitude
+            await new WaitForSecondsRealtime(timeout); // Used to be rb.velocity.magnitude
         }, source.Token);
 
         if (await Task.WhenAny(t, t1) == t)
         {
-            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            //GFFPhaseFlag = 4;
+            //await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
         }
         else
         {
             //print("Timed out");
             isTimeout = true;
         }
-
+        GFFPhaseFlag = 5;
         source.Cancel();
 
         if (mode == Modes.Flash)

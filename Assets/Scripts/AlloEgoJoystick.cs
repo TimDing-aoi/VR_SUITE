@@ -37,6 +37,8 @@ public class AlloEgoJoystick : MonoBehaviour
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
 
+    public float phiShared = 0.0f;
+
     public bool worldcentric = true;
 
     //readonly List<float> t = new List<float>();
@@ -268,6 +270,7 @@ public class AlloEgoJoystick : MonoBehaviour
                     if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2)
                     {
                         currentSpeed = 0.0f;
+                        SharedReward.currPhase = Phases.check;
                     }
                     else
                     {
@@ -310,7 +313,8 @@ public class AlloEgoJoystick : MonoBehaviour
                     //Selmotion preperation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    float offset = fixedSpeed * 0.9f; //Offset for the player at start
+                    int fixedObservationFrame = 63; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+                    float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
                     {
@@ -318,14 +322,15 @@ public class AlloEgoJoystick : MonoBehaviour
                     }
                     transform.position = new Vector3(-offset, 1f, 0f);
                     circX = 0;
+                    int framcntTemp = Time.frameCount;
                 }
                 else if (self_motion && SharedReward.GFFPhaseFlag == 2 || self_motion && SharedReward.GFFPhaseFlag == 3) 
                 //Selfmotion Habituation & Observation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    float offset = fixedSpeed * 0.9f; //Offset for the player at start
-                    float frameRate = 120.0f;
-                    hbobCounter += fixedSpeed/frameRate;
+                    int fixedObservationFrame = 63; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+                    float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
+                    hbobCounter += fixedSpeed * Time.smoothDeltaTime;
                     float x = offset - hbobCounter;
                     if (worldcentric)
                     {
@@ -338,26 +343,35 @@ public class AlloEgoJoystick : MonoBehaviour
                     }
                     else
                     {
-                        transform.position = new Vector3(0f, 0f, -x);
+                        //transform.position = new Vector3(0f, 0f, -x);
+                        //if (cammode == 0) //Simply facing outward
+                        //{
+                        //    transform.LookAt(new Vector3(0f, 0f, 0f));
+                        //}
+                        //transform.position = new Vector3(0f, 1f, -x);
+
+                        transform.position = new Vector3(-x, 0f, 0f);
                         if (cammode == 0) //Simply facing outward
                         {
                             transform.LookAt(new Vector3(0f, 0f, 0f));
                         }
-                        transform.position = new Vector3(0f, 1f, -x);
+                        transform.position = new Vector3(-x, 1f, 0f);
                     }
                     circX = 0;
+                    int framcntTemp = Time.frameCount;
                 }
                 else
                 {
                     
-                    if (worldcentric)
+                    if (worldcentric & SharedReward.GFFPhaseFlag == 4)
                     {
+                        int framcntTemp = Time.frameCount;
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                         //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
                         // set values
-                        float maxJoyRotDeg = 37.50f;// 50.0f;// 59.0f; // deg/s
+                        float maxJoyRotDeg = 50.0f;//37.50f;// 50.0f;// 59.0f; // deg/s
                         float maxJoyRotRad = 30.0f; // rad/s
-                        float frameRate = 120.0f; // frame rate
+                        float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
                         float joyConvRateRad = maxJoyRotRad / frameRate;
 
@@ -369,7 +383,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         // for deg/s
                         float theta = joyConvRateDeg * moveX; // moveX consider to be in degree; We use joyConvRate in Degree
 
-                        // transfering phi from deg to rad if its necessary
+                        // transfering theta from deg to rad if its necessary
                         theta = theta * Mathf.Deg2Rad;
 
                         //timeCounter += 0.005f * speedMultiplier;
@@ -384,7 +398,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float z = Mathf.Sin(circX);
 
                         tmpCnt += 1;
-                        if (tmpCnt > 120)
+                        if (tmpCnt > 90)
                         {
                             tmpCnt = 0;
                             /*print("moveX");
@@ -427,7 +441,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z);
                         circXlast = circX;
                     }
-                    else
+                    else if (SharedReward.GFFPhaseFlag == 4)
                     {
                         //print("Egocentric");
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
@@ -439,9 +453,9 @@ public class AlloEgoJoystick : MonoBehaviour
                         timeCounterShared = timeCounter;
 
                         // set values
-                        float maxJoyRotDeg = 55.50f;// 74.0f;// 85f; // deg/s
+                        float maxJoyRotDeg = 74.0f;//55.50f;// 74.0f;// 85f; // deg/s
                         float maxJoyRotRad = 1000.0f; // rad/s
-                        float frameRate = 120.0f; // frame rate
+                        float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
                         float joyConvRateRad = maxJoyRotRad / frameRate;
 
@@ -454,7 +468,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float phi = joyConvRateDeg * moveX; // moveX consider to be in degree
 
                         tmpCnt += 1;
-                        if (tmpCnt > 120)
+                        if (tmpCnt > 90)
                         {
                             tmpCnt = 0;
                             print("phi");
@@ -465,6 +479,8 @@ public class AlloEgoJoystick : MonoBehaviour
 
                         // Rotate the camera based on joystick input
                         transform.Rotate(0.0f, phi, 0.0f, Space.Self);
+
+                        phiShared = phi;
 
                         // Read camre rotation (deg and radian)
                         float yRot_deg = transform.rotation.eulerAngles.y;

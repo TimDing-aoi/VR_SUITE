@@ -1523,6 +1523,7 @@ MonoBehaviour:
   currentRot: 0
   RotSpeed: 0
   MaxSpeed: 0
+  phiShared: 0
   worldcentric: 1
   seed: 0
   timeCounterShared: 0
@@ -9059,6 +9060,7 @@ MonoBehaviour:
   ntrials: 0
   isBegin: 0
   isTrial: 0
+  currPhase: 0
   phaseString: 
   initialD: 0
   arrow: {fileID: 6085303251087625661}
