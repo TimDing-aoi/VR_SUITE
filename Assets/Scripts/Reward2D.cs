@@ -127,15 +127,38 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> velocities = new List<float> { 0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
             0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
             0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
-            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f };
-    readonly public List<float> v_ratios = new List<float> {0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
-        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f};
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f};
+
+    readonly public List<float> v_ratios = new List<float> {0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f,
+        0.25f/8.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f, 0.75f / 80.0f};
+
     readonly public List<float> v_noises = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
             2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+
+    readonly public List<int> selfMotionList = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 
     private float beginTimeTmp = 0.0f;
@@ -365,6 +388,9 @@ public class Reward2D : MonoBehaviour
     private float velocity;
     private float noise_SD;
     private float velocity_Noised;
+    public bool selfMotion;
+
+    readonly List<int> selfMotionStorage = new List<int>();
 
     //Stochastic FF Variables
     private float sigma1;
@@ -743,7 +769,7 @@ public class Reward2D : MonoBehaviour
 
         //print(string.Join(", ", v_ratios));
 
-        for (int i = 1; i < 44; i++)
+        for (int i = 1; i < v_ratios.Count; i++)
         {
             v_ratios[i] = v_ratios[i] + v_ratios[i - 1];
         }
@@ -914,7 +940,7 @@ public class Reward2D : MonoBehaviour
         string firstLine = "";
         if (ptb == 2 && !isMoving2FF)
         {
-            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared\n";
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared,selfMotion\n";
         }
         else if (isMoving2FF)
         {
@@ -1332,7 +1358,7 @@ public class Reward2D : MonoBehaviour
                 
                 
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
+                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}",
                        trialNum,
                        Time.realtimeSinceStartup,
                        (int)currPhase,
@@ -1354,7 +1380,8 @@ public class Reward2D : MonoBehaviour
                        GFFTrueDegree,
                        SharedJoystick.timeCounterShared,
                        SharedJoystick.frameCounterShared,
-                       SharedJoystick.phiShared));
+                       SharedJoystick.phiShared,
+                       Convert.ToInt32(selfMotion)));
 
                 if (ptb == 2 && !isMoving2FF)
                 {
@@ -1413,7 +1440,7 @@ public class Reward2D : MonoBehaviour
 
         player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        bool self_motion = selfMotion;// PlayerPrefs.GetInt("SelfMotionOn") == 1;
         if (self_motion)
         {
             float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
@@ -1753,18 +1780,20 @@ public class Reward2D : MonoBehaviour
                 //v1
                 velocity = velocities[0];
                 noise_SD = v_noises[0];
+                selfMotion = selfMotionList[0] == 1;
             }
             else {
-                for (int i = 1; i < 44; i++)
+                for (int i = 1; i < velocities.Count; i++)
                 {
                     if (r > v_ratios[i-1] && r <= v_ratios[i])
                     {
                         velocity = velocities[i];
                         noise_SD = v_noises[i];
+                        selfMotion = selfMotionList[i] == 1;
                     }
                 }
             }
-
+            selfMotionStorage.Add(Convert.ToInt32(selfMotion));
             /*print(velocity);
             print(noise_SD);*/
 
@@ -2085,7 +2114,7 @@ public class Reward2D : MonoBehaviour
 
         source = new CancellationTokenSource();
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+        bool self_motion = selfMotion;// PlayerPrefs.GetInt("SelfMotionOn") == 1;
         bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
         int framcntTemp = 0;
@@ -3301,7 +3330,7 @@ public class Reward2D : MonoBehaviour
             }
             else if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
-                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,selfMotion,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
             else
             {
@@ -3474,7 +3503,7 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26}",
                         n[i],
                         max_v[i],
                         max_w[i],
@@ -3499,6 +3528,7 @@ public class Reward2D : MonoBehaviour
                         ActionStart[i],
                         SelfReportStart[i],
                         FeedbackStart[i],
+                        selfMotionStorage[i],
                         FFnoiseList[i],
                         GFFTrueDegree);
                     csvDisc.AppendLine(line);
