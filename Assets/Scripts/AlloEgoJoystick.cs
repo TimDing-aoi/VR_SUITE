@@ -299,10 +299,11 @@ public class AlloEgoJoystick : MonoBehaviour
                 //Out of circle(Feedback) OR No selfmotion's Preparation & Habituation & Observation OR Timed Out
                 {
                     //print("out of ring");
-                    if (worldcentric)
-                    {
-                        transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-                    }
+                    //if (worldcentric)
+                    //{
+                    //    transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                    //}
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
                     moveY = 0;                    
                     timeCounter = 0;
                     frameCounter = 0;
@@ -369,7 +370,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                         //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
                         // set values
-                        float maxJoyRotDeg = 50.0f;//37.50f;// 50.0f;// 59.0f; // deg/s
+                        float maxJoyRotDeg = 50.0f * 90.0f / 120.0f;//37.50f;// 50.0f;// 59.0f; // deg/s
                         float maxJoyRotRad = 30.0f; // rad/s
                         float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
@@ -453,7 +454,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         timeCounterShared = timeCounter;
 
                         // set values
-                        float maxJoyRotDeg = 74.0f;//55.50f;// 74.0f;// 85f; // deg/s
+                        float maxJoyRotDeg = 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
                         float maxJoyRotRad = 1000.0f; // rad/s
                         float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;

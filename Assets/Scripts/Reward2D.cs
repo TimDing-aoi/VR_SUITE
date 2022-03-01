@@ -1417,7 +1417,8 @@ public class Reward2D : MonoBehaviour
         if (self_motion)
         {
             float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-            float offset = fixedSpeed * 0.65f; //Offset for the player at start
+            int fixedObservationFrame = 63; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+            float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
             player.transform.position = new Vector3(-offset, 1f, 0f);
             player.transform.LookAt(new Vector3(0f, 0f, 0f));
         }
@@ -2180,14 +2181,22 @@ public class Reward2D : MonoBehaviour
             }
             else
             {
-                //float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
+                ////float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
+                //float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
+                //float y = 0;
+                ////float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
+                //float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
+                //Vector3 position = new Vector3(x, y, z);
+                //firefly.transform.position = position;
+                //timeCounter = (float)randStdNormal * Mathf.Deg2Rad + Mathf.PI / 2;
+                //firefly.SetActive(true);
+
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
                 float y = 0;
-                //float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)randStdNormal * Mathf.Deg2Rad) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
-                timeCounter = (float)randStdNormal * Mathf.Deg2Rad + Mathf.PI / 2;
+                timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
                 firefly.SetActive(true);
             }
             ObservationStart.Add(Time.realtimeSinceStartup);
