@@ -454,7 +454,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         timeCounterShared = timeCounter;
 
                         // set values
-                        float maxJoyRotDeg = 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
+                        float maxJoyRotDeg = 85f * 90.0f / 120.0f;// 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
                         float maxJoyRotRad = 1000.0f; // rad/s
                         float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
