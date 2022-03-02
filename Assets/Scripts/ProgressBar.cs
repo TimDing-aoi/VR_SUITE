@@ -5,10 +5,13 @@ using static Reward2D;
 public class ProgressBar : FillBar
 {
     public Canvas bar_canvas;
+    public float maxFFR;
+    public float minFFR;
 
     void Start()
     {
-
+        minFFR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
+        maxFFR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
     }
 
     void Update()
@@ -22,7 +25,7 @@ public class ProgressBar : FillBar
         {
             bar_canvas.enabled = true;
         }
-        float progress = Vector3.Distance(new Vector3(0f, 0f, 0f), SharedReward.player.transform.position) / 30;
+        float progress = Vector3.Distance(new Vector3(0f, 0f, 0f), SharedReward.player.transform.position) / ((maxFFR+minFFR)/2);
         if (progress > 1)
         {
             progress = 1;

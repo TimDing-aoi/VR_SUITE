@@ -680,7 +680,7 @@ public class Reward2D : MonoBehaviour
             line.SetActive(false);
         }
 
-        drawLine(30, 200);
+        drawLine((maxDrawDistance+minDrawDistance)/2, 200);
 
         if (isMoving2FF)
         {
