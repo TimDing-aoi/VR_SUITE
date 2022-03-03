@@ -210,6 +210,10 @@ public class AlloEgoJoystick : MonoBehaviour
             //moveX = joystick.x.ReadValue();
             //moveY = joystick.y.ReadValue();
             moveX = Input.GetAxis("Vertical");
+            if(Mathf.Abs(moveX) < 0.05f)
+            {
+                moveX = 0;
+            }
             moveY = 1.0f;
 
             /*if (moveX < 0.0f)
