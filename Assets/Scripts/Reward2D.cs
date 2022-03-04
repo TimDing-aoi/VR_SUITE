@@ -99,6 +99,17 @@ public class Reward2D : MonoBehaviour
     private float PW;
     public GameObject player;
     public GameObject FPS;
+    public GameObject star1;
+    public GameObject star2;
+    public GameObject star3;
+    public GameObject star4;
+    public GameObject star5; 
+    public GameObject darkstar1;
+    public GameObject darkstar2;
+    public GameObject darkstar3;
+    public GameObject darkstar4;
+    public GameObject darkstar5;
+    public GameObject starring;
     private Vector3 initialPposition;
     private Vector3 initialPforward;
     private float initialRotation;
@@ -444,6 +455,18 @@ public class Reward2D : MonoBehaviour
 
         Lcam.ResetProjectionMatrix();
         Rcam.ResetProjectionMatrix();
+
+        star1.SetActive(false);
+        star2.SetActive(false);
+        star3.SetActive(false);
+        star4.SetActive(false);
+        star5.SetActive(false);
+        darkstar1.SetActive(false);
+        darkstar2.SetActive(false);
+        darkstar3.SetActive(false);
+        darkstar4.SetActive(false);
+        darkstar5.SetActive(false);
+        starring.SetActive(false);
 
         List<XRDisplaySubsystem> displaySubsystems = new List<XRDisplaySubsystem>();
         SubsystemManager.GetInstances<XRDisplaySubsystem>(displaySubsystems);
@@ -2322,6 +2345,42 @@ public class Reward2D : MonoBehaviour
     {
         // Self Report
         GFFPhaseFlag = 5;
+
+        if (isMoving)
+        {
+            line.SetActive(true);
+            LineRenderer lr;
+            lr = line.GetComponent<LineRenderer>();
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+
+            currPhase = Phases.question;
+
+            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+
+            panel.SetActive(true);
+
+            await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
+
+            if (SharedJoystick.currentRot < 0.0f)
+            {
+                // no
+                answer.Add(0);
+            }
+            else
+            {
+                // yes
+                answer.Add(1);
+            }
+
+            panel.SetActive(false);
+
+            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+        }
+        else
+        {
+            answer.Add(0);
+        }
+
         SelfReportStart.Add(Time.realtimeSinceStartup);
         //Debug.Log(loopCount);
 
@@ -2489,11 +2548,77 @@ public class Reward2D : MonoBehaviour
             float player_degree = Mathf.Acos(player.transform.position.x / reward_radius) * Mathf.Rad2Deg;
             float FF_Degree = Mathf.Acos(firefly.transform.position.x / reward_radius) * Mathf.Rad2Deg;
             float degree_score = Mathf.Abs(player_degree - FF_Degree);
-            if(degree_score <= 5)
+            if(degree_score <= 25)
             {
                 proximity = true;
             }
-            //print(degree_score);
+            if (degree_score <= 5)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                star4.SetActive(true);
+                star5.SetActive(true);
+                starring.SetActive(true);
+            }
+            else if (degree_score <= 10)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                star4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+            }
+            else if (degree_score <= 15)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+            }
+            else if (degree_score <= 20)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+            }
+            else if (degree_score <= 25)
+            {
+                star1.SetActive(true);
+                darkstar2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+            }
+            else
+            {
+                darkstar1.SetActive(true);
+                darkstar2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+            }
+            await new WaitForSeconds(1f);
+            star1.SetActive(false);
+            star2.SetActive(false);
+            star3.SetActive(false);
+            star4.SetActive(false);
+            star5.SetActive(false);
+            darkstar1.SetActive(false);
+            darkstar2.SetActive(false);
+            darkstar3.SetActive(false);
+            darkstar4.SetActive(false);
+            darkstar5.SetActive(false);
+            starring.SetActive(false);
+            print(string.Format("Scored: {0}", degree_score));
             //print(player_degree);
             //print(FF_Degree);
             ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
@@ -2521,41 +2646,6 @@ public class Reward2D : MonoBehaviour
 
         //print(string.Format("Proximity: {0}", proximity));
         //print(string.Format("isReward: {0}", isReward));
-
-        if (isMoving)
-        {
-            line.SetActive(true);
-            LineRenderer lr;
-            lr = line.GetComponent<LineRenderer>();
-            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
-
-            currPhase = Phases.question;
-
-            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
-
-            panel.SetActive(true);
-
-            await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
-
-            if (SharedJoystick.currentRot < 0.0f)
-            {
-                // no
-                answer.Add(0);
-            }
-            else
-            {
-                // yes
-                answer.Add(1);
-            }
-
-            panel.SetActive(false);
-
-            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
-        }
-        else
-        {
-            answer.Add(0);
-        }
 
         // Feedback
         GFFPhaseFlag = 6;
