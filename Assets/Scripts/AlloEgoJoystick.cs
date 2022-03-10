@@ -370,7 +370,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                         //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
                         // set values
-                        float maxJoyRotDeg = 50.0f * 90.0f / 120.0f;//37.50f;// 50.0f;// 59.0f; // deg/s
+                        float maxJoyRotDeg = 60.0f;// deg/s
                         float maxJoyRotRad = 30.0f; // rad/s
                         float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
@@ -454,7 +454,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         timeCounterShared = timeCounter;
 
                         // set values
-                        float maxJoyRotDeg = 85f * 90.0f / 120.0f;// 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
+                        float maxJoyRotDeg = 90f * 90.0f / 120.0f;// 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
                         float maxJoyRotRad = 1000.0f; // rad/s
                         float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
