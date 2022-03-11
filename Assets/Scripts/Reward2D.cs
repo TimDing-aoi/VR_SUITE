@@ -1349,7 +1349,7 @@ public class Reward2D : MonoBehaviour
                 string transformedPos = new Vector3(tempQuat.x, tempQuat.y, tempQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
                 string transformedRot = (player.transform.rotation * Quaternion.Inverse(player_rotation_initial)).ToString("F8").Trim(toTrim).Replace(" ", "");
 
-                var tempFFPos = firefly.transform.position - player_origin;
+                var tempFFPos = firefly.transform.position - player_origin; // THIS NEED TO BE FIXED
                 var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
                 string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
                 
