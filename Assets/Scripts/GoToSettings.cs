@@ -20,7 +20,6 @@ public class GoToSettings : MonoBehaviour
     public GameObject settingMenu1;
     public GameObject settingMenu2;
     public GameObject settingMenu3;
-    public GameObject settingMenu4;
     public UnityEngine.UI.Button saveButton;
     public UnityEngine.UI.Button loadButton;
     private TMP_InputField input;
@@ -345,7 +344,6 @@ public class GoToSettings : MonoBehaviour
         settingMenu1.SetActive(true);
         settingMenu2.SetActive(false);
         settingMenu3.SetActive(false);
-        settingMenu4.SetActive(false);
     }
 
     public void SwitchPageJP()
@@ -353,7 +351,6 @@ public class GoToSettings : MonoBehaviour
         settingMenu1.SetActive(false);
         settingMenu2.SetActive(true);
         settingMenu3.SetActive(false);
-        settingMenu4.SetActive(false);
     }
 
     public void SwitchPageSFF()
@@ -361,14 +358,6 @@ public class GoToSettings : MonoBehaviour
         settingMenu1.SetActive(false);
         settingMenu2.SetActive(false);
         settingMenu3.SetActive(true);
-        settingMenu4.SetActive(false);
-    }
-    public void SwitchPageCI()
-    {
-        settingMenu1.SetActive(false);
-        settingMenu2.SetActive(false);
-        settingMenu3.SetActive(false);
-        settingMenu4.SetActive(true);
     }
 
     public void SwitchVel()
@@ -830,50 +819,6 @@ public class GoToSettings : MonoBehaviour
                     }
                 }
                 settingMenu3.SetActive(false);
-            }
-            if (!settingMenu4.activeInHierarchy)
-            {
-                settingMenu4.SetActive(true);
-                foreach (Transform child in settingMenu4.transform)
-                {
-                    foreach (Transform children in child)
-                    {
-                        if (children.name == null)
-                        {
-                            UnityEngine.UI.Toggle toggle = children.GetComponent<UnityEngine.UI.Toggle>();
-                            foreach (XmlNode node in doc.DocumentElement.ChildNodes)
-                            {
-                                foreach (XmlNode setting in node.ChildNodes)
-                                {
-                                    if (setting.Name == children.name.Replace(" ", "") && toggle.isOn != null)
-                                    {
-                                        toggle.isOn = int.Parse(setting.InnerText) == 1;
-                                        PlayerPrefs.SetInt(children.name, toggle.isOn ? 1 : 0);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            TMP_InputField field = children.GetComponent<TMP_InputField>();
-                            foreach (XmlNode node in doc.DocumentElement.ChildNodes)
-                            {
-                                foreach (XmlNode setting in node.ChildNodes)
-                                {
-                                    if (setting.Name == children.name.Replace(" ", "") && field != null)
-                                    {
-                                        //print(setting.Name);
-                                        //print(children.name);
-                                        //print(field);
-                                        field.text = setting.InnerText;
-                                        PlayerPrefs.SetFloat(children.name, float.Parse(field.text));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                settingMenu4.SetActive(false);
             }
         }
         catch (Exception e)
