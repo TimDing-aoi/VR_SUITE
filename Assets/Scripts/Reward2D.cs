@@ -82,6 +82,8 @@ public class Reward2D : MonoBehaviour
         Fixed
     }
     private Modes mode;
+    // Is causal inference or not
+    private bool isCI;
     // Toggle for whether trial is an always on trial or not
     public bool toggle;
     // Toggle for self motion
@@ -306,6 +308,16 @@ public class Reward2D : MonoBehaviour
     readonly List<float> deltaTdata = new List<float>();
     readonly List<float> spawnRdata = new List<float>();
 
+    //Causal Inference Data
+    readonly List<float> CIvelocities = new List<float>();
+    readonly List<float> CINoiseSDs = new List<float>();
+    readonly List<float> TrialsSD1 = new List<float>();
+    readonly List<float> TrialsSD2 = new List<float>();
+    readonly List<float> TrialsSD3 = new List<float>();
+    readonly List<float> TrialsSD4 = new List<float>();
+    readonly List<Tuple<float, float, float>> CItrialsetup = new List<Tuple<float,float,float>>();
+    [HideInInspector] public bool selfmotiontrial;
+
     //Gitter FF Time Stamps
     readonly List<float> PreparationStart = new List<float>();
     readonly List<float> HabituationStart = new List<float>();
@@ -456,6 +468,8 @@ public class Reward2D : MonoBehaviour
         Lcam.ResetProjectionMatrix();
         Rcam.ResetProjectionMatrix();
 
+        isCI = !(PlayerPrefs.GetFloat("FixedYSpeed") == 0);
+
         star1.SetActive(false);
         star2.SetActive(false);
         star3.SetActive(false);
@@ -514,8 +528,8 @@ public class Reward2D : MonoBehaviour
         checkMax = PlayerPrefs.GetFloat("Maximum Wait to Check");
         interMin = PlayerPrefs.GetFloat("Minimum Intertrial Wait");
         interMax = PlayerPrefs.GetFloat("Maximum Intertrial Wait");
-        print(checkMax);
-        print(checkMin);
+        //print(checkMax);
+        //print(checkMin);
         c_min = Tcalc(checkMin, c_lambda);
         c_max = Tcalc(checkMax, c_lambda);
         i_min = Tcalc(interMin, c_lambda);
@@ -590,9 +604,148 @@ public class Reward2D : MonoBehaviour
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT8"));
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT9"));
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT10"));
-        
+
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities1"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities2"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities3"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities4"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities5"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities6"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities7"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities8"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities9"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities10"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities11"));
+
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD1"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD2"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD3"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD4"));
+
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V1SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V2SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V3SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V4SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V5SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V6SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V7SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V8SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V9SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V10SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V11SD1"));
+
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V1SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V2SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V3SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V4SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V5SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V6SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V7SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V8SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V9SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V10SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V11SD2"));
+
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V1SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V2SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V3SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V4SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V5SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V6SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V7SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V8SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V9SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V10SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V11SD3"));
+
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V1SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V2SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V3SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V4SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V5SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V6SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V7SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V8SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V9SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V10SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V11SD4"));
+
+        if (isCI)
+        {
+            int conditioncount;
+            for(int i = 0; i < 11; i++)
+            {
+                conditioncount = (int)TrialsSD1[i];
+                while (TrialsSD1[i] > 0)
+                {
+                    if(TrialsSD1[i] > conditioncount/2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[0], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[0], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD2[i];
+                while (TrialsSD2[i] > 0)
+                {
+                    if (TrialsSD2[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[1], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[1], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD3[i];
+                while (TrialsSD3[i] > 0)
+                {
+                    if (TrialsSD3[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[2], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[2], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD4[i];
+                while (TrialsSD4[i] > 0)
+                {
+                    if (TrialsSD4[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[3], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(velocities[i], CINoiseSDs[3], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                }
+            }
+            Shuffle(CItrialsetup);
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() +" trials";
+            print(setupcheck);
+        }
         StochasticFFN = N2ff.Max();
-        print(StochasticFFN);
+        //print(StochasticFFN);
         isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
         LootDeltaT = PlayerPrefs.GetFloat("LootDeltaT");
         //print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
@@ -1770,94 +1923,94 @@ public class Reward2D : MonoBehaviour
             //print("setting moving FF params");
             //if ((float)rand.NextDouble() < moveRatio)
             //{
+
+            //real random. We do not use it in causal inference task.
             float r = (float)rand.NextDouble();
-            if (r <= v_ratios[0])
+            if (isCI)
             {
-                //v1
-                velocity = velocities[0];
-                noise_SD = v_noises[0];
+                var trialpair = CItrialsetup[trialNum];
+                velocity = trialpair.Item1;
+                noise_SD = trialpair.Item2;
+                selfmotiontrial = trialpair.Item3 == 1;
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SD:" + noise_SD.ToString() + "\n" + "Selfmotion:" + selfmotiontrial.ToString();
+                print(trialset);
             }
-            else {
-                for (int i = 1; i < 44; i++)
+            else
+            {
+                if (r <= v_ratios[0])
                 {
-                    if (r > v_ratios[i-1] && r <= v_ratios[i])
-                    {
-                        velocity = velocities[i];
-                        noise_SD = v_noises[i];
-                    }
+                    //v1
+                    velocity = velocities[0];
+                    noise_SD = v_noises[0];
+                }
+                else if (r > v_ratios[0] && r <= v_ratios[1])
+                {
+                    //v2
+                    velocity = velocities[1];
+                    noise_SD = v_noises[1];
+                }
+                else if (r > v_ratios[1] && r <= v_ratios[2])
+                {
+                    //v3
+                    velocity = velocities[2];
+                    noise_SD = v_noises[2];
+                }
+                else if (r > v_ratios[2] && r <= v_ratios[3])
+                {
+                    //v4
+                    velocity = velocities[3];
+                    noise_SD = v_noises[3];
+                }
+                else if (r > v_ratios[3] && r <= v_ratios[4])
+                {
+                    //v5
+                    velocity = velocities[4];
+                    noise_SD = v_noises[4];
+                }
+                else if (r > v_ratios[4] && r <= v_ratios[5])
+                {
+                    //v6
+                    velocity = velocities[5];
+                    noise_SD = v_noises[5];
+                }
+                else if (r > v_ratios[5] && r <= v_ratios[6])
+                {
+                    //v7
+                    velocity = velocities[6];
+                    noise_SD = v_noises[6];
+                }
+                else if (r > v_ratios[6] && r <= v_ratios[7])
+                {
+                    //v8
+                    velocity = velocities[7];
+                    noise_SD = v_noises[7];
+                }
+                else if (r > v_ratios[7] && r <= v_ratios[8])
+                {
+                    //v9
+                    velocity = velocities[8];
+                    noise_SD = v_noises[8];
+                }
+                else if (r > v_ratios[8] && r <= v_ratios[9])
+                {
+                    //v10
+                    velocity = velocities[9];
+                    noise_SD = v_noises[9];
+                }
+                else if (r > v_ratios[9] && r <= v_ratios[10])
+                {
+                    //v11
+                    velocity = velocities[10];
+                    noise_SD = v_noises[10];
+                }
+                else
+                {
+                    //v12
+                    velocity = velocities[11];
+                    noise_SD = v_noises[11];
                 }
             }
-
-            /*print(velocity);
-            print(noise_SD);*/
-
-            //else if (r > v_ratios[0] && r <= v_ratios[1])
-            //{
-            //    //v2
-            //    velocity = velocities[1];
-            //    noise_SD = v_noises[1];
-            //}
-            //else if (r > v_ratios[1] && r <= v_ratios[2])
-            //{
-            //    //v3
-            //    velocity = velocities[2];
-            //    noise_SD = v_noises[2];
-            //}
-            //else if (r > v_ratios[2] && r <= v_ratios[3])
-            //{
-            //    //v4
-            //    velocity = velocities[3];
-            //    noise_SD = v_noises[3];
-            //}
-            //else if (r > v_ratios[3] && r <= v_ratios[4])
-            //{
-            //    //v5
-            //    velocity = velocities[4];
-            //    noise_SD = v_noises[4];
-            //}
-            //else if (r > v_ratios[4] && r <= v_ratios[5])
-            //{
-            //    //v6
-            //    velocity = velocities[5];
-            //    noise_SD = v_noises[5];
-            //}
-            //else if (r > v_ratios[5] && r <= v_ratios[6])
-            //{
-            //    //v7
-            //    velocity = velocities[6];
-            //    noise_SD = v_noises[6];
-            //}
-            //else if (r > v_ratios[6] && r <= v_ratios[7])
-            //{
-            //    //v8
-            //    velocity = velocities[7];
-            //    noise_SD = v_noises[7];
-            //}
-            //else if (r > v_ratios[7] && r <= v_ratios[8])
-            //{
-            //    //v9
-            //    velocity = velocities[8];
-            //    noise_SD = v_noises[8];
-            //}
-            //else if (r > v_ratios[8] && r <= v_ratios[9])
-            //{
-            //    //v10
-            //    velocity = velocities[9];
-            //    noise_SD = v_noises[9];
-            //}
-            //else if (r > v_ratios[9] && r <= v_ratios[10])
-            //{
-            //    //v11
-            //    velocity = velocities[10];
-            //    noise_SD = v_noises[10];
-            //}
-            //else
-            //{
-            //    //v12
-            //    velocity = velocities[11];
-            //    noise_SD = v_noises[11];
-            //}
-
+            
             if (LRFB)
             {
                 direction = player.transform.right;
@@ -3346,6 +3499,19 @@ public class Reward2D : MonoBehaviour
         lr.SetPositions(points);
     }
 
+    void Shuffle(List<Tuple<float, float, float>> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rand.Next(n + 1);
+            var value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
     /// <summary>
     /// If you provide filepaths beforehand, the program will save all of your data as .csv files.
     /// 
@@ -3477,8 +3643,8 @@ public class Reward2D : MonoBehaviour
             temp.Sort();
             for (int i = 0; i < temp.Count; i++)
             {
-                print(string.Format("temp{0}", i));
-                print(temp[i]);
+                //print(string.Format("temp{0}", i));
+                //print(temp[i]);
             }
 
             var totalScore = 0;
@@ -4639,6 +4805,103 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteStartElement("FullON");
             xmlWriter.WriteString(PlayerPrefs.GetInt("Full ON").ToString());
             xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Setting");
+            xmlWriter.WriteAttributeString("Type", "Causal Inference Settings");
+
+            xmlWriter.WriteStartElement("Velocities1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities11");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities11").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD4").ToString());
+            xmlWriter.WriteEndElement();
+
+            for(int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD1";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD2";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD3";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD4";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
 
             xmlWriter.WriteEndElement();
 

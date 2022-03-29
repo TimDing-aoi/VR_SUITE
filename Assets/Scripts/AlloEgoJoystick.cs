@@ -293,7 +293,7 @@ public class AlloEgoJoystick : MonoBehaviour
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
 
-                bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
+                bool self_motion = SharedReward.selfmotiontrial;
                 if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2 || !self_motion && SharedReward.GFFPhaseFlag == 1
                     || !self_motion && SharedReward.GFFPhaseFlag == 2 || !self_motion && SharedReward.GFFPhaseFlag == 3 || SharedReward.isTimeout)
                 //Out of circle(Feedback) OR No selfmotion's Preparation & Habituation & Observation OR Timed Out
