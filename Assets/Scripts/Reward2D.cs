@@ -1932,7 +1932,7 @@ public class Reward2D : MonoBehaviour
                 velocity = trialpair.Item1;
                 noise_SD = trialpair.Item2;
                 selfmotiontrial = trialpair.Item3 == 1;
-                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SD:" + noise_SD.ToString() + " Selfmotion:" + selfmotiontrial.ToString();
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SD:" + noise_SD.ToString() + "\n" + "Selfmotion:" + selfmotiontrial.ToString();
                 print(trialset);
             }
             else
