@@ -2914,7 +2914,7 @@ public class Reward2D : MonoBehaviour
                 starring.SetActive(true);
                 CIScores.Add(0f);
             }
-            await new WaitForSeconds(1f);
+            await new WaitForSeconds(sharedTimeStamps.feedback);
             star1.SetActive(false);
             star2.SetActive(false);
             star3.SetActive(false);

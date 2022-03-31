@@ -9530,7 +9530,7 @@ MonoBehaviour:
   habituation_2: 0.2
   habituation_3: 0.05
   observation: 0.3
-  feedback: 0.2
+  feedback: 0.5
   preparation_total: 0.3
   habituation_total: 0.35
 --- !u!1 &1283958853

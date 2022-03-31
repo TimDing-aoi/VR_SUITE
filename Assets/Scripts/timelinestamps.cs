@@ -10,10 +10,10 @@ public class timelinestamps : MonoBehaviour
     public float habituation_2 = 0.2f;
     public float habituation_3 = 0.05f;
     public float observation = 0.3f;
-    public float feedback = 0.2f;
+    public float feedback = 0.5f;
     public float preparation_total = 0.3f;
     public float habituation_total = 0.35f;
-    private void Start()
+    private void Update()
     {
         sharedTimeStamps = this;
     }
