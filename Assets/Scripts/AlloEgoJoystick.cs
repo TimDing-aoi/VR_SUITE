@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using static Reward2D;
 using UnityEngine.InputSystem.LowLevel;
+using static timelinestamps;
 
 public class AlloEgoJoystick : MonoBehaviour
 {
@@ -314,12 +315,17 @@ public class AlloEgoJoystick : MonoBehaviour
                     //Selmotion preperation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+<<<<<<< Updated upstream
                     int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+=======
+                    int framerate = 90;
+                    int fixedObservationFrame = (int)(framerate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times based on frames for GFFPhaseFlag==2&3
+>>>>>>> Stashed changes
                     float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
                     {
-                        transform.LookAt(new Vector3(0f, 0f, 0f));
+                        transform.LookAt(new Vector3(100f, 0f, 0f));
                     }
                     transform.position = new Vector3(-offset, 1f, 0f);
                     circX = 0;
@@ -328,8 +334,14 @@ public class AlloEgoJoystick : MonoBehaviour
                 else if (self_motion && SharedReward.GFFPhaseFlag == 2 || self_motion && SharedReward.GFFPhaseFlag == 3) 
                 //Selfmotion Habituation & Observation
                 {
+<<<<<<< Updated upstream
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                     int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+=======
+                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in 0.1 meter per second
+                    int framerate = 90;
+                    int fixedObservationFrame = (int)(framerate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+>>>>>>> Stashed changes
                     float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
                     hbobCounter += fixedSpeed * Time.smoothDeltaTime;
                     float x = offset - hbobCounter;
@@ -338,7 +350,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         transform.position = new Vector3(-x, 0f, 0f);
                         if (cammode == 0) //Simply facing outward
                         {
-                            transform.LookAt(new Vector3(1f, 0f, 0f));
+                            transform.LookAt(new Vector3(2f, 0f, 0f));
                         }
                         transform.position = new Vector3(-x, 1f, 0f);
                     }
@@ -354,7 +366,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         transform.position = new Vector3(-x, 0f, 0f);
                         if (cammode == 0) //Simply facing outward
                         {
-                            transform.LookAt(new Vector3(1f, 0f, 0f));
+                            transform.LookAt(new Vector3(100f, 0f, 0f));
                         }
                         transform.position = new Vector3(-x, 1f, 0f);
                     }

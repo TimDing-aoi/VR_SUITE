@@ -41,6 +41,7 @@ using System;
 using UnityEngine.XR;
 using TMPro;
 using System.Linq;
+using static timelinestamps;
 
 public class Reward2D : MonoBehaviour
 {
@@ -63,6 +64,7 @@ public class Reward2D : MonoBehaviour
     public float FFnoise = 0;
     public float GFFTrueDegree = 0;
     readonly public List<float> FFnoiseList = new List<float>();
+    readonly public List<float> CIScores = new List<float>();
 
     public Camera Lcam;
     public Camera Rcam;
@@ -333,6 +335,7 @@ public class Reward2D : MonoBehaviour
     private string path;
 
     [HideInInspector] public int trialNum;
+    [HideInInspector] public int CItrialNum = 0;
     //private float trialT;
     private float programT0 = 0.0f;
 
@@ -416,6 +419,7 @@ public class Reward2D : MonoBehaviour
     bool proximity;
     bool isReward;
 
+    private static System.Random rng = new System.Random();
 
     int ptb;
 
@@ -502,6 +506,7 @@ public class Reward2D : MonoBehaviour
         //    }
         //}
 
+        path = PlayerPrefs.GetString("Path");
         ntrials = (int)PlayerPrefs.GetFloat("Num Trials");
         if (ntrials == 0) ntrials = 9999;
         seed = UnityEngine.Random.Range(1, 10000);
@@ -590,7 +595,160 @@ public class Reward2D : MonoBehaviour
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT8"));
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT9"));
         deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT10"));
+<<<<<<< Updated upstream
         
+=======
+
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities1"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities2"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities3"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities4"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities5"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities6"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities7"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities8"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities9"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities10"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities11"));
+
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD1"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD2"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD3"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD4"));
+
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V1SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V2SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V3SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V4SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V5SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V6SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V7SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V8SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V9SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V10SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V11SD1"));
+
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V1SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V2SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V3SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V4SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V5SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V6SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V7SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V8SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V9SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V10SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V11SD2"));
+
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V1SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V2SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V3SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V4SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V5SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V6SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V7SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V8SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V9SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V10SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V11SD3"));
+
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V1SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V2SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V3SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V4SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V5SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V6SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V7SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V8SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V9SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V10SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V11SD4"));
+
+        if (isCI)
+        {
+            int conditioncount;
+            for (int i = 0; i < 11; i++)
+            {
+                conditioncount = (int)TrialsSD1[i];
+                while (TrialsSD1[i] > 0)
+                {
+                    if(TrialsSD1[i] > conditioncount/2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[0], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[0], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD2[i];
+                while (TrialsSD2[i] > 0)
+                {
+                    if (TrialsSD2[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[1], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[1], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD3[i];
+                while (TrialsSD3[i] > 0)
+                {
+                    if (TrialsSD3[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[2], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[2], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD4[i];
+                while (TrialsSD4[i] > 0)
+                {
+                    if (TrialsSD4[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[3], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[3], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                }
+            }
+            Shuffle(CItrialsetup);
+            int trial_count = 0;
+            string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+            File.AppendAllText(metaPath, "TrialNum, TrialFFV, TrialSD, Selfmotion\n");
+            foreach (var tuple in CItrialsetup)
+            {
+                trial_count++;
+                string trialtext = string.Format("{0} , {1} , {2} , {3} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3.ToString());
+                File.AppendAllText(metaPath, trialtext);
+            }
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() +" trials";
+            print(setupcheck);
+            ntrials = CItrialsetup.Count;
+        }
+>>>>>>> Stashed changes
         StochasticFFN = N2ff.Max();
         print(StochasticFFN);
         isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
@@ -925,7 +1083,6 @@ public class Reward2D : MonoBehaviour
         //ipd = ;
 
         timeout = PlayerPrefs.GetFloat("Timeout");
-        path = PlayerPrefs.GetString("Path");
         rewardAmt = PlayerPrefs.GetFloat("Reward");
         trialNum = 0;
 
@@ -934,8 +1091,13 @@ public class Reward2D : MonoBehaviour
         systemStartTimeVerbose = DateTime.Now.ToString("MM-dd_HH-mm-ss");
         contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
 
-        string firstLine = "";
-        if (ptb == 2 && !isMoving2FF)
+        string firstLine;
+        if (isCI)
+        {
+            firstLine = "TrialNum,TrialTime,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,JoystickRaw,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
+                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounterShared\n";
+        }
+        else if (ptb == 2 && !isMoving2FF)
         {
             firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared\n";
         }
@@ -1352,32 +1514,56 @@ public class Reward2D : MonoBehaviour
                 var tempFFPos = firefly.transform.position - player_origin; // THIS NEED TO BE FIXED
                 var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
                 string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
-                
-                
+
+
                 // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
-                       trialNum,
-                       Time.realtimeSinceStartup,
-                       (int)currPhase,
-                       firefly.activeInHierarchy ? 1 : 0,
-                       transformedPos,
-                       transformedRot,
-                       SharedJoystick.cleanVel,
-                       SharedJoystick.cleanRot,
-                       transformedFFPos,
-                       velocity_Noised,
-                       string.Join(",", x, y, z),
-                       string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
-                       location.ToString("F8").Trim(toTrim).Replace(" ", ""),
-                       direction,
-                       string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
-                       string.Join(",", left.eye_openness, right.eye_openness),
-                       GFFPhaseFlag,
-                       FFnoise,
-                       GFFTrueDegree,
-                       SharedJoystick.timeCounterShared,
-                       SharedJoystick.frameCounterShared,
-                       SharedJoystick.phiShared));
+                if (isCI)
+                {
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
+                           trialNum,
+                           Time.realtimeSinceStartup,
+                           firefly.activeInHierarchy ? 1 : 0,
+                           string.Join(",", player.transform.position.x / 10, player.transform.position.y / 10, player.transform.position.z / 10),
+                           string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
+                           SharedJoystick.moveX,
+                           velocity_Noised,
+                           string.Join(",", x, y, z),
+                           string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                           location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                           direction,
+                           string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                           string.Join(",", left.eye_openness, right.eye_openness),
+                           GFFPhaseFlag,
+                           GFFTrueDegree * Mathf.Rad2Deg,
+                           FFnoise,
+                           SharedJoystick.frameCounterShared));
+                }
+                else
+                {
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
+                           trialNum,
+                           Time.realtimeSinceStartup,
+                           (int)currPhase,
+                           firefly.activeInHierarchy ? 1 : 0,
+                           transformedPos,
+                           transformedRot,
+                           SharedJoystick.cleanVel,
+                           SharedJoystick.cleanRot,
+                           transformedFFPos,
+                           velocity_Noised,
+                           string.Join(",", x, y, z),
+                           string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                           location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                           direction,
+                           string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                           string.Join(",", left.eye_openness, right.eye_openness),
+                           GFFPhaseFlag,
+                           FFnoise,
+                           GFFTrueDegree,
+                           SharedJoystick.timeCounterShared,
+                           SharedJoystick.frameCounterShared,
+                           SharedJoystick.phiShared));
+                }
 
                 if (ptb == 2 && !isMoving2FF)
                 {
@@ -1773,9 +1959,19 @@ public class Reward2D : MonoBehaviour
             float r = (float)rand.NextDouble();
             if (r <= v_ratios[0])
             {
+<<<<<<< Updated upstream
                 //v1
                 velocity = velocities[0];
                 noise_SD = v_noises[0];
+=======
+                var trialpair = CItrialsetup[CItrialNum];
+                CItrialNum++;
+                velocity = trialpair.Item1;
+                noise_SD = trialpair.Item2;
+                selfmotiontrial = trialpair.Item3 == 1;
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SD:" + noise_SD.ToString() + " Selfmotion:" + selfmotiontrial.ToString();
+                print(trialset);
+>>>>>>> Stashed changes
             }
             else {
                 for (int i = 1; i < 44; i++)
@@ -2133,6 +2329,7 @@ public class Reward2D : MonoBehaviour
             //await new WaitForSeconds(0.1f);
             int frameRate = 90;
             //int currentFrame = Time.frameCount;
+<<<<<<< Updated upstream
             int endFrame = Time.frameCount;// + (int)Math.Ceiling(0.1f * frameRate);
 
             framcntTemp = Time.frameCount;
@@ -2150,6 +2347,12 @@ public class Reward2D : MonoBehaviour
             }
                 
 
+=======
+            /*int endFrame = Time.frameCount + (int)(sharedTimeStamps.preparation_1 * frameRate);
+            framcntTemp = Time.frameCount;
+            await new WaitUntil(() => Time.frameCount == endFrame);*/
+            await new WaitForSecondsRealtime(sharedTimeStamps.preparation_1);
+>>>>>>> Stashed changes
             framcntTemp = Time.frameCount;
 
             for (int prep = 0; prep < 18; prep++)
@@ -2158,6 +2361,7 @@ public class Reward2D : MonoBehaviour
                 //print(lr.materials[0].color);
                 //await new WaitForSeconds(0.01f);
                 //await new WaitForSecondsRealtime(0.01f);
+<<<<<<< Updated upstream
 
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
@@ -2165,6 +2369,13 @@ public class Reward2D : MonoBehaviour
                 //StartCoroutine(waitForAFrame());
 
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
+=======
+                await new WaitForSecondsRealtime(sharedTimeStamps.preparation_2 / 18);
+                /*endFrame = Time.frameCount + (int)(sharedTimeStamps.preparation_2/18) * frameRate;
+                await new WaitUntil(() => Time.frameCount == endFrame);*/
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 18f));
+                print(Time.frameCount);
+>>>>>>> Stashed changes
             }
             framcntTemp = Time.frameCount;
 
@@ -2175,6 +2386,7 @@ public class Reward2D : MonoBehaviour
             HabituationStart.Add(Time.realtimeSinceStartup);
             //await new WaitForSeconds(0.1f);
             //await new WaitForSecondsRealtime(0.1f);
+<<<<<<< Updated upstream
             endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate) ;
             //await new WaitUntil(() => Time.frameCount == endFrame);
 
@@ -2187,19 +2399,32 @@ public class Reward2D : MonoBehaviour
             }
 
             framcntTemp = Time.frameCount;
+=======
+            /*endFrame = Time.frameCount + (int)(sharedTimeStamps.habituation_1 * frameRate) ; 
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            framcntTemp = Time.frameCount;*/
+            await new WaitForSecondsRealtime(sharedTimeStamps.habituation_1);
+>>>>>>> Stashed changes
             for (int prep = 0; prep < 18; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
                 //await new WaitForSeconds(0.01f);
                 //await new WaitForSecondsRealtime(0.01f);
+<<<<<<< Updated upstream
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
+=======
+                await new WaitForSecondsRealtime(sharedTimeStamps.habituation_2 / 18);
+                /*endFrame = Time.frameCount + (int)(sharedTimeStamps.habituation_2/18 * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame);*/
+>>>>>>> Stashed changes
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
             }
             framcntTemp = Time.frameCount;
             //await new WaitForSeconds(0.05f);
             //await new WaitForSecondsRealtime(0.05f);
+<<<<<<< Updated upstream
             endFrame = Time.frameCount + (int)Math.Ceiling(0.05f * frameRate);
             //await new WaitUntil(() => Time.frameCount == endFrame);
 
@@ -2212,6 +2437,12 @@ public class Reward2D : MonoBehaviour
             }
 
             framcntTemp = Time.frameCount;
+=======
+            /*endFrame = Time.frameCount + (int)(sharedTimeStamps.habituation_3 * frameRate);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            framcntTemp = Time.frameCount;*/
+            await new WaitForSecondsRealtime(sharedTimeStamps.habituation_3);
+>>>>>>> Stashed changes
             motion_toggle = false;
             line.SetActive(false);
         }
@@ -2268,11 +2499,18 @@ public class Reward2D : MonoBehaviour
             // Observation
             ObservationStart.Add(Time.realtimeSinceStartup);
             GFFPhaseFlag = 3;
+<<<<<<< Updated upstream
             //await new WaitForSeconds(0.3f); //Observation
             //await new WaitForSecondsRealtime(0.3f); //Observation
             int frameRate = 90;
             int endFrame = Time.frameCount + 27;// (int)Math.Ceiling(0.3f * frameRate);
             await new WaitUntil(() => Time.frameCount == endFrame);
+=======
+            /*int frameRate = 90;
+            int endFrame = Time.frameCount + (int)(sharedTimeStamps.observation * frameRate);
+            await new WaitUntil(() => Time.frameCount == endFrame);*/
+            await new WaitForSecondsRealtime(sharedTimeStamps.observation);
+>>>>>>> Stashed changes
             framcntTemp = Time.frameCount;
             if (!toggle)
             {
@@ -2612,6 +2850,7 @@ public class Reward2D : MonoBehaviour
                 star4.SetActive(true);
                 star5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(5f);
             }
             else if (degree_score <= 10)
             {
@@ -2621,6 +2860,7 @@ public class Reward2D : MonoBehaviour
                 star4.SetActive(true);
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(4f);
             }
             else if (degree_score <= 15)
             {
@@ -2630,6 +2870,7 @@ public class Reward2D : MonoBehaviour
                 darkstar4.SetActive(true);
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(3f);
             }
             else if (degree_score <= 20)
             {
@@ -2639,6 +2880,7 @@ public class Reward2D : MonoBehaviour
                 darkstar4.SetActive(true);
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(2f);
             }
             else if (degree_score <= 25)
             {
@@ -2648,6 +2890,7 @@ public class Reward2D : MonoBehaviour
                 darkstar4.SetActive(true);
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(1f);
             }
             else
             {
@@ -2657,6 +2900,7 @@ public class Reward2D : MonoBehaviour
                 darkstar4.SetActive(true);
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
+                CIScores.Add(0f);
             }
             await new WaitForSeconds(1f);
             star1.SetActive(false);
@@ -3288,25 +3532,6 @@ public class Reward2D : MonoBehaviour
         }
     }
 
-    public async void WriteToFile()
-    {
-        StringBuilder sb = new StringBuilder();
-        //Debug.Log("Writing Start");
-        while (playing || stringList.Count > 0)
-        {
-            if (stringList.Count > 0)
-            {
-                sb.Append(stringList[0]);
-                stringList.RemoveAt(0);
-
-                //Debug.Log("writing...");
-            }
-            await new WaitForFixedUpdate();
-        }
-        File.AppendAllText(contPath, sb.ToString());
-        //writing = false;
-    }
-
     private float Tcalc(float t, float lambda)
     {
         return -1.0f / lambda * Mathf.Log(t / lambda);
@@ -3390,6 +3615,22 @@ public class Reward2D : MonoBehaviour
         lr.SetPositions(points);
     }
 
+<<<<<<< Updated upstream
+=======
+    void Shuffle(List<Tuple<float, float, float>> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            var value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
+>>>>>>> Stashed changes
     /// <summary>
     /// If you provide filepaths beforehand, the program will save all of your data as .csv files.
     /// 
@@ -3443,7 +3684,7 @@ public class Reward2D : MonoBehaviour
             }
             else if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
-                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,StarsGot,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
             else
             {
@@ -3506,6 +3747,7 @@ public class Reward2D : MonoBehaviour
                 temp.Add(ActionStart.Count);
                 temp.Add(SelfReportStart.Count);
                 temp.Add(FeedbackStart.Count);
+                temp.Add(CIScores.Count);
             }
 
             //nasta added
@@ -3616,7 +3858,7 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24}",
                         n[i],
                         max_v[i],
                         max_w[i],
@@ -3641,8 +3883,7 @@ public class Reward2D : MonoBehaviour
                         ActionStart[i],
                         SelfReportStart[i],
                         FeedbackStart[i],
-                        FFnoiseList[i],
-                        GFFTrueDegree);
+                        CIScores[i]);
                     csvDisc.AppendLine(line);
                 }
             }
