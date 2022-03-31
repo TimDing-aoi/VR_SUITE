@@ -1102,8 +1102,13 @@ public class Reward2D : MonoBehaviour
         systemStartTimeVerbose = DateTime.Now.ToString("MM-dd_HH-mm-ss");
         contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
 
-        string firstLine = "";
-        if (ptb == 2 && !isMoving2FF)
+        string firstLine;
+        if (isCI)
+        {
+            firstLine = "TrialNum,TrialTime,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,JoystickRaw,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
+                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter\n";
+        }
+        else if (ptb == 2 && !isMoving2FF)
         {
             firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared\n";
         }
@@ -1254,7 +1259,76 @@ public class Reward2D : MonoBehaviour
         {
             print(currentTask.Exception);
         }
+        if (isCI)
+        {
+            ViveSR.Error error = SRanipal_Eye_API.GetEyeData(ref data);
+            float x;
+            float y;
+            float z;
+            Vector3 location = Vector3.zero;
+            float direction = 0.0f;
+            var left = new SingleEyeData();
+            var right = new SingleEyeData();
+            var combined = new CombinedEyeData();
 
+            if (error == ViveSR.Error.WORK)
+            {
+                left = data.verbose_data.left;
+                right = data.verbose_data.right;
+                combined = data.verbose_data.combined;
+
+                x = combined.eye_data.gaze_direction_normalized.x;
+                y = combined.eye_data.gaze_direction_normalized.y;
+                z = combined.eye_data.gaze_direction_normalized.z;
+
+                var tuple = CalculateConvergenceDistanceAndCoords(player.transform.position, new Vector3(-x, y, z), ~((1 << 12) | (1 << 13)));
+
+                location = tuple.Item1;
+                direction = tuple.Item2;
+
+                if (Camera.main.gameObject.activeInHierarchy)
+                {
+                    HitLocations2D.Add(string.Join(",", 0.0f, 0.0f));
+                }
+                else
+                {
+                    HitLocations2D.Add(string.Join(",", 0.0f, 0.0f));
+                }
+
+                var alpha = Vector3.SignedAngle(player.transform.position, player.transform.position + new Vector3(-x, y, z), player.transform.forward) * Mathf.Deg2Rad;
+                var hypo = 10.0f / Mathf.Cos(alpha);
+                Marker.transform.localPosition = new Vector3(-x, y, z) * hypo;
+            }
+            else
+            {
+                x = 0.0f;
+                y = 0.0f;
+                z = 0.0f;
+
+                left.pupil_diameter_mm = 0.0f;
+                left.eye_openness = 0.0f;
+                right.pupil_diameter_mm = 0.0f;
+                right.eye_openness = 0.0f;
+            }
+            sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}\n",
+                   trialNum,
+                   Time.realtimeSinceStartup,
+                   firefly.activeInHierarchy ? 1 : 0,
+                   string.Join(",", player.transform.position.x / 10, player.transform.position.y / 10, player.transform.position.z / 10),
+                   string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
+                   SharedJoystick.moveX,
+                   velocity_Noised,
+                   string.Join(",", x, y, z),
+                   string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                   location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                   direction,
+                   string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                   string.Join(",", left.eye_openness, right.eye_openness),
+                   GFFPhaseFlag,
+                   GFFTrueDegree * Mathf.Rad2Deg,
+                   FFnoise,
+                   Time.frameCount));
+        }
     }
 
     /// <summary>
@@ -1525,7 +1599,7 @@ public class Reward2D : MonoBehaviour
                 // continous saving
                 if (isCI)
                 {
-                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
+                    /*sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                            trialNum,
                            Time.realtimeSinceStartup,
                            firefly.activeInHierarchy ? 1 : 0,
@@ -1542,7 +1616,7 @@ public class Reward2D : MonoBehaviour
                            GFFPhaseFlag,
                            GFFTrueDegree * Mathf.Rad2Deg,
                            FFnoise,
-                           SharedJoystick.frameCounterShared));
+                           Time.frameCount));*/
                 }
                 else
                 {
@@ -1571,6 +1645,10 @@ public class Reward2D : MonoBehaviour
                            SharedJoystick.phiShared));
                 }
 
+                if (isCI)
+                {
+                    //sb.Append("\n");
+                }
                 if (ptb == 2 && !isMoving2FF)
                 {
                     sb.Append("\n");
@@ -2375,7 +2453,7 @@ public class Reward2D : MonoBehaviour
             //await new WaitForSeconds(0.05f);
             //await new WaitForSecondsRealtime(0.05f);
             endFrame = Time.frameCount + (int)Math.Ceiling(0.05f * frameRate);
-            for (int prep = 0; prep < 4; prep++)
+            for (int prep = 0; prep < 5; prep++)
             {
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
