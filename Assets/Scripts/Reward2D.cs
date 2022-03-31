@@ -2481,14 +2481,17 @@ public class Reward2D : MonoBehaviour
                 randStdNormal = draw_sigma * Math.Sqrt(-2.0 * Math.Log(u1)) *
                              Math.Sin(2.0 * Math.PI * u2);
             }
+            double uniform_offset = randNoise.NextDouble();
+            uniform_offset = -25 + uniform_offset * 50; //--> put in GUI
             trial_start_phase = true;
             motion_toggle = true;
             firefly.SetActive(false);
             if (SharedJoystick.worldcentric)
             {
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
+                //(float)randStdNormal * Mathf.Deg2Rad
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)uniform_offset) / 2;
                 float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)randStdNormal * Mathf.Deg2Rad) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)uniform_offset) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
                 timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
