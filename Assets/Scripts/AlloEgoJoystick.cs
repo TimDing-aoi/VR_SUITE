@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using static Reward2D;
 using UnityEngine.InputSystem.LowLevel;
+using static timelinestamps;
 
 public class AlloEgoJoystick : MonoBehaviour
 {
@@ -114,6 +115,9 @@ public class AlloEgoJoystick : MonoBehaviour
 
     private float prevX;
     private float prevY;
+
+    private float maxJoyRotDeg = 60.0f;// deg/s
+    private float frameRate = 90.0f; // frame rate
 
     // Start is called before the first frame update
     void Awake()
@@ -314,7 +318,7 @@ public class AlloEgoJoystick : MonoBehaviour
                     //Selmotion preperation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+                    int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
                     float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
@@ -329,7 +333,7 @@ public class AlloEgoJoystick : MonoBehaviour
                 //Selfmotion Habituation & Observation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+                    int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
                     float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
                     hbobCounter += fixedSpeed * Time.smoothDeltaTime;
                     float x = offset - hbobCounter;
@@ -370,11 +374,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                         //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
                         // set values
-                        float maxJoyRotDeg = 60.0f;// deg/s
-                        float maxJoyRotRad = 30.0f; // rad/s
-                        float frameRate = 90.0f; // frame rate
                         float joyConvRateDeg = maxJoyRotDeg / frameRate;
-                        float joyConvRateRad = maxJoyRotRad / frameRate;
 
                         // Read input from joystick 
 

@@ -9209,6 +9209,7 @@ GameObject:
   - component: {fileID: 1242841534}
   - component: {fileID: 1242841541}
   - component: {fileID: 1242841533}
+  - component: {fileID: 1242841542}
   m_Layer: 12
   m_Name: GameObject
   m_TagString: Untagged
@@ -9359,6 +9360,7 @@ MonoBehaviour:
   lineOnOff: 0
   marker: {fileID: 1431452378}
   panel: {fileID: 115409361}
+  frameRate: 90
   scoring: {fileID: 1405291811}
   GFFPhaseFlag: 0
   FFnoise: 0
@@ -9409,6 +9411,7 @@ MonoBehaviour:
   phase: 0
   isTimeout: 0
   isQuestion: 0
+  selfmotiontrial: 0
   FrameTimeElement: 0
   delayTime: 0.2
   Detector: 0
@@ -9416,6 +9419,7 @@ MonoBehaviour:
   sceneTypeVerbose: 
   systemStartTimeVerbose: 
   trialNum: 0
+  CItrialNum: 0
   rewardAmt: 0
   points: 0
   ntrials: 0
@@ -9508,6 +9512,27 @@ MonoBehaviour:
   EnableEye: 1
   EnableEyeDataCallback: 0
   EnableEyeVersion: 0
+--- !u!114 &1242841542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242841532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2266ec9008182341b56226291d12ec0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  preparation_1: 0.1
+  preparation_2: 0.2
+  habituation_1: 0.1
+  habituation_2: 0.2
+  habituation_3: 0.05
+  observation: 0.3
+  feedback: 0.2
+  preparation_total: 0.3
+  habituation_total: 0.35
 --- !u!1 &1283958853
 GameObject:
   m_ObjectHideFlags: 0

@@ -41,6 +41,7 @@ using System;
 using UnityEngine.XR;
 using TMPro;
 using System.Linq;
+using static timelinestamps;
 
 public class Reward2D : MonoBehaviour
 {
@@ -51,6 +52,8 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
+
+    [HideInInspector] public int frameRate = 90;
 
     //Stochastic FF variables
     public GameObject scoring;
@@ -1710,7 +1713,7 @@ public class Reward2D : MonoBehaviour
         if (self_motion)
         {
             float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-            int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+            int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
             float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
             player.transform.position = new Vector3(-offset, 1f, 0f);
             player.transform.LookAt(new Vector3(0f, 0f, 0f));
@@ -2394,7 +2397,6 @@ public class Reward2D : MonoBehaviour
             motion_toggle = true;
             lr = line.GetComponent<LineRenderer>();
             //await new WaitForSeconds(0.1f);
-            int frameRate = 90;
             //int currentFrame = Time.frameCount;
             int endFrame = Time.frameCount;// + (int)Math.Ceiling(0.1f * frameRate);
 
@@ -2403,7 +2405,7 @@ public class Reward2D : MonoBehaviour
             //await new WaitForSecondsRealtime(0.1f);
 
             //await new WaitUntil(() => Time.frameCount == endFrame);
-            for (int prep = 0; prep < 9; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_1; prep++)
             {
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
@@ -2411,7 +2413,7 @@ public class Reward2D : MonoBehaviour
 
             framcntTemp = Time.frameCount;
 
-            for (int prep = 0; prep < 18; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
@@ -2427,10 +2429,9 @@ public class Reward2D : MonoBehaviour
             HabituationStart.Add(Time.realtimeSinceStartup);
             //await new WaitForSeconds(0.1f);
             //await new WaitForSecondsRealtime(0.1f);
-            endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate);
             //await new WaitUntil(() => Time.frameCount == endFrame);
 
-            for (int prep = 0; prep < 9; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_1; prep++)
             {
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
@@ -2439,7 +2440,7 @@ public class Reward2D : MonoBehaviour
             }
 
             framcntTemp = Time.frameCount;
-            for (int prep = 0; prep < 18; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
@@ -2452,8 +2453,7 @@ public class Reward2D : MonoBehaviour
             framcntTemp = Time.frameCount;
             //await new WaitForSeconds(0.05f);
             //await new WaitForSecondsRealtime(0.05f);
-            endFrame = Time.frameCount + (int)Math.Ceiling(0.05f * frameRate);
-            for (int prep = 0; prep < 5; prep++)
+            for (int prep = 0; prep < (int)Math.Ceiling(frameRate * sharedTimeStamps.habituation_3); prep++)
             {
                 endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
@@ -2518,7 +2518,7 @@ public class Reward2D : MonoBehaviour
             // Observation
             //await new WaitForSeconds(0.3f); //Observation
             //await new WaitForSecondsRealtime(0.3f); //Observation
-            int endFrame = Time.frameCount + 27;// (int)Math.Ceiling(0.3f * 90);
+            int endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.observation);// (int)Math.Ceiling(0.3f * 90);
             await new WaitUntil(() => Time.frameCount == endFrame);
             framcntTemp = Time.frameCount;
             if (!toggle)
