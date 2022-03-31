@@ -1440,7 +1440,7 @@ public class Reward2D : MonoBehaviour
         if (self_motion)
         {
             float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-            int fixedObservationFrame = 63; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+            int fixedObservationFrame = 58; // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
             float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
             player.transform.position = new Vector3(-offset, 1f, 0f);
             player.transform.LookAt(new Vector3(0f, 0f, 0f));
@@ -2096,6 +2096,14 @@ public class Reward2D : MonoBehaviour
         //Debug.Log("Begin Phase End.");
     }
 
+    System.Collections.IEnumerator waitForAFrame()
+    {
+
+        //returning 0 will make it wait 1 frame
+        yield return 0;
+
+    }
+
     /// <summary>
     /// Doesn't really do much besides wait for the player to start moving, and, afterwards,
     /// wait until the player stops moving and then start the check phase. Also will go back to
@@ -2125,42 +2133,67 @@ public class Reward2D : MonoBehaviour
             //await new WaitForSeconds(0.1f);
             int frameRate = 90;
             //int currentFrame = Time.frameCount;
-            int endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate);
+            int endFrame = Time.frameCount;// + (int)Math.Ceiling(0.1f * frameRate);
 
             framcntTemp = Time.frameCount;
 
             //await new WaitForSecondsRealtime(0.1f);
 
-            await new WaitUntil(() => Time.frameCount == endFrame);
+            //await new WaitUntil(() => Time.frameCount == endFrame);
+
+            for (int prep = 0; prep < 9; prep++)
+            {
+                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame); 
+                
+                //StartCoroutine(waitForAFrame());
+            }
+                
 
             framcntTemp = Time.frameCount;
 
-            for (int prep = 0; prep < 20; prep++)
+            for (int prep = 0; prep < 18; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
                 //await new WaitForSeconds(0.01f);
                 //await new WaitForSecondsRealtime(0.01f);
-                endFrame = Time.frameCount + (int)Math.Ceiling(0.01f * frameRate);
+
+                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
+
+                //StartCoroutine(waitForAFrame());
+
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / 60f));
             }
             framcntTemp = Time.frameCount;
+
+
+
             //Habituation
             GFFPhaseFlag = 2;
             HabituationStart.Add(Time.realtimeSinceStartup);
             //await new WaitForSeconds(0.1f);
             //await new WaitForSecondsRealtime(0.1f);
-            endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate) ; 
-            await new WaitUntil(() => Time.frameCount == endFrame);
+            endFrame = Time.frameCount + (int)Math.Ceiling(0.1f * frameRate) ;
+            //await new WaitUntil(() => Time.frameCount == endFrame);
+
+            for (int prep = 0; prep < 9; prep++)
+            {
+                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame); 
+                
+                //StartCoroutine(waitForAFrame());
+            }
+
             framcntTemp = Time.frameCount;
-            for (int prep = 0; prep < 20; prep++)
+            for (int prep = 0; prep < 18; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
                 //await new WaitForSeconds(0.01f);
                 //await new WaitForSecondsRealtime(0.01f);
-                endFrame = Time.frameCount + (int)Math.Ceiling(0.01f * frameRate);
+                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
                 await new WaitUntil(() => Time.frameCount == endFrame);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(0.5 - prep / 60f)));
             }
@@ -2168,7 +2201,16 @@ public class Reward2D : MonoBehaviour
             //await new WaitForSeconds(0.05f);
             //await new WaitForSecondsRealtime(0.05f);
             endFrame = Time.frameCount + (int)Math.Ceiling(0.05f * frameRate);
-            await new WaitUntil(() => Time.frameCount == endFrame);
+            //await new WaitUntil(() => Time.frameCount == endFrame);
+
+            for (int prep = 0; prep < 4; prep++)
+            {
+                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
+                await new WaitUntil(() => Time.frameCount == endFrame); 
+                
+                //StartCoroutine(waitForAFrame());
+            }
+
             framcntTemp = Time.frameCount;
             motion_toggle = false;
             line.SetActive(false);
@@ -2222,12 +2264,14 @@ public class Reward2D : MonoBehaviour
                 timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
                 firefly.SetActive(true);
             }
+
+            // Observation
             ObservationStart.Add(Time.realtimeSinceStartup);
             GFFPhaseFlag = 3;
             //await new WaitForSeconds(0.3f); //Observation
             //await new WaitForSecondsRealtime(0.3f); //Observation
             int frameRate = 90;
-            int endFrame = Time.frameCount + (int)Math.Ceiling(0.3f * frameRate);
+            int endFrame = Time.frameCount + 27;// (int)Math.Ceiling(0.3f * frameRate);
             await new WaitUntil(() => Time.frameCount == endFrame);
             framcntTemp = Time.frameCount;
             if (!toggle)
