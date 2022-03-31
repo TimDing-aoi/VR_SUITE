@@ -2472,12 +2472,13 @@ public class Reward2D : MonoBehaviour
         if (is_gitter)
         {
             System.Random randNoise = new System.Random();
-            double randStdNormal = 25;
-            while (randStdNormal > 20)
+            float draw_sigma = 10;
+            double randStdNormal = 2.6 * draw_sigma;
+            while (Mathf.Abs((float)randStdNormal) > 2.5 * draw_sigma)
             {
                 double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
                 double u2 = 1.0 - randNoise.NextDouble();
-                randStdNormal = 10 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                randStdNormal = draw_sigma * Math.Sqrt(-2.0 * Math.Log(u1)) *
                              Math.Sin(2.0 * Math.PI * u2);
             }
             trial_start_phase = true;
