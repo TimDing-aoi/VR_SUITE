@@ -1955,7 +1955,6 @@ public class Reward2D : MonoBehaviour
             }
             firefly.transform.position = position;
             ffPositions.Add(position);
-
         }
         //Nasta Add ends
 
@@ -2279,9 +2278,9 @@ public class Reward2D : MonoBehaviour
                         }
                         else
                         {
-                            SetFireflyLocation();
                             if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
                             {
+                                SetFireflyLocation();
                                 firefly.SetActive(true);
                             }
                         }
@@ -2357,7 +2356,10 @@ public class Reward2D : MonoBehaviour
                         }
                         else
                         {
-                            SetFireflyLocation();
+                            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                            {
+                                SetFireflyLocation();
+                            }
                             onDur.Add(lifeSpan);
                             OnOff(lifeSpan);
                         }
@@ -2505,12 +2507,12 @@ public class Reward2D : MonoBehaviour
             if (SharedJoystick.worldcentric)
             {
                 //(float)randStdNormal * Mathf.Deg2Rad
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)uniform_offset) / 2;
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)uniform_offset * Mathf.Deg2Rad) / 2;
                 float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)uniform_offset) / 2;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)uniform_offset * Mathf.Deg2Rad) / 2;
                 Vector3 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
-                timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
+                timeCounter = (float)uniform_offset * Mathf.Deg2Rad;
                 firefly.SetActive(true);
             }
             else
