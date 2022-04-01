@@ -2414,7 +2414,7 @@ public class Reward2D : MonoBehaviour
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_1);
             await new WaitUntil(() => Time.frameCount == endFrame);
 
-            for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
+            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
@@ -2424,8 +2424,10 @@ public class Reward2D : MonoBehaviour
                 //await new WaitUntil(() => Time.frameCount == endFrame);
                 await new WaitForSecondsRealtime(1f/frameRate);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / (frameRate * sharedTimeStamps.preparation_2)));
-            }
-            framcntTemp = Time.frameCount;
+            }*/
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0.5f));
+            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_2);
+            await new WaitUntil(() => Time.frameCount == endFrame);
             //Habituation
             GFFPhaseFlag = 2;
             HabituationStart.Add(Time.realtimeSinceStartup);
@@ -2445,7 +2447,7 @@ public class Reward2D : MonoBehaviour
             await new WaitUntil(() => Time.frameCount == endFrame);
 
             framcntTemp = Time.frameCount;
-            for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
+            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
             {
                 //print(prep);
                 //print(lr.materials[0].color);
@@ -2456,7 +2458,10 @@ public class Reward2D : MonoBehaviour
                 await new WaitForSecondsRealtime(1f / frameRate);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(((frameRate * sharedTimeStamps.habituation_2) - prep) /
                     (frameRate * sharedTimeStamps.habituation_2))));
-            }
+            }*/
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_2);
+            await new WaitUntil(() => Time.frameCount == endFrame);
             framcntTemp = Time.frameCount;
             //await new WaitForSeconds(0.05f);
             //await new WaitForSecondsRealtime(0.05f);
@@ -2467,7 +2472,7 @@ public class Reward2D : MonoBehaviour
 
                 //StartCoroutine(waitForAFrame());
             }*/
-
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0.5f));
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_3);
             await new WaitUntil(() => Time.frameCount == endFrame);
 

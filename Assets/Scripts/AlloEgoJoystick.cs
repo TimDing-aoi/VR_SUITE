@@ -319,7 +319,7 @@ public class AlloEgoJoystick : MonoBehaviour
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
                     int fixedObservationFrame = (int)Math.Floor(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
-                    float offset = fixedSpeed * 72 * Time.deltaTime; //Offset for the player at start
+                    float offset = fixedSpeed * fixedObservationFrame * Time.deltaTime; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
                     {
