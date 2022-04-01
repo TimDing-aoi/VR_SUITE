@@ -1264,7 +1264,7 @@ public class Reward2D : MonoBehaviour
         }
         if (isCI)
         {
-            ViveSR.Error error = SRanipal_Eye_API.GetEyeData(ref data);
+            /*ViveSR.Error error = SRanipal_Eye_API.GetEyeData(ref data);
             float x;
             float y;
             float z;
@@ -1330,7 +1330,7 @@ public class Reward2D : MonoBehaviour
                    GFFPhaseFlag,
                    GFFTrueDegree * Mathf.Rad2Deg,
                    FFnoise,
-                   Time.frameCount));
+                   Time.frameCount));*/
         }
     }
 
@@ -1602,7 +1602,7 @@ public class Reward2D : MonoBehaviour
                 // continous saving
                 if (isCI)
                 {
-                    /*sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                            trialNum,
                            Time.realtimeSinceStartup,
                            firefly.activeInHierarchy ? 1 : 0,
@@ -1619,7 +1619,7 @@ public class Reward2D : MonoBehaviour
                            GFFPhaseFlag,
                            GFFTrueDegree * Mathf.Rad2Deg,
                            FFnoise,
-                           Time.frameCount));*/
+                           Time.frameCount));
                 }
                 else
                 {
