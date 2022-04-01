@@ -318,12 +318,12 @@ public class AlloEgoJoystick : MonoBehaviour
                     //Selmotion preperation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
-                    float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
+                    int fixedObservationFrame = (int)Math.Floor(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
+                    float offset = fixedSpeed * 72 * Time.deltaTime; //Offset for the player at start
                     transform.position = new Vector3(-offset, 0f, 0f);
                     if (cammode == 0) //Simply facing outward
                     {
-                        transform.LookAt(new Vector3(0f, 0f, 0f));
+                        transform.LookAt(new Vector3(10f, 0f, 0f));
                     }
                     transform.position = new Vector3(-offset, 1f, 0f);
                     circX = 0;
@@ -333,18 +333,20 @@ public class AlloEgoJoystick : MonoBehaviour
                 //Selfmotion Habituation & Observation
                 {
                     float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
-                    float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
-                    hbobCounter += fixedSpeed * Time.smoothDeltaTime;
-                    float x = offset - hbobCounter;
+                    hbobCounter = fixedSpeed * Time.deltaTime;
+                    float x = transform.position.x + hbobCounter;
+                    if(x > 0f)
+                    {
+                        x = 0f;
+                    }
                     if (worldcentric)
                     {
-                        transform.position = new Vector3(-x, 0f, 0f);
+                        transform.position = new Vector3(x, 0f, 0f);
                         if (cammode == 0) //Simply facing outward
                         {
-                            transform.LookAt(new Vector3(1f, 0f, 0f));
+                            transform.LookAt(new Vector3(10f, 0f, 0f));
                         }
-                        transform.position = new Vector3(-x, 1f, 0f);
+                        transform.position = new Vector3(x, 1f, 0f);
                     }
                     else
                     {
@@ -390,7 +392,7 @@ public class AlloEgoJoystick : MonoBehaviour
                         //timeCounter += 0.005f * speedMultiplier;
                         frameCounter += 1;
                         frameCounterShared = frameCounter;
-                        timeCounter += Time.smoothDeltaTime;
+                        timeCounter += Time.deltaTime;
                         timeCounterShared = timeCounter;
                         //circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
                         circX -= theta;//Unrealistic steering
