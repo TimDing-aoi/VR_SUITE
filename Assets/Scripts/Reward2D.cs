@@ -1101,7 +1101,14 @@ public class Reward2D : MonoBehaviour
         trialNum = 0;
 
         player.transform.position = new Vector3(0.0f, p_height, 0.0f);
-        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
         systemStartTimeVerbose = DateTime.Now.ToString("MM-dd_HH-mm-ss");
         contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
 
@@ -1137,7 +1144,14 @@ public class Reward2D : MonoBehaviour
         phase = Phases.begin;
 
         player.transform.position = Vector3.up * p_height;
-        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
 
         player_rotation_initial = player.transform.rotation;
 
@@ -1707,7 +1721,14 @@ public class Reward2D : MonoBehaviour
         isBegin = true;
         loopCount = 0;
 
-        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        if(PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
 
         bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
         if (self_motion)
@@ -3082,7 +3103,14 @@ public class Reward2D : MonoBehaviour
                     }
 
                     player.transform.position = Vector3.up * p_height;
-                    player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                    if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                    {
+                        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                    }
+                    else
+                    {
+                        player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                    }
 
                     score.Add(isReward && proximity ? 1 : 0);
                     timedout.Add(isTimeout ? 1 : 0);
@@ -3139,7 +3167,14 @@ public class Reward2D : MonoBehaviour
                 isTimeout = false;
                 //nasta added 
                 player.transform.position = Vector3.up * p_height;
-                player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                {
+                    player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                }
+                else
+                {
+                    player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                }
                 //Nasta Add ends
                 await new WaitForSeconds(wait);
 
@@ -3192,6 +3227,11 @@ public class Reward2D : MonoBehaviour
             if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
                 player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                player.transform.position = Vector3.up * p_height;
+            }
+            else
+            {
+                player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
                 player.transform.position = Vector3.up * p_height;
             }
 
