@@ -70,6 +70,8 @@ public class AlloEgoJoystick : MonoBehaviour
     public float frameCounterShared = 0;
     private float frameCounter = 0;
     private float hbobCounter = 0;
+    private float accelCounter = 0;
+    private float decelCounter = 0;
     private float tmpCnt = 0.0f;
 
     public GameObject FF;
@@ -116,7 +118,9 @@ public class AlloEgoJoystick : MonoBehaviour
     private float prevX;
     private float prevY;
 
+    //Causal Inference Max rot speed
     private float maxJoyRotDeg = 60.0f;// deg/s
+
     private float frameRate = 90.0f; // frame rate
 
     // Start is called before the first frame update
@@ -292,223 +296,121 @@ public class AlloEgoJoystick : MonoBehaviour
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
             if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
-                int cammode = 0;
-
                 moveY = PlayerPrefs.GetFloat("FixedYSpeed");
                 //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
 
                 bool self_motion = SharedReward.selfmotiontrial;
-                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2 || !self_motion && SharedReward.GFFPhaseFlag == 1
-                    || !self_motion && SharedReward.GFFPhaseFlag == 2 || !self_motion && SharedReward.GFFPhaseFlag == 3 || SharedReward.isTimeout)
-                //Out of circle(Feedback) OR No selfmotion's Preparation & Habituation & Observation OR Timed Out
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2 || SharedReward.GFFPhaseFlag == 1
+                    || SharedReward.GFFPhaseFlag == 2 || !self_motion && SharedReward.GFFPhaseFlag == 3 || SharedReward.isTimeout)
+                //Out of circle(Feedback) OR Preparation & Habituation & No selfmotion's Observation OR Timed Out
                 {
-                    //print("out of ring");
-                    //if (worldcentric)
-                    //{
-                    //    transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
-                    //}
                     transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
                     moveY = 0;                    
                     timeCounter = 0;
+                    accelCounter = 0;
+                    decelCounter = 0;
                     frameCounter = 0;
                     hbobCounter = 0;
                     circX = 0;
                 }
-                else if (self_motion && SharedReward.GFFPhaseFlag == 1)
-                    //Selmotion preperation
+                else if (self_motion && SharedReward.GFFPhaseFlag == 2.5)
+                //Selfmotion Ramp Up
                 {
-                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    int fixedObservationFrame = (int)Math.Floor(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
-                    float offset = fixedSpeed * fixedObservationFrame * Time.deltaTime; //Offset for the player at start
-                    transform.position = new Vector3(-offset, 0f, 0f);
-                    if (cammode == 0) //Simply facing outward
+                    float updur = PlayerPrefs.GetFloat("RampUpDur");
+                    float accelTime = Mathf.Ceil(updur * 90);
+                    float SMspeed = SharedReward.SelfMotionSpeed;
+                    float acceleration = (accelCounter / accelTime) * SMspeed;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    accelCounter++;
+                    frameCounter = 0;
+                    hbobCounter += acceleration/frameRate;
+                    if (hbobCounter > 0)
                     {
-                        transform.LookAt(new Vector3(10f, 0f, 0f));
-                    }
-                    transform.position = new Vector3(-offset, 1f, 0f);
-                    circX = 0;
-                    int framcntTemp = Time.frameCount;
-                }
-                else if (self_motion && SharedReward.GFFPhaseFlag == 2 || self_motion && SharedReward.GFFPhaseFlag == 3) 
-                //Selfmotion Habituation & Observation
-                {
-                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                    hbobCounter = fixedSpeed * Time.deltaTime;
-                    float x = transform.position.x + hbobCounter;
-                    if(x > 0f)
-                    {
-                        x = 0f;
-                    }
-                    if (worldcentric)
-                    {
-                        transform.position = new Vector3(x, 0f, 0f);
-                        if (cammode == 0) //Simply facing outward
-                        {
-                            transform.LookAt(new Vector3(10f, 0f, 0f));
-                        }
-                        transform.position = new Vector3(x, 1f, 0f);
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
                     }
                     else
                     {
-                        //transform.position = new Vector3(0f, 0f, -x);
-                        //if (cammode == 0) //Simply facing outward
-                        //{
-                        //    transform.LookAt(new Vector3(0f, 0f, 0f));
-                        //}
-                        //transform.position = new Vector3(0f, 1f, -x);
-
-                        transform.position = new Vector3(-x, 0f, 0f);
-                        if (cammode == 0) //Simply facing outward
-                        {
-                            transform.LookAt(new Vector3(1f, 0f, 0f));
-                        }
-                        transform.position = new Vector3(-x, 1f, 0f);
+                        circX = -hbobCounter * Mathf.Deg2Rad;
                     }
-                    circX = 0;
-                    int framcntTemp = Time.frameCount;
                 }
-                else
+                else if (self_motion && SharedReward.GFFPhaseFlag == 3.5)
+                //Selfmotion Ramp Down
                 {
-                    
-                    if (worldcentric & SharedReward.GFFPhaseFlag == 4)
+                    float downdur = PlayerPrefs.GetFloat("RampDownDur");
+                    float decelTime = Mathf.Ceil(downdur * 90);
+                    float SMspeed = SharedReward.SelfMotionSpeed;
+                    float deceleration = (1-(decelCounter / decelTime)) * SMspeed;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    decelCounter++;
+                    frameCounter = 0;
+                    hbobCounter += deceleration/frameRate;
+                    if(hbobCounter > 0)
                     {
-                        int framcntTemp = Time.frameCount;
-                        float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                        //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
-                        // set values
-                        float joyConvRateDeg = maxJoyRotDeg / frameRate;
-
-                        // Read input from joystick 
-
-                        // for rad/s 
-                        //float theta = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
-
-                        // for deg/s
-                        float theta = joyConvRateDeg * moveX; // moveX consider to be in degree; We use joyConvRate in Degree
-
-                        // transfering theta from deg to rad if its necessary
-                        theta = theta * Mathf.Deg2Rad;
-
-                        //timeCounter += 0.005f * speedMultiplier;
-                        frameCounter += 1;
-                        frameCounterShared = frameCounter;
-                        timeCounter += Time.deltaTime;
-                        timeCounterShared = timeCounter;
-                        //circX -= moveX * (float)Math.PI / 180;//Unrealistic steering
-                        circX -= theta;//Unrealistic steering
-                        //circX -= moveX * (float)Math.PI / (180 * timeCounter);//Realistic steering
-                        float x = Mathf.Cos(circX);
-                        float z = Mathf.Sin(circX);
-
-                        tmpCnt += 1;
-                        if (tmpCnt > 90)
-                        {
-                            tmpCnt = 0;
-                            /*print("moveX");
-                            print(moveX);
-                            print("theta");
-                            print(theta);
-                            print("speedMultiplier");
-                            print(speedMultiplier);
-                            print("speedMultiplier2");
-                            print(0.005f * speedMultiplier);
-                            print("moveY");
-                            print(moveY);
-                            print("deltaTime");
-                            print(Time.smoothDeltaTime);*/
-                        }
-
-                        
-
-                        Vector3 previouspos = transform.position;
-                        //transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
-                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 0f, fixedSpeed * timeCounter * z);
-                        FF = GameObject.Find("Firefly");
-                        if (cammode == 0) //Simply facing outward
-                        {
-                            transform.LookAt(new Vector3(0f, 0f, 0f));
-                            transform.Rotate(0f, 180f, 0f);
-                        }
-                        else if (cammode == 1) //Calculated Tangent
-                        {
-                            Vector3 lookatpos = new Vector3(timeCounter * x * 2, 1f, timeCounter * z * 2);
-                            transform.LookAt(lookatpos);
-                            transform.Rotate(0.0f, moveX * 180f / (float)Math.PI, 0.0f, Space.Self);
-                        }
-                        else if (cammode == 2) //Numerical Tangent
-                        {
-                            Vector3 lookatpos = 2 * transform.position - previouspos;
-                            transform.LookAt(lookatpos);
-                        }
-                        //transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
-                        transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z);
-                        circXlast = circX;
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
                     }
-                    else if (SharedReward.GFFPhaseFlag == 4)
+                    else
                     {
-                        //print("Egocentric");
-                        float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-                        //float maxDistance = 30.0f; // should come from PlayerPrefs.GetFloat("XYZ");
-
-                        frameCounter += 1;
-                        frameCounterShared = frameCounter;
-                        timeCounter += Time.smoothDeltaTime;
-                        timeCounterShared = timeCounter;
-
-                        // set values
-                        float maxJoyRotDeg = 90f * 90.0f / 120.0f;// 74.0f * 90.0f / 120.0f;//55.50f;// 74.0f;// 85f; // deg/s
-                        float maxJoyRotRad = 1000.0f; // rad/s
-                        float frameRate = 90.0f; // frame rate
-                        float joyConvRateDeg = maxJoyRotDeg / frameRate;
-                        float joyConvRateRad = maxJoyRotRad / frameRate;
-
-                        // Read input from joystick 
-
-                        // for rad/s 
-                        //float phi = joyConvRateRad * moveX * Mathf.Rad2Deg; // moveX consider to be in Radian so we use radian to degree convertion
-
-                        // for deg/s
-                        float phi = joyConvRateDeg * moveX; // moveX consider to be in degree
-
-                        tmpCnt += 1;
-                        if (tmpCnt > 90)
-                        {
-                            tmpCnt = 0;
-                            print("phi");
-                            print(phi);
-                            print("moveY");
-                            print(moveY);
-                        }
-
-                        // Rotate the camera based on joystick input
-                        transform.Rotate(0.0f, phi, 0.0f, Space.Self);
-
-                        phiShared = phi;
-
-                        // Read camre rotation (deg and radian)
-                        float yRot_deg = transform.rotation.eulerAngles.y;
-                        float yRot_rad = yRot_deg * Mathf.Deg2Rad;
-
-                        // Pritn camera rotation
-                        //print(yRot_deg);
-                        //print(yRot_rad);
-
-                        float timeBetweenFrames = Time.smoothDeltaTime;
-
-                        // Calculate player location based on camera angle
-                        //float x = transform.position.x + 0.005f * moveY * Mathf.Sin(yRot_rad);
-                        //float z = transform.position.z + 0.005f * moveY * Mathf.Cos(yRot_rad);
-
-                        //float x = transform.position.x + timeBetweenFrames * moveY * Mathf.Sin(yRot_rad);
-                        //float z = transform.position.z + timeBetweenFrames * moveY * Mathf.Cos(yRot_rad);
-
-                        float x = transform.position.x + timeBetweenFrames * fixedSpeed * Mathf.Sin(yRot_rad);
-                        float z = transform.position.z + timeBetweenFrames * fixedSpeed * Mathf.Cos(yRot_rad);
-
-                        // Update player location based on new calculated values
-                        transform.position = new Vector3(x, 1f, z);
-                       
+                        circX = -hbobCounter * Mathf.Deg2Rad;
                     }
+                }
+                else if (self_motion && SharedReward.GFFPhaseFlag == 3) 
+                //Selfmotion Observation
+                {
+                    float SMspeed = SharedReward.SelfMotionSpeed/frameRate;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    frameCounter = 0;
+                    hbobCounter += SMspeed;
+                    if (hbobCounter > 0)
+                    {
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
+                    }
+                    else
+                    {
+                        circX = -hbobCounter * Mathf.Deg2Rad;
+                    }
+                }
+                else if(SharedReward.GFFPhaseFlag == 4)
+                //action
+                {
+                    int framcntTemp = Time.frameCount;
+                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                    float joyConvRateDeg = maxJoyRotDeg / frameRate;
+
+                    // for deg/s
+                    float theta = joyConvRateDeg * moveX; // moveX consider to be in degree; We use joyConvRate in Degree
+
+                    // transfering theta from deg to rad if its necessary
+                    theta = theta * Mathf.Deg2Rad;
+
+                    //timeCounter += 0.005f * speedMultiplier;
+                    frameCounter += 1;
+                    frameCounterShared = frameCounter;
+                    timeCounter += Time.deltaTime;
+                    timeCounterShared = timeCounter;
+                    circX -= theta;//Unrealistic steering
+                    float x = Mathf.Cos(circX);
+                    float z = Mathf.Sin(circX);
+
+                    tmpCnt += 1;
+                    if (tmpCnt > 90)
+                    {
+                        tmpCnt = 0;
+                    }
+                    Vector3 previouspos = transform.position;
+                    //transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                    transform.position = new Vector3(fixedSpeed * timeCounter * x, 0f, fixedSpeed * timeCounter * z);
+                    FF = GameObject.Find("Firefly");
+                    transform.LookAt(new Vector3(0f, 0f, 0f));
+                    transform.Rotate(0f, 180f, 0f);
+                    //transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                    transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z);
+                    circXlast = circX;
                 }
             }
             else

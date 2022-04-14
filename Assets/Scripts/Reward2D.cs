@@ -65,6 +65,7 @@ public class Reward2D : MonoBehaviour
     public float GFFPhaseFlag = 0;
     public float FFnoise = 0;
     public float GFFTrueDegree = 0;
+    public float SelfMotionSpeed = 0;
     readonly public List<float> FFnoiseList = new List<float>();
     readonly public List<float> CIScores = new List<float>();
 
@@ -314,11 +315,14 @@ public class Reward2D : MonoBehaviour
 
     //Causal Inference Data
     readonly List<float> CIvelocities = new List<float>();
+    readonly List<float> CIratios = new List<float>();
     readonly List<float> CINoiseSDs = new List<float>();
     readonly List<float> TrialsSD1 = new List<float>();
     readonly List<float> TrialsSD2 = new List<float>();
     readonly List<float> TrialsSD3 = new List<float>();
     readonly List<float> TrialsSD4 = new List<float>();
+    readonly List<float> SMspeeds = new List<float>();
+    readonly List<float> SMtrials = new List<float>();
     readonly List<Tuple<float, float, float>> CItrialsetup = new List<Tuple<float,float,float>>();
     [HideInInspector] public bool selfmotiontrial;
 
@@ -678,7 +682,31 @@ public class Reward2D : MonoBehaviour
         TrialsSD4.Add(PlayerPrefs.GetFloat("V10SD4"));
         TrialsSD4.Add(PlayerPrefs.GetFloat("V11SD4"));
 
-        if (isCI)
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed1"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed2"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed3"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed4"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed5"));
+
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM1"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM2"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM3"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM4"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM5"));
+
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios1"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios2"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios3"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios4"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios5"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios6"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios7"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios8"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios9"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios10"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios11"));
+
+        /*if (isCI)
         {
             int conditioncount;
             for (int i = 0; i < 11; i++)
@@ -752,6 +780,48 @@ public class Reward2D : MonoBehaviour
             int trial_count = 0;
             string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
             File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSD,Selfmotion\n");
+            foreach (var tuple in CItrialsetup)
+            {
+                trial_count++;
+                string trialtext = string.Format("{0},{1},{2},{3} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3.ToString());
+                File.AppendAllText(metaPath, trialtext);
+            }
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
+            print(setupcheck);
+            ntrials = CItrialsetup.Count;
+            CItrialNum = 0;
+        }*/
+        if (isCI)
+        {
+            for(int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
+            {
+                for (int speeds = 0; speeds < 5; speeds++)
+                {
+                    int conditioncount;
+                    conditioncount = (int)(SMtrials[speeds] * CIratios[velocitiescondition]);
+                    while (conditioncount > 0)
+                    {
+                        float conditionvelocity = CIvelocities[velocitiescondition];
+                        float conditionspeed = SMspeeds[speeds];
+                        if (conditionspeed != 0)
+                        {
+                            Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(conditionvelocity, conditionspeed, 1f);
+                            CItrialsetup.Add(New_Tuple);
+                            conditioncount--;
+                        }
+                        else
+                        {
+                            Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(conditionvelocity, conditionspeed, 0f);
+                            CItrialsetup.Add(New_Tuple);
+                            conditioncount--;
+                        }
+                    }
+                }
+            }
+            Shuffle(CItrialsetup);
+            int trial_count = 0;
+            string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+            File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSelfMotionSpeed,Selfmotion\n");
             foreach (var tuple in CItrialsetup)
             {
                 trial_count++;
@@ -868,7 +938,9 @@ public class Reward2D : MonoBehaviour
         line.transform.localScale = new Vector3(10000f, 0.125f * p_height * 10, 1);
         if (lineOnOff == 1)
         {
-            line.SetActive(true);
+            var liner = line.GetComponent<LineRenderer>();
+            liner.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
+            line.SetActive(false);
         }
         else
         {
@@ -1730,19 +1802,7 @@ public class Reward2D : MonoBehaviour
             player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
         }
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
-        if (self_motion)
-        {
-            float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
-            int fixedObservationFrame = (int)Math.Ceiling(frameRate * (sharedTimeStamps.habituation_total + sharedTimeStamps.observation)); // This is total frame comes from Reward2D; All wait times besed on frames for GFFPhaseFlag==2&3
-            float offset = fixedSpeed * fixedObservationFrame * Time.smoothDeltaTime; //Offset for the player at start
-            player.transform.position = new Vector3(-offset, 1f, 0f);
-            player.transform.LookAt(new Vector3(0f, 0f, 0f));
-        }
-        else
-        {
-            player.transform.position = Vector3.up * p_height;
-        }
+        player.transform.position = Vector3.up * p_height;
         //Nasta Added for sequential
 
         if (nFF > 1 && multiMode == 1)
@@ -1973,9 +2033,13 @@ public class Reward2D : MonoBehaviour
                 float y = 0;
                 float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
                 position = new Vector3(x, y, z);
+                firefly.transform.position = position;
             }
-            firefly.transform.position = position;
-            ffPositions.Add(position);
+            else
+            {
+                firefly.transform.position = position;
+                ffPositions.Add(position);
+            }
         }
         //Nasta Add ends
 
@@ -2071,10 +2135,11 @@ public class Reward2D : MonoBehaviour
                 var trialpair = CItrialsetup[CItrialNum];
                 CItrialNum++;
                 velocity = trialpair.Item1;
-                noise_SD = trialpair.Item2;
+                SelfMotionSpeed = trialpair.Item2;
                 selfmotiontrial = trialpair.Item3 == 1;
-                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SD:" + noise_SD.ToString() + " Selfmotion:" + selfmotiontrial.ToString();
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SMspeed:" + SelfMotionSpeed.ToString() + " Selfmotion:" + selfmotiontrial.ToString();
                 print(trialset);
+                noise_SD = 0;//not using noised FFs right now
             }
             else
             {
@@ -2405,101 +2470,40 @@ public class Reward2D : MonoBehaviour
 
         source = new CancellationTokenSource();
 
-        bool self_motion = PlayerPrefs.GetInt("SelfMotionOn") == 1;
         bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
-        int framcntTemp = 0;
-
-        //preperation
         if (lineOnOff == 1 && is_gitter)
         {
+            //preperation
             GFFPhaseFlag = 1;
             PreparationStart.Add(Time.realtimeSinceStartup);
             line.SetActive(true);
             LineRenderer lr;
             motion_toggle = true;
             lr = line.GetComponent<LineRenderer>();
-            //await new WaitForSeconds(0.1f);
-            //int currentFrame = Time.frameCount;
-            int endFrame = Time.frameCount;// + (int)Math.Ceiling(0.1f * frameRate);
-
-            framcntTemp = Time.frameCount;
-
-            //await new WaitForSecondsRealtime(0.1f);
-
-            //await new WaitUntil(() => Time.frameCount == endFrame);
-            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_1; prep++)
-            {
-                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
-                await new WaitUntil(() => Time.frameCount == endFrame);
-            }*/
-
+            int endFrame = Time.frameCount;
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_1);
             await new WaitUntil(() => Time.frameCount == endFrame);
-
-            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
             {
-                //print(prep);
-                //print(lr.materials[0].color);
-                //await new WaitForSeconds(0.01f);
-                //await new WaitForSecondsRealtime(0.01f);
-                //endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
-                //await new WaitUntil(() => Time.frameCount == endFrame);
-                await new WaitForSecondsRealtime(1f/frameRate);
+                await new WaitForSecondsRealtime(1f / frameRate);
                 lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / (frameRate * sharedTimeStamps.preparation_2)));
-            }*/
-            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0.5f));
-            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_2);
-            await new WaitUntil(() => Time.frameCount == endFrame);
+            }
+
             //Habituation
             GFFPhaseFlag = 2;
             HabituationStart.Add(Time.realtimeSinceStartup);
-            //await new WaitForSeconds(0.1f);
-            //await new WaitForSecondsRealtime(0.1f);
-            //await new WaitUntil(() => Time.frameCount == endFrame);
-
-            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_1; prep++)
-            {
-                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
-                await new WaitUntil(() => Time.frameCount == endFrame);
-
-                //StartCoroutine(waitForAFrame());
-            }*/
-
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_1);
             await new WaitUntil(() => Time.frameCount == endFrame);
-
-            framcntTemp = Time.frameCount;
-            /*for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
             {
-                //print(prep);
-                //print(lr.materials[0].color);
-                //await new WaitForSeconds(0.01f);
-                //await new WaitForSecondsRealtime(0.01f);
-                //endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
-                //await new WaitUntil(() => Time.frameCount == endFrame);
                 await new WaitForSecondsRealtime(1f / frameRate);
-                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, (float)(((frameRate * sharedTimeStamps.habituation_2) - prep) /
-                    (frameRate * sharedTimeStamps.habituation_2))));
-            }*/
-            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
-            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_2);
-            await new WaitUntil(() => Time.frameCount == endFrame);
-            framcntTemp = Time.frameCount;
-            //await new WaitForSeconds(0.05f);
-            //await new WaitForSecondsRealtime(0.05f);
-            /*for (int prep = 0; prep < (int)Math.Ceiling(frameRate * sharedTimeStamps.habituation_3); prep++)
-            {
-                endFrame = Time.frameCount + 1;// (int)Math.Ceiling(0.01f * frameRate);
-                await new WaitUntil(() => Time.frameCount == endFrame);
-
-                //StartCoroutine(waitForAFrame());
-            }*/
-            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0.5f));
+                float ring_color = (float)(((frameRate * sharedTimeStamps.habituation_2) - prep) /
+                    (frameRate * sharedTimeStamps.habituation_2));
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, ring_color));
+            }
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_3);
             await new WaitUntil(() => Time.frameCount == endFrame);
-
-            framcntTemp = Time.frameCount;
             motion_toggle = false;
             line.SetActive(false);
         }
@@ -2510,66 +2514,65 @@ public class Reward2D : MonoBehaviour
 
         if (is_gitter)
         {
+
+            //ramp up
+            GFFPhaseFlag = 2.5f;
+            float updur = PlayerPrefs.GetFloat("RampUpDur");
+            await new WaitForSeconds(updur);
+
+            // Observation
+            GFFPhaseFlag = 3;
+
+            //Firefly Generation
             System.Random randNoise = new System.Random();
-            float draw_sigma = 10;
-            double randStdNormal = 2.6 * draw_sigma;
-            while (Mathf.Abs((float)randStdNormal) > 2.5 * draw_sigma)
+            float CImean1 = PlayerPrefs.GetFloat("CIFFmean1");
+            float CImean2 = PlayerPrefs.GetFloat("CIFFmean2");
+            float drawSD1 = PlayerPrefs.GetFloat("CIFFSD1");
+            float drawSD2 = PlayerPrefs.GetFloat("CIFFSD2");
+            float player_circX = SharedJoystick.circX;
+            float FF_circX = 999;
+            double dist_decider = randNoise.NextDouble();
+            if(dist_decider > 0.5)
             {
-                double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
-                double u2 = 1.0 - randNoise.NextDouble();
-                randStdNormal = draw_sigma * Math.Sqrt(-2.0 * Math.Log(u1)) *
-                             Math.Sin(2.0 * Math.PI * u2);
-            }
-            double uniform_offset = randNoise.NextDouble();
-            uniform_offset = -25 + uniform_offset * 50; //--> put in GUI
-            trial_start_phase = true;
-            motion_toggle = true;
-            firefly.SetActive(false);
-            if (SharedJoystick.worldcentric)
-            {
-                //(float)randStdNormal * Mathf.Deg2Rad
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)uniform_offset * Mathf.Deg2Rad) / 2;
-                float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)uniform_offset * Mathf.Deg2Rad) / 2;
-                Vector3 position = new Vector3(x, y, z);
-                firefly.transform.position = position;
-                timeCounter = (float)uniform_offset * Mathf.Deg2Rad;
-                firefly.SetActive(true);
+                while (Mathf.Abs(FF_circX - player_circX) > 45)
+                {
+                    double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                    double u2 = 1.0 - randNoise.NextDouble();
+                    FF_circX = player_circX + (float)(CImean1 + drawSD1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                 Math.Sin(2.0 * Math.PI * u2));
+                }
             }
             else
             {
-                ////float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(Mathf.PI / 2) / 2;
-                //float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
-                //float y = 0;
-                ////float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(Mathf.PI / 2) / 2;
-                //float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(((float)randStdNormal * Mathf.Deg2Rad) + Mathf.PI / 2) / 2;
-                //Vector3 position = new Vector3(x, y, z);
-                //firefly.transform.position = position;
-                //timeCounter = (float)randStdNormal * Mathf.Deg2Rad + Mathf.PI / 2;
-                //firefly.SetActive(true);
-
-                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos((float)randStdNormal * Mathf.Deg2Rad) / 2;
-                float y = 0;
-                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin((float)randStdNormal * Mathf.Deg2Rad) / 2;
-                Vector3 position = new Vector3(x, y, z);
-                firefly.transform.position = position;
-                timeCounter = (float)randStdNormal * Mathf.Deg2Rad;
-                firefly.SetActive(true);
+                while (Mathf.Abs(FF_circX - player_circX) > 45)
+                {
+                    double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                    double u2 = 1.0 - randNoise.NextDouble();
+                    FF_circX = player_circX + (float)(CImean2 + drawSD2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                 Math.Sin(2.0 * Math.PI * u2));
+                }
             }
+            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(FF_circX * Mathf.Deg2Rad) / 2;
+            float y = 0;
+            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(FF_circX * Mathf.Deg2Rad) / 2;
+            Vector3 position = new Vector3(x, y, z);
+            firefly.transform.position = position;
+            ffPositions.Add(position);
+            timeCounter = FF_circX * Mathf.Deg2Rad;
+            firefly.SetActive(true);
             ObservationStart.Add(Time.realtimeSinceStartup);
-            GFFPhaseFlag = 3;
-            // Observation
-            //await new WaitForSeconds(0.3f); //Observation
-            //await new WaitForSecondsRealtime(0.3f); //Observation
-            int endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.observation);// (int)Math.Ceiling(0.3f * 90);
+
+            int endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.observation);
             await new WaitUntil(() => Time.frameCount == endFrame);
-            framcntTemp = Time.frameCount;
             if (!toggle)
             {
                 firefly.SetActive(false);
             }
-            motion_toggle = false;
-            trial_start_phase = false;
+
+            //ramp down
+            GFFPhaseFlag = 3.5f;
+            float downdur = PlayerPrefs.GetFloat("RampDownDur");
+            await new WaitForSeconds(downdur);
         }
 
         //Action

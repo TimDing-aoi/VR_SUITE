@@ -3612,7 +3612,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9a24c79493e44ba4e92e3e52715c5eef, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9365,6 +9365,7 @@ MonoBehaviour:
   GFFPhaseFlag: 0
   FFnoise: 0
   GFFTrueDegree: 0
+  SelfMotionSpeed: 0
   Lcam: {fileID: 331937838}
   Rcam: {fileID: 927302626}
   FP: {fileID: 1588712467}
