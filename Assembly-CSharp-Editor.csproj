@@ -698,17 +698,9 @@
       <Project>{B1859FA8-333A-1EDE-D8C8-6F8799731506}</Project>
       <Name>Unity.Subsystem.Registration</Name>
     </ProjectReference>
-    <ProjectReference Include="Unity.PlayerPrefsEditor.Editor.csproj">
-      <Project>{4DA5BB88-AC6C-85BE-06E9-F47326351465}</Project>
-      <Name>Unity.PlayerPrefsEditor.Editor</Name>
-    </ProjectReference>
     <ProjectReference Include="Unity.VSCode.Editor.csproj">
       <Project>{B4313BB1-FD85-D494-EFEF-479B66F1290A}</Project>
       <Name>Unity.VSCode.Editor</Name>
-    </ProjectReference>
-    <ProjectReference Include="Unity.PlayerPrefsEditor.EditorResources.csproj">
-      <Project>{0C619882-1D18-36CD-2EFB-C4CA993BE793}</Project>
-      <Name>Unity.PlayerPrefsEditor.EditorResources</Name>
     </ProjectReference>
     <ProjectReference Include="Unity.InputSystem.csproj">
       <Project>{E8E7C6DA-95BC-0497-D365-D15B670EA106}</Project>
@@ -797,6 +789,14 @@
     <ProjectReference Include="UnityEditor.UI.csproj">
       <Project>{2087A52E-C6AC-B8D9-76DE-C999830162CB}</Project>
       <Name>UnityEditor.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.PlayerPrefsEditor.Editor.csproj">
+      <Project>{4DA5BB88-AC6C-85BE-06E9-F47326351465}</Project>
+      <Name>Unity.PlayerPrefsEditor.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.PlayerPrefsEditor.EditorResources.csproj">
+      <Project>{0C619882-1D18-36CD-2EFB-C4CA993BE793}</Project>
+      <Name>Unity.PlayerPrefsEditor.EditorResources</Name>
     </ProjectReference>
     <ProjectReference Include="Unity.PlayerPrefsEditor.Samples.SampleScene.csproj">
       <Project>{1F89AA13-882B-09EA-7768-AD728081D160}</Project>

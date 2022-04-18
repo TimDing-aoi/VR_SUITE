@@ -5117,6 +5117,54 @@ public class Reward2D : MonoBehaviour
                 xmlWriter.WriteEndElement();
             }
 
+            for (int i = 1; i < 6; i++)
+            {
+                string savename = "SelfMotionSpeed" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 6; i++)
+            {
+                string savename = "NtrialsSM" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            xmlWriter.WriteStartElement("RampUpDur");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("RampUpDur").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("RampDownDur");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("RampDownDur").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFmean1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFmean1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFmean2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFmean2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFSD1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFSD1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFSD2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFSD2").ToString());
+            xmlWriter.WriteEndElement();
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "CIRatios" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndDocument();
