@@ -141,10 +141,15 @@ public class AlloEgoJoystick : MonoBehaviour
         //print(PlayerPrefs.GetInt("Type"));
         //print(ptb);
 
-        if (!ptb)
+        if (!ptb && PlayerPrefs.GetFloat("FixedYSpeed") == 0)
         {
             MaxSpeed = 20.0f * PlayerPrefs.GetFloat("Player Height");
             RotSpeed = 90.0f;
+        }
+        else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            MaxSpeed = PlayerPrefs.GetFloat("FixedYSpeed") * 0.1f;
+            RotSpeed = 60.0f;
         }
 
         meanDist = PlayerPrefs.GetFloat("Mean Distance");

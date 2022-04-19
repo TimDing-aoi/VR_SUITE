@@ -1187,8 +1187,8 @@ public class Reward2D : MonoBehaviour
         string firstLine;
         if (isCI)
         {
-            firstLine = "TrialNum,TrialTime,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,JoystickRaw,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
-                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter\n";
+            firstLine = "TrialNum,TrialTime,BackendPhase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV/linear,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
+                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,CIFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter,FFV/degrees\n";
         }
         else if (ptb == 2 && !isMoving2FF)
         {
@@ -1688,14 +1688,17 @@ public class Reward2D : MonoBehaviour
                 // continous saving
                 if (isCI)
                 {
-                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}",
                            trialNum,
                            Time.realtimeSinceStartup,
+                           (int)currPhase,
                            firefly.activeInHierarchy ? 1 : 0,
-                           string.Join(",", player.transform.position.x / 10, player.transform.position.y / 10, player.transform.position.z / 10),
+                           string.Join(",", player.transform.position.z / 10, player.transform.position.x / 10, player.transform.position.y / 10),
                            string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
-                           SharedJoystick.moveX,
-                           velocity_Noised,
+                           -999,
+                           SharedJoystick.moveX * SharedJoystick.RotSpeed,
+                           transformedFFPos,
+                           -999,
                            string.Join(",", x, y, z),
                            string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
                            location.ToString("F8").Trim(toTrim).Replace(" ", ""),
@@ -1705,7 +1708,8 @@ public class Reward2D : MonoBehaviour
                            GFFPhaseFlag,
                            GFFTrueDegree * Mathf.Rad2Deg,
                            FFnoise,
-                           Time.frameCount));
+                           Time.frameCount,
+                           velocity_Noised));
                 }
                 else
                 {
@@ -3780,7 +3784,7 @@ public class Reward2D : MonoBehaviour
             }
             else if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
             {
-                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
+                firstLine = "n,max_v,max_w,ffv,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,duration,delays,ITI,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Score,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
             else
             {
@@ -3843,6 +3847,7 @@ public class Reward2D : MonoBehaviour
                 temp.Add(ActionStart.Count);
                 temp.Add(SelfReportStart.Count);
                 temp.Add(FeedbackStart.Count);
+                temp.Add(CIScores.Count);
             }
 
             //nasta added
@@ -3953,12 +3958,11 @@ public class Reward2D : MonoBehaviour
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
-                        fvSD[i],
                         onDur[i],
                         answer[i],
                         origin[i],
@@ -3971,6 +3975,9 @@ public class Reward2D : MonoBehaviour
                         timedout[i],
                         beginTime[i],
                         checkTime[i],
+                        -999,
+                        -999,
+                        -999,
                         endTime[i],
                         PreparationStart[i],
                         HabituationStart[i],
