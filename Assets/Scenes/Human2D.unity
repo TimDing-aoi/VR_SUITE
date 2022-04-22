@@ -9357,6 +9357,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   firefly: {fileID: 306717868}
   line: {fileID: 832611691}
+  progressbar: {fileID: 615432901}
   lineOnOff: 0
   marker: {fileID: 1431452378}
   panel: {fileID: 115409361}

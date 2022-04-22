@@ -49,6 +49,7 @@ public class Reward2D : MonoBehaviour
 
     public GameObject firefly;
     public GameObject line;
+    public GameObject progressbar;
     [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
@@ -944,6 +945,7 @@ public class Reward2D : MonoBehaviour
         }
         else
         {
+            progressbar.SetActive(false);
             line.SetActive(false);
         }
 
@@ -1658,7 +1660,7 @@ public class Reward2D : MonoBehaviour
                 }
                 else
                 {
-                    print("eye tracking error!");
+                    //print("eye tracking error!");
                     x = 0.0f;
                     y = 0.0f;
                     z = 0.0f;
@@ -2534,8 +2536,12 @@ public class Reward2D : MonoBehaviour
             float CImean2 = PlayerPrefs.GetFloat("CIFFmean2");
             float drawSD1 = PlayerPrefs.GetFloat("CIFFSD1");
             float drawSD2 = PlayerPrefs.GetFloat("CIFFSD2");
-            float player_circX = SharedJoystick.circX;
-            float FF_circX = 999;
+            float FF_circX = 999;//FF pos in deg
+
+            float grace_time = PlayerPrefs.GetFloat("GracePeriod");
+            await new WaitForSeconds(grace_time);
+
+            float player_circX = SharedJoystick.circX * Mathf.Rad2Deg;//player pos in deg
             double dist_decider = randNoise.NextDouble();
             if(dist_decider > 0.5)
             {
@@ -2691,10 +2697,13 @@ public class Reward2D : MonoBehaviour
 
         if (isMoving)
         {
-            line.SetActive(true);
-            LineRenderer lr;
-            lr = line.GetComponent<LineRenderer>();
-            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+            if(lineOnOff == 1)
+            {
+                line.SetActive(true);
+                LineRenderer lr;
+                lr = line.GetComponent<LineRenderer>();
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+            }
 
             currPhase = Phases.question;
 
@@ -2992,19 +3001,6 @@ public class Reward2D : MonoBehaviour
         }
 
         isCheck = true;
-
-        //if (isReward && proximity)
-        //{
-        //    audioSource.clip = winSound;
-        //    //points++;
-        //}
-        //else
-        //{
-        //    audioSource.clip = loseSound;
-        //}
-
-        //print(string.Format("Proximity: {0}", proximity));
-        //print(string.Format("isReward: {0}", isReward));
 
         //Nasta Added sequential
         if (isReward && proximity)
@@ -5172,6 +5168,10 @@ public class Reward2D : MonoBehaviour
                 xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
                 xmlWriter.WriteEndElement();
             }
+
+            xmlWriter.WriteStartElement("GracePeriod");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("GracePeriod").ToString());
+            xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
 

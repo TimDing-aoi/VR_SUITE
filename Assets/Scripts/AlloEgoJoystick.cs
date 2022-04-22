@@ -420,8 +420,11 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             else
             {
-                transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
-                transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+                if(SharedReward.isTrial)
+                {
+                    transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
+                    transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+                }
             }
         }
         catch (Exception e)
