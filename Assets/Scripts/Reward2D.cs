@@ -2595,15 +2595,13 @@ public class Reward2D : MonoBehaviour
 
 
         var t1 = Task.Run(async () => {
-            //await new WaitForSeconds(timeout); // Used to be rb.velocity.magnitude
             await new WaitForSecondsRealtime(timeout); // Used to be rb.velocity.magnitude
         }, source.Token);
 
         if (await Task.WhenAny(t, t1) == t)
         {
-            //GFFPhaseFlag = 4;
-            //await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
-            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold 
+            && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
         }
         else
         {
