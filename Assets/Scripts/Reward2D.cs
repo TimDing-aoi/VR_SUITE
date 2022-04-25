@@ -1691,12 +1691,13 @@ public class Reward2D : MonoBehaviour
                 // continous saving
                 if (isCI)
                 {
+                    transformedFFPos = new Vector3(firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x).ToString("F8").Trim(toTrim).Replace(" ", "");
                     sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}",
                            trialNum,
                            Time.realtimeSinceStartup,
                            (int)currPhase,
                            firefly.activeInHierarchy ? 1 : 0,
-                           string.Join(",", player.transform.position.z / 10, player.transform.position.x / 10, player.transform.position.y / 10),
+                           string.Join(",", player.transform.position.z, player.transform.position.y, player.transform.position.x),
                            string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
                            -999,
                            SharedJoystick.moveX * SharedJoystick.RotSpeed,
@@ -1712,7 +1713,7 @@ public class Reward2D : MonoBehaviour
                            GFFTrueDegree * Mathf.Rad2Deg,
                            FFnoise,
                            Time.frameCount,
-                           velocity_Noised));
+                           velocity));
                 }
                 else
                 {
@@ -2749,7 +2750,14 @@ public class Reward2D : MonoBehaviour
 
         pPos = player.transform.position - new Vector3(0.0f, p_height, 0.0f);
 
-        pos = player.transform.position;
+        if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            pos = new Vector3(player.transform.position.z, player.transform.position.y, player.transform.position.x);
+        }
+        else
+        {
+            pos = player.transform.position;
+        }
         rot = player.transform.rotation;
 
         if (!isTimeout)
@@ -2987,7 +2995,7 @@ public class Reward2D : MonoBehaviour
             print(string.Format("Scored: {0}", degree_score));
             //print(player_degree);
             //print(FF_Degree);
-            ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
+            ffPosStr = string.Format("{0},{1},{2}", firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x);
             distances.Add(degree_score);
         }
         else
