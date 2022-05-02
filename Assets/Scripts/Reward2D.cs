@@ -1190,7 +1190,7 @@ public class Reward2D : MonoBehaviour
         if (isCI)
         {
             firstLine = "TrialNum,TrialTime,BackendPhase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV/linear,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
-                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,CIFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter,FFV/degrees\n";
+                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,CIFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter,FFV/degrees,SelfMotionSpeed\n";
         }
         else if (ptb == 2 && !isMoving2FF)
         {
@@ -1551,7 +1551,7 @@ public class Reward2D : MonoBehaviour
             //Nasta Add Ends
             if (isMoving && nFF < 2)
             {
-                System.Random randNoise = new System.Random();
+                /*System.Random randNoise = new System.Random();
                 double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
                 double u2 = 1.0 - randNoise.NextDouble();
                 double randStdNormal = noise_SD * Math.Sqrt(-2.0 * Math.Log(u1)) *
@@ -1559,17 +1559,18 @@ public class Reward2D : MonoBehaviour
                                                            //double randNormal =
                                                            //mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
                                                            
-                //print(randStdNormal);
+                //print(randStdNormal);*/
+                double randStdNormal = 0;
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
                     //print(timeCounter);
                     if (GFFPhaseFlag <= 4)
                     {
                         timeCounter += velocity * Mathf.Deg2Rad / 90;
-                        velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
-                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(velocity_Noised) / 2;
+                        //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
+                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                         float y = 0.0001f;
-                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(velocity_Noised) / 2;
+                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
                         //print(x);
                         //print(z);
                         firefly.transform.position = new Vector3(x, y, z);
@@ -1692,7 +1693,7 @@ public class Reward2D : MonoBehaviour
                 if (isCI)
                 {
                     transformedFFPos = new Vector3(firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x).ToString("F8").Trim(toTrim).Replace(" ", "");
-                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}",
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
                            trialNum,
                            Time.realtimeSinceStartup,
                            (int)currPhase,
@@ -1713,7 +1714,8 @@ public class Reward2D : MonoBehaviour
                            GFFTrueDegree * Mathf.Rad2Deg,
                            FFnoise,
                            Time.frameCount,
-                           velocity));
+                           velocity,
+                           SelfMotionSpeed));
                 }
                 else
                 {
