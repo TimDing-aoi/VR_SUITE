@@ -327,6 +327,13 @@ public class Reward2D : MonoBehaviour
     readonly List<Tuple<float, float, float>> CItrialsetup = new List<Tuple<float,float,float>>();
     [HideInInspector] public bool selfmotiontrial;
 
+    //CI Accel Vars
+    private float FF0_acc;
+    private float t_max = 1.8f;
+    private float t0_acc;
+    private float sign_v;
+    private float dFF_acc = 25f;
+
     //Gitter FF Time Stamps
     readonly List<float> PreparationStart = new List<float>();
     readonly List<float> HabituationStart = new List<float>();
@@ -1566,7 +1573,20 @@ public class Reward2D : MonoBehaviour
                     //print(timeCounter);
                     if (GFFPhaseFlag <= 4)
                     {
-                        timeCounter += velocity * Mathf.Deg2Rad / 90;
+                        //timeCounter += velocity * Mathf.Deg2Rad / 90;
+                        if(velocity > 0)
+                        {
+                            sign_v = 1;
+                        }
+                        else if(velocity < 0)
+                        {
+                            sign_v = -1;
+                        }
+                        else
+                        {
+                            sign_v = 0;
+                        }
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t0_acc) / t_max) * ((Time.time - t0_acc) / t_max));
                         //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                         float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                         float y = 0.0001f;
@@ -2570,6 +2590,8 @@ public class Reward2D : MonoBehaviour
             float y = 0;
             float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(FF_circX * Mathf.Deg2Rad) / 2;
             Vector3 position = new Vector3(x, y, z);
+            FF0_acc = FF_circX;
+            t0_acc = Time.time;
             firefly.transform.position = position;
             ffPositions.Add(position);
             timeCounter = FF_circX * Mathf.Deg2Rad;
@@ -2591,26 +2613,43 @@ public class Reward2D : MonoBehaviour
 
         //Action
         GFFPhaseFlag = 4;
-        ActionStart.Add(Time.realtimeSinceStartup);
-        var t = Task.Run(async () => {
-            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
-        }, source.Token);
-
-
-        var t1 = Task.Run(async () => {
-            await new WaitForSecondsRealtime(timeout); // Used to be rb.velocity.magnitude
-        }, source.Token);
-
-        if (await Task.WhenAny(t, t1) == t)
+        if (is_gitter)
         {
-            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold 
-            && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            ActionStart.Add(Time.realtimeSinceStartup);
+            await new WaitForSeconds(0.75f);
+
+            firefly.SetActive(true);
+            await new WaitForSeconds(0.3f);
+            if (!toggle)
+            {
+                firefly.SetActive(false);
+            }
+            await new WaitForSeconds(0.45f);
         }
         else
         {
-            //print("Timed out");
-            isTimeout = true;
+            ActionStart.Add(Time.realtimeSinceStartup);
+            var t = Task.Run(async () => {
+                await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
+            }, source.Token);
+
+
+            var t1 = Task.Run(async () => {
+                await new WaitForSecondsRealtime(timeout); // Used to be rb.velocity.magnitude
+            }, source.Token);
+
+            if (await Task.WhenAny(t, t1) == t)
+            {
+                await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold
+                && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            }
+            else
+            {
+                //print("Timed out");
+                isTimeout = true;
+            }
         }
+        
         GFFPhaseFlag = 5;
         source.Cancel();
 
