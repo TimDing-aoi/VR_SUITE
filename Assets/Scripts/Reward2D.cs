@@ -332,7 +332,7 @@ public class Reward2D : MonoBehaviour
     private float t_max = 1.8f;
     private float t0_acc;
     private float sign_v;
-    private float dFF_acc = 25f;
+    private float dFF_acc = 50f;
 
     //Gitter FF Time Stamps
     readonly List<float> PreparationStart = new List<float>();
