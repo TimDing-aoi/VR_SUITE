@@ -1564,7 +1564,7 @@ public class Reward2D : MonoBehaviour
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
                     //print(timeCounter);
-                    if (GFFPhaseFlag <= 4)
+                    if (GFFPhaseFlag <= 4 && GFFPhaseFlag > 2)
                     {
                         timeCounter += velocity * Mathf.Deg2Rad / 90;
                         //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
