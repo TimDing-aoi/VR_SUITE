@@ -324,15 +324,17 @@ public class Reward2D : MonoBehaviour
     readonly List<float> TrialsSD4 = new List<float>();
     readonly List<float> SMspeeds = new List<float>();
     readonly List<float> SMtrials = new List<float>();
-    readonly List<Tuple<float, float, float>> CItrialsetup = new List<Tuple<float,float,float>>();
+    readonly List<Tuple<float, float, float, float, float>> CItrialsetup = new List<Tuple<float,float,float,float,float>>();
     [HideInInspector] public bool selfmotiontrial;
+    [HideInInspector] public bool AlwaysOntrial;
+    [HideInInspector] public bool DoubleObservtrial;
 
     //CI Accel Vars
     private float FF0_acc;
-    private float t_max = 1.8f;
+    private float t_max = 1.9f;//Total FF move time
     private float t0_acc;
     private float sign_v;
-    private float dFF_acc = 50f;
+    private float dFF_acc;
 
     //Gitter FF Time Stamps
     readonly List<float> PreparationStart = new List<float>();
@@ -714,6 +716,8 @@ public class Reward2D : MonoBehaviour
         CIratios.Add(PlayerPrefs.GetFloat("CIRatios10"));
         CIratios.Add(PlayerPrefs.GetFloat("CIRatios11"));
 
+        ratio = PlayerPrefs.GetFloat("Ratio");
+        dFF_acc = PlayerPrefs.GetFloat("FFacceleration");
         /*if (isCI)
         {
             int conditioncount;
@@ -807,35 +811,40 @@ public class Reward2D : MonoBehaviour
                 {
                     int conditioncount;
                     conditioncount = (int)(SMtrials[speeds] * CIratios[velocitiescondition]);
+                    int No_2_observ = (int)(conditioncount * 0.5);
                     while (conditioncount > 0)
                     {
                         float conditionvelocity = CIvelocities[velocitiescondition];
                         float conditionspeed = SMspeeds[speeds];
-                        if (conditionspeed != 0)
+                        Tuple<float, float, float, float, float> New_Tuple;
+                        if (conditioncount >= No_2_observ)
                         {
-                            Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(conditionvelocity, conditionspeed, 1f);
-                            CItrialsetup.Add(New_Tuple);
-                            conditioncount--;
+                            if (conditionspeed != 0)
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 0f);
+                            }
+                            else
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 0f);
+                            }
                         }
                         else
                         {
-                            Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(conditionvelocity, conditionspeed, 0f);
-                            CItrialsetup.Add(New_Tuple);
-                            conditioncount--;
+                            if (conditionspeed != 0)
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                            }
+                            else
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                            }
                         }
+                        CItrialsetup.Add(New_Tuple);
+                        conditioncount--;
                     }
                 }
             }
             Shuffle(CItrialsetup);
-            int trial_count = 0;
-            string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
-            File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSelfMotionSpeed,Selfmotion\n");
-            foreach (var tuple in CItrialsetup)
-            {
-                trial_count++;
-                string trialtext = string.Format("{0},{1},{2},{3} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3.ToString());
-                File.AppendAllText(metaPath, trialtext);
-            }
             string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
             print(setupcheck);
             ntrials = CItrialsetup.Count;
@@ -934,7 +943,6 @@ public class Reward2D : MonoBehaviour
         fireflyZoneRadius = PlayerPrefs.GetFloat("Reward Zone Radius");
         fireflySize = PlayerPrefs.GetFloat("Size");
         firefly.transform.localScale = new Vector3(fireflySize, fireflySize, 1);
-        ratio = PlayerPrefs.GetFloat("Ratio");
         if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
         {
             lineOnOff = 1;//(int)PlayerPrefs.GetFloat("Line OnOff");
@@ -1571,7 +1579,7 @@ public class Reward2D : MonoBehaviour
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
                     //print(timeCounter);
-                    if (GFFPhaseFlag <= 4)
+                    if (GFFPhaseFlag <= 4 && GFFPhaseFlag > 2.5)
                     {
                         //timeCounter += velocity * Mathf.Deg2Rad / 90;
                         if(velocity > 0)
@@ -2167,7 +2175,10 @@ public class Reward2D : MonoBehaviour
                 velocity = trialpair.Item1;
                 SelfMotionSpeed = trialpair.Item2;
                 selfmotiontrial = trialpair.Item3 == 1;
-                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SMspeed:" + SelfMotionSpeed.ToString() + " Selfmotion:" + selfmotiontrial.ToString();
+                AlwaysOntrial = trialpair.Item4 == 1;
+                DoubleObservtrial = trialpair.Item5 == 1;
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SMspeed:" + SelfMotionSpeed.ToString() + " Selfmotion:" + selfmotiontrial.ToString() + " Always On:" 
+                    + AlwaysOntrial.ToString() + "Double Obsv:" + DoubleObservtrial.ToString();
                 print(trialset);
                 noise_SD = 0;//not using noised FFs right now
             }
@@ -2511,6 +2522,9 @@ public class Reward2D : MonoBehaviour
             LineRenderer lr;
             motion_toggle = true;
             lr = line.GetComponent<LineRenderer>();
+            lr.sortingOrder = 1;
+            lr.material = new Material(Shader.Find("Sprites/Default"));
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
             int endFrame = Time.frameCount;
             endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_1);
             await new WaitUntil(() => Time.frameCount == endFrame);
@@ -2550,6 +2564,9 @@ public class Reward2D : MonoBehaviour
             float updur = PlayerPrefs.GetFloat("RampUpDur");
             await new WaitForSeconds(updur);
 
+            float grace_time = PlayerPrefs.GetFloat("GracePeriod");
+            await new WaitForSeconds(grace_time);
+
             // Observation
             GFFPhaseFlag = 3;
 
@@ -2561,14 +2578,11 @@ public class Reward2D : MonoBehaviour
             float drawSD2 = PlayerPrefs.GetFloat("CIFFSD2");
             float FF_circX = 999;//FF pos in deg
 
-            float grace_time = PlayerPrefs.GetFloat("GracePeriod");
-            await new WaitForSeconds(grace_time);
-
             float player_circX = SharedJoystick.circX * Mathf.Rad2Deg;//player pos in deg
             double dist_decider = randNoise.NextDouble();
             if(dist_decider > 0.5)
             {
-                while (Mathf.Abs(FF_circX - player_circX) > 45)
+                while (Mathf.Abs(FF_circX - player_circX) > 15)
                 {
                     double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
                     double u2 = 1.0 - randNoise.NextDouble();
@@ -2578,7 +2592,7 @@ public class Reward2D : MonoBehaviour
             }
             else
             {
-                while (Mathf.Abs(FF_circX - player_circX) > 45)
+                while (Mathf.Abs(FF_circX - player_circX) > 15)
                 {
                     double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
                     double u2 = 1.0 - randNoise.NextDouble();
@@ -2617,8 +2631,10 @@ public class Reward2D : MonoBehaviour
         {
             ActionStart.Add(Time.realtimeSinceStartup);
             await new WaitForSeconds(0.75f);
-
-            firefly.SetActive(true);
+            if (DoubleObservtrial)
+            {
+                firefly.SetActive(true);
+            }
             await new WaitForSeconds(0.3f);
             if (!toggle)
             {
@@ -3762,7 +3778,7 @@ public class Reward2D : MonoBehaviour
         lr.SetPositions(points);
     }
 
-    void Shuffle(List<Tuple<float, float, float>> list)
+    void Shuffle(List<Tuple<float, float, float, float, float>> list)
     {
         int n = list.Count;
         while (n > 1)
@@ -4072,6 +4088,40 @@ public class Reward2D : MonoBehaviour
             File.WriteAllText(discPath, csvDisc.ToString());
 
             //PlayerPrefs.GetInt("Save") == 1)
+
+            if (isCI)
+            {
+                int trial_count = 0;
+                string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+                File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSelfMotionSpeed,Selfmotion,ObservCondition,FFmoving\n");//TODO
+                foreach (var tuple in CItrialsetup)
+                {
+                    int obscondition;
+                    if(alwaysON[trial_count] == true)
+                    {
+                        obscondition = 0;
+                    }
+                    else if(tuple.Item5 == 0)
+                    {
+                        obscondition = 1;
+                    }
+                    else
+                    {
+                        obscondition = 2;
+                    }
+                    trial_count++;
+                    if (tuple.Item1 != 0)
+                    {
+                        string trialtext = string.Format("{0},{1},{2},{3},{4},{5} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3, obscondition, 1.ToString());
+                        File.AppendAllText(metaPath, trialtext);
+                    }
+                    else
+                    {
+                        string trialtext = string.Format("{0},{1},{2},{3},{4},{5} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3, obscondition, 0.ToString());
+                        File.AppendAllText(metaPath, trialtext);
+                    }
+                }
+            }
 
             string configPath = path + "/config_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".xml";
 
@@ -5218,6 +5268,10 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("GracePeriod");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("GracePeriod").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFacceleration");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFacceleration").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
