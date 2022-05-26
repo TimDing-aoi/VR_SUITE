@@ -331,8 +331,9 @@ public class Reward2D : MonoBehaviour
 
     //CI Accel Vars
     private float FF0_acc;
-    private float t_max = 1.9f;//Total FF move time
+    private float t_max = 1.5f;//Total FF move time
     private float t0_acc;
+    private float t1_acc;
     private float sign_v;
     private float dFF_acc;
 
@@ -1579,7 +1580,7 @@ public class Reward2D : MonoBehaviour
                 if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
                 {
                     //print(timeCounter);
-                    if (GFFPhaseFlag <= 4 && GFFPhaseFlag > 2.5)
+                    if (GFFPhaseFlag == 4)
                     {
                         //timeCounter += velocity * Mathf.Deg2Rad / 90;
                         if(velocity > 0)
@@ -1594,13 +1595,21 @@ public class Reward2D : MonoBehaviour
                         {
                             sign_v = 0;
                         }
-                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t0_acc) / t_max) * ((Time.time - t0_acc) / t_max));
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t1_acc) / t_max) * ((Time.time - t1_acc) / t_max));
                         //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                         float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                         float y = 0.0001f;
                         float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
                         //print(x);
                         //print(z);
+                        firefly.transform.position = new Vector3(x, y, z);
+                    }
+                    else if(GFFPhaseFlag > 2.5 && GFFPhaseFlag < 4)
+                    {
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc);
+                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
+                        float y = 0.0001f;
+                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
                         firefly.transform.position = new Vector3(x, y, z);
                     }
                 }
@@ -2605,7 +2614,7 @@ public class Reward2D : MonoBehaviour
             float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(FF_circX * Mathf.Deg2Rad) / 2;
             Vector3 position = new Vector3(x, y, z);
             FF0_acc = FF_circX;
-            t0_acc = Time.time;
+            t0_acc = Time.time;//FF generation time
             firefly.transform.position = position;
             ffPositions.Add(position);
             timeCounter = FF_circX * Mathf.Deg2Rad;
@@ -2627,6 +2636,7 @@ public class Reward2D : MonoBehaviour
 
         //Action
         GFFPhaseFlag = 4;
+        t1_acc = Time.time;//Action phase begin time
         if (is_gitter)
         {
             ActionStart.Add(Time.realtimeSinceStartup);
