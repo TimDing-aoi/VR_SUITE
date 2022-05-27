@@ -1,12 +1,9 @@
 ﻿///////////////////////////////////////////////////////////////////////////////////////////
 ///                                                                                     ///
 /// Reward2D.cs                                                                         ///
-/// by Joshua Calugay                                                                   ///
-/// jc10487@nyu.edu                                                                     ///
-/// jcal1696@gmail.com (use this to contact me since, whoever is reading this is        ///
-///                     probably my successor, which means I no longer work at          ///
-///                     NYU, which means I no longer have my NYU email.)                ///
-/// Last Updated: 6/17/2020                                                             ///
+/// by Joshua Calugay and Tim Ding                                                      ///
+/// hd840@nyu.edu                                                                       ///
+/// jcal1696@gmail.com                                                                  ///
 /// For the Angelaki Lab                                                                ///
 ///                                                                                     ///
 /// <summary>                                                                           ///
@@ -39,6 +36,9 @@ using static AlloEgoJoystick;
 using UnityEngine.SceneManagement;
 using System;
 using UnityEngine.XR;
+using TMPro;
+using System.Linq;
+using static timelinestamps;
 
 public class Reward2D : MonoBehaviour
 {
@@ -46,9 +46,27 @@ public class Reward2D : MonoBehaviour
 
     public GameObject firefly;
     public GameObject line;
-    [HideInInspector] public int lineOnOff = 0;
+    public GameObject progressbar;
+    [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
+
+    [HideInInspector] public int frameRate = 90;
+
+    //Stochastic FF variables
+    public GameObject scoring;
+    private float score2FF;
+    private float totalScore = 0;
+    private float timeCounter = 0;
+
+    //Gitter FF phase flag
+    public float GFFPhaseFlag = 0;
+    public float FFnoise = 0;
+    public float GFFTrueDegree = 0;
+    public float SelfMotionSpeed = 0;
+    readonly public List<float> FFnoiseList = new List<float>();
+    readonly public List<float> CIScores = new List<float>();
+
     public Camera Lcam;
     public Camera Rcam;
     public GameObject FP;
@@ -67,8 +85,15 @@ public class Reward2D : MonoBehaviour
         Fixed
     }
     private Modes mode;
+    // Is causal inference or not
+    private bool isCI;
     // Toggle for whether trial is an always on trial or not
-    private bool toggle;
+    public bool toggle;
+    // Toggle for self motion
+    public bool motion_toggle = false;
+    // Toggle for habituation/observation
+    public bool trial_start_phase = false;
+
     [Tooltip("Ratio of trials that will have fireflies always on")]
     [HideInInspector] public float ratio;
     [Tooltip("Frequency of flashing firefly (Flashing Firefly Only)")]
@@ -78,6 +103,21 @@ public class Reward2D : MonoBehaviour
     // Pulse Width; how long in seconds it stays on during one period
     private float PW;
     public GameObject player;
+    public GameObject FPS;
+    public GameObject star1;
+    public GameObject star2;
+    public GameObject star3;
+    public GameObject star4;
+    public GameObject star5; 
+    public GameObject darkstar1;
+    public GameObject darkstar2;
+    public GameObject darkstar3;
+    public GameObject darkstar4;
+    public GameObject darkstar5;
+    public GameObject starring;
+    private Vector3 initialPposition;
+    private Vector3 initialPforward;
+    private float initialRotation;
     public AudioSource audioSource;
     public AudioClip winSound;
     public AudioClip neutralSound;
@@ -98,9 +138,25 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public float lifeSpan;
     [Tooltip("How many fireflies can appear at once")]
     [HideInInspector] public float nFF;
-    int multiMode=1;
-    readonly public List<float> velocities = new List<float>();
-    readonly public List<float> v_ratios = new List<float>();
+    int multiMode = 0;
+
+    readonly public List<float> velocities = new List<float> { 0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f,
+            0.0f, -30.0f, -20.0f, -10.0f, -6.0f, -2.0f, 30.0f, 20.0f, 10.0f, 6.0f, 2.0f };
+    readonly public List<float> v_ratios = new List<float> {0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f,
+        0.25f/4.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f, 0.75f / 40.0f};
+    readonly public List<float> v_noises = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f};
+
+
+    private float beginTimeTmp = 0.0f;
+    private float endTimeTmp = 0.0f;
+
     readonly public List<Vector3> directions = new List<Vector3>()
     {
         Vector3.left,
@@ -158,7 +214,7 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public Phases phase;
 
     private Vector3 pPos;
-    private bool isTimeout = false;
+    public bool isTimeout = false;
 
     // Trial number
     readonly List<int> n = new List<int>();
@@ -190,8 +246,9 @@ public class Reward2D : MonoBehaviour
     readonly List<float> max_v = new List<float>();
     readonly List<float> max_w = new List<float>();
 
-    // Firefly velocity
+    // Firefly velocity & SD
     readonly List<float> fv = new List<float>();
+    readonly List<float> fvSD = new List<float>();
 
     // Distances from player to firefly
     readonly List<string> dist = new List<string>();
@@ -239,6 +296,52 @@ public class Reward2D : MonoBehaviour
     readonly List<float> tautau = new List<float>();
     readonly List<float> filterTau = new List<float>();
 
+    //moving2FF task data
+    readonly List<float> scores2FF = new List<float>();
+    readonly List<float> sigma1s = new List<float>();
+    readonly List<float> sigma2s = new List<float>();
+    readonly List<float> means2ff = new List<float>();
+    readonly List<float> N2ff = new List<float>();
+    readonly List<float> deltaTs = new List<float>();
+    readonly List<float> spawnradius = new List<float>();
+    readonly List<float> sigma1data = new List<float>();
+    readonly List<float> sigma2data = new List<float>();
+    readonly List<float> meansdata = new List<float>();
+    readonly List<float> N2ffdata = new List<float>();
+    readonly List<float> deltaTdata = new List<float>();
+    readonly List<float> spawnRdata = new List<float>();
+
+    //Causal Inference Data
+    readonly List<float> CIvelocities = new List<float>();
+    readonly List<float> CIratios = new List<float>();
+    readonly List<float> CINoiseSDs = new List<float>();
+    readonly List<float> TrialsSD1 = new List<float>();
+    readonly List<float> TrialsSD2 = new List<float>();
+    readonly List<float> TrialsSD3 = new List<float>();
+    readonly List<float> TrialsSD4 = new List<float>();
+    readonly List<float> SMspeeds = new List<float>();
+    readonly List<float> SMtrials = new List<float>();
+    readonly List<Tuple<float, float, float, float, float>> CItrialsetup = new List<Tuple<float,float,float,float,float>>();
+    [HideInInspector] public bool selfmotiontrial;
+    [HideInInspector] public bool AlwaysOntrial;
+    [HideInInspector] public bool DoubleObservtrial;
+
+    //CI Accel Vars
+    private float FF0_acc;
+    private float t_max = 1.5f;//Total FF move time
+    private float t0_acc;
+    private float t1_acc;
+    private float sign_v;
+    private float dFF_acc;
+
+    //Gitter FF Time Stamps
+    readonly List<float> PreparationStart = new List<float>();
+    readonly List<float> HabituationStart = new List<float>();
+    readonly List<float> ObservationStart = new List<float>();
+    readonly List<float> ActionStart = new List<float>();
+    readonly List<float> SelfReportStart = new List<float>();
+    readonly List<float> FeedbackStart = new List<float>();
+
     [HideInInspector] public float FrameTimeElement = 0;
 
     [HideInInspector] public float delayTime = .2f;
@@ -258,6 +361,8 @@ public class Reward2D : MonoBehaviour
     private string path;
 
     [HideInInspector] public int trialNum;
+    [HideInInspector] public int CItrialNum = 0;
+
     //private float trialT;
     private float programT0 = 0.0f;
 
@@ -280,10 +385,11 @@ public class Reward2D : MonoBehaviour
     private bool isFull = false;
 
     public bool isBegin = false;
+    public bool isTrial = false;
     private bool isCheck = false;
     private bool isEnd = false;
 
-    private Phases currPhase;
+    public Phases currPhase;
     [HideInInspector] public string phaseString;
 
     readonly private List<GameObject> pooledFF = new List<GameObject>();
@@ -296,7 +402,20 @@ public class Reward2D : MonoBehaviour
 
     [HideInInspector] public float initialD = 0.0f;
 
+    private Vector3 direction = new Vector3();
     private float velocity;
+    private float noise_SD;
+    private float velocity_Noised;
+
+    //Stochastic FF Variables
+    private float sigma1;
+    private float sigma2;
+    private float mean;
+    private float stochasticRadius;
+    private float LootDeltaT;
+    private float StochasticFFN;
+    bool isMoving2FF;
+    private float winscore;
 
     public GameObject arrow;
     private MeshRenderer mesh;
@@ -336,6 +455,7 @@ public class Reward2D : MonoBehaviour
     float rotationThreshold;
 
     float timeSinceLastFixedUpdate;
+    float timeSinceLastFFloot;
 
     List<Vector2> fixedLocations = new List<Vector2>();
 
@@ -357,12 +477,30 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Start()
     {
+       
+
         UnityEngine.XR.InputTracking.disablePositionalTracking = true;
         UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Lcam, true);
         UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Rcam, true);
 
         Lcam.ResetProjectionMatrix();
         Rcam.ResetProjectionMatrix();
+
+        isCI = !(PlayerPrefs.GetFloat("FixedYSpeed") == 0);
+
+        path = PlayerPrefs.GetString("Path");
+
+        star1.SetActive(false);
+        star2.SetActive(false);
+        star3.SetActive(false);
+        star4.SetActive(false);
+        star5.SetActive(false);
+        darkstar1.SetActive(false);
+        darkstar2.SetActive(false);
+        darkstar3.SetActive(false);
+        darkstar4.SetActive(false);
+        darkstar5.SetActive(false);
+        starring.SetActive(false);
 
         List<XRDisplaySubsystem> displaySubsystems = new List<XRDisplaySubsystem>();
         SubsystemManager.GetInstances<XRDisplaySubsystem>(displaySubsystems);
@@ -410,6 +548,8 @@ public class Reward2D : MonoBehaviour
         checkMax = PlayerPrefs.GetFloat("Maximum Wait to Check");
         interMin = PlayerPrefs.GetFloat("Minimum Intertrial Wait");
         interMax = PlayerPrefs.GetFloat("Maximum Intertrial Wait");
+        //print(checkMax);
+        //print(checkMin);
         c_min = Tcalc(checkMin, c_lambda);
         c_max = Tcalc(checkMax, c_lambda);
         i_min = Tcalc(interMin, c_lambda);
@@ -419,7 +559,309 @@ public class Reward2D : MonoBehaviour
         minDrawDistance = PlayerPrefs.GetFloat("Minimum Firefly Distance");
         maxDrawDistance = PlayerPrefs.GetFloat("Maximum Firefly Distance");
 
-        nFF = PlayerPrefs.GetFloat("Number of Fireflies");
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma1"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma12"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma13"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma14"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma15"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma16"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma17"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma18"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma19"));
+        sigma1s.Add(PlayerPrefs.GetFloat("Sigma110"));
+
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma2"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma22"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma23"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma24"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma25"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma26"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma27"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma28"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma29"));
+        sigma2s.Add(PlayerPrefs.GetFloat("Sigma210"));
+
+        means2ff.Add(PlayerPrefs.GetFloat("Means"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means2"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means3"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means4"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means5"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means6"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means7"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means8"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means9"));
+        means2ff.Add(PlayerPrefs.GetFloat("Means10"));
+
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius2"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius3"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius4"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius5"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius6"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius7"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius8"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius9"));
+        spawnradius.Add(PlayerPrefs.GetFloat("FFRadius10"));
+
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma2"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma3"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma4"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma5"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma6"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma7"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma8"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma9"));
+        N2ff.Add(PlayerPrefs.GetFloat("NFFperSigma10"));
+
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT2"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT3"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT4"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT5"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT6"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT7"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT8"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT9"));
+        deltaTs.Add(PlayerPrefs.GetFloat("LootDeltaT10"));
+
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities1"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities2"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities3"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities4"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities5"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities6"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities7"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities8"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities9"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities10"));
+        CIvelocities.Add(PlayerPrefs.GetFloat("Velocities11"));
+
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD1"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD2"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD3"));
+        CINoiseSDs.Add(PlayerPrefs.GetFloat("FFNoiseSD4"));
+
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V1SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V2SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V3SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V4SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V5SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V6SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V7SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V8SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V9SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V10SD1"));
+        TrialsSD1.Add(PlayerPrefs.GetFloat("V11SD1"));
+
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V1SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V2SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V3SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V4SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V5SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V6SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V7SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V8SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V9SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V10SD2"));
+        TrialsSD2.Add(PlayerPrefs.GetFloat("V11SD2"));
+
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V1SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V2SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V3SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V4SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V5SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V6SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V7SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V8SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V9SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V10SD3"));
+        TrialsSD3.Add(PlayerPrefs.GetFloat("V11SD3"));
+
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V1SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V2SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V3SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V4SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V5SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V6SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V7SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V8SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V9SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V10SD4"));
+        TrialsSD4.Add(PlayerPrefs.GetFloat("V11SD4"));
+
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed1"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed2"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed3"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed4"));
+        SMspeeds.Add(PlayerPrefs.GetFloat("SelfMotionSpeed5"));
+
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM1"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM2"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM3"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM4"));
+        SMtrials.Add(PlayerPrefs.GetFloat("NtrialsSM5"));
+
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios1"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios2"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios3"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios4"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios5"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios6"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios7"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios8"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios9"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios10"));
+        CIratios.Add(PlayerPrefs.GetFloat("CIRatios11"));
+
+        ratio = PlayerPrefs.GetFloat("Ratio");
+        dFF_acc = PlayerPrefs.GetFloat("FFacceleration");
+        /*if (isCI)
+        {
+            int conditioncount;
+            for (int i = 0; i < 11; i++)
+            {
+                conditioncount = (int)TrialsSD1[i];
+                while (TrialsSD1[i] > 0)
+                {
+                    if (TrialsSD1[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[0], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[0], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD1[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD2[i];
+                while (TrialsSD2[i] > 0)
+                {
+                    if (TrialsSD2[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[1], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[1], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD2[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD3[i];
+                while (TrialsSD3[i] > 0)
+                {
+                    if (TrialsSD3[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[2], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[2], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD3[i] -= 1;
+                    }
+                }
+                conditioncount = (int)TrialsSD4[i];
+                while (TrialsSD4[i] > 0)
+                {
+                    if (TrialsSD4[i] > conditioncount / 2)
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[3], 1f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                    else
+                    {
+                        Tuple<float, float, float> New_Tuple = new Tuple<float, float, float>(CIvelocities[i], CINoiseSDs[3], 0f);
+                        CItrialsetup.Add(New_Tuple);
+                        TrialsSD4[i] -= 1;
+                    }
+                }
+            }
+            Shuffle(CItrialsetup); 
+            int trial_count = 0;
+            string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+            File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSD,Selfmotion\n");
+            foreach (var tuple in CItrialsetup)
+            {
+                trial_count++;
+                string trialtext = string.Format("{0},{1},{2},{3} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3.ToString());
+                File.AppendAllText(metaPath, trialtext);
+            }
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
+            print(setupcheck);
+            ntrials = CItrialsetup.Count;
+            CItrialNum = 0;
+        }*/
+        if (isCI)
+        {
+            for(int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
+            {
+                for (int speeds = 0; speeds < 5; speeds++)
+                {
+                    int conditioncount;
+                    conditioncount = (int)(SMtrials[speeds] * CIratios[velocitiescondition]);
+                    int No_2_observ = (int)(conditioncount * 0.5);
+                    while (conditioncount > 0)
+                    {
+                        float conditionvelocity = CIvelocities[velocitiescondition];
+                        float conditionspeed = SMspeeds[speeds];
+                        Tuple<float, float, float, float, float> New_Tuple;
+                        if (conditioncount >= No_2_observ)
+                        {
+                            if (conditionspeed != 0)
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 0f);
+                            }
+                            else
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 0f);
+                            }
+                        }
+                        else
+                        {
+                            if (conditionspeed != 0)
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                            }
+                            else
+                            {
+                                New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                            }
+                        }
+                        CItrialsetup.Add(New_Tuple);
+                        conditioncount--;
+                    }
+                }
+            }
+            Shuffle(CItrialsetup);
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
+            print(setupcheck);
+            ntrials = CItrialsetup.Count;
+            CItrialNum = 0;
+        }
+        StochasticFFN = N2ff.Max();
+        //print(StochasticFFN);
+        isMoving2FF = PlayerPrefs.GetInt("Stochastic Fire Flies") == 1;
+        LootDeltaT = PlayerPrefs.GetFloat("LootDeltaT");
+        //print(PlayerPrefs.GetFloat("Stochastic Fire Flies"));
+        winscore = PlayerPrefs.GetFloat("WinScore");
+        if (isMoving2FF)
+        {
+            nFF = StochasticFFN * 2;
+        }
+        else
+        {
+            nFF = PlayerPrefs.GetFloat("Number of Fireflies");
+        }
 
         for (int i = 0; i < nFF; i++)
         {
@@ -480,9 +922,9 @@ public class Reward2D : MonoBehaviour
             }
         }
         //Nasta Add ends
-        Debug.Log("This is ranges");
-        Debug.Log(string.Join(",", ranges));
-        Debug.Log(ffPositions.Count);
+        //Debug.Log("This is ranges");
+        //Debug.Log(string.Join(",", ranges));
+        //Debug.Log(ffPositions.Count);
 
 
         LR = 0.5f;//PlayerPrefs.GetFloat("Left Right");
@@ -499,16 +941,36 @@ public class Reward2D : MonoBehaviour
         fireflyZoneRadius = PlayerPrefs.GetFloat("Reward Zone Radius");
         fireflySize = PlayerPrefs.GetFloat("Size");
         firefly.transform.localScale = new Vector3(fireflySize, fireflySize, 1);
-        ratio = PlayerPrefs.GetFloat("Ratio");
-        lineOnOff = (int)PlayerPrefs.GetFloat("Line OnOff");
-        line.transform.localScale = new Vector3(10000f, 0.125f * p_height * 10, 1);
-        if (lineOnOff == 1)
+        if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
         {
-            line.SetActive(true);
+            lineOnOff = 1;//(int)PlayerPrefs.GetFloat("Line OnOff");
         }
         else
         {
+            lineOnOff = 0;
+        }
+        line.transform.localScale = new Vector3(10000f, 0.125f * p_height * 10, 1);
+        if (lineOnOff == 1)
+        {
+            var liner = line.GetComponent<LineRenderer>();
+            liner.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
             line.SetActive(false);
+        }
+        else
+        {
+            progressbar.SetActive(false);
+            line.SetActive(false);
+        }
+
+        drawLine((maxDrawDistance+minDrawDistance)/2, 200);
+
+        if (isMoving2FF)
+        {
+            scoring.SetActive(true);
+        }
+        else
+        {
+            scoring.SetActive(false);
         }
 
         if (ptb != 2)
@@ -522,36 +984,55 @@ public class Reward2D : MonoBehaviour
             rotationThreshold = 1.0f;
         }
 
-        velocities.Add(PlayerPrefs.GetFloat("V1"));
-        velocities.Add(PlayerPrefs.GetFloat("V2"));
-        velocities.Add(PlayerPrefs.GetFloat("V3"));
-        velocities.Add(PlayerPrefs.GetFloat("V4"));
-        velocities.Add(PlayerPrefs.GetFloat("V5"));
-        velocities.Add(PlayerPrefs.GetFloat("V6"));
-        velocities.Add(PlayerPrefs.GetFloat("V7"));
-        velocities.Add(PlayerPrefs.GetFloat("V8"));
-        velocities.Add(PlayerPrefs.GetFloat("V9"));
-        velocities.Add(PlayerPrefs.GetFloat("V10"));
-        velocities.Add(PlayerPrefs.GetFloat("V11"));
-        velocities.Add(PlayerPrefs.GetFloat("V12"));
+        //velocities.Add(PlayerPrefs.GetFloat("V1"));
+        //velocities.Add(PlayerPrefs.GetFloat("V2"));
+        //velocities.Add(PlayerPrefs.GetFloat("V3"));
+        //velocities.Add(PlayerPrefs.GetFloat("V4"));
+        //velocities.Add(PlayerPrefs.GetFloat("V5"));
+        //velocities.Add(PlayerPrefs.GetFloat("V6"));
+        //velocities.Add(PlayerPrefs.GetFloat("V7"));
+        //velocities.Add(PlayerPrefs.GetFloat("V8"));
+        //velocities.Add(PlayerPrefs.GetFloat("V9"));
+        //velocities.Add(PlayerPrefs.GetFloat("V10"));
+        //velocities.Add(PlayerPrefs.GetFloat("V11"));
+        //velocities.Add(PlayerPrefs.GetFloat("V12"));
 
-        v_ratios.Add(PlayerPrefs.GetFloat("VR1"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR2"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR3"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR4"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR5"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR6"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR7"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR8"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR9"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR10"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR11"));
-        v_ratios.Add(PlayerPrefs.GetFloat("VR12"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR1"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR2"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR3"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR4"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR5"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR6"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR7"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR8"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR9"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR10"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR11"));
+        //v_ratios.Add(PlayerPrefs.GetFloat("VR12"));
 
-        for (int i = 1; i < 12; i++)
+        //v_noises.Add(PlayerPrefs.GetFloat("VN1"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN2"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN3"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN4"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN5"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN6"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN7"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN8"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN9"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN10"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN11"));
+        //v_noises.Add(PlayerPrefs.GetFloat("VN12"));
+
+        //print(string.Join(", ", v_ratios));
+
+        for (int i = 1; i < 44; i++)
         {
             v_ratios[i] = v_ratios[i] + v_ratios[i - 1];
         }
+
+        //print(string.Join(", ", velocities));
+        //print(string.Join(", ", v_noises));
+        //print(string.Join(", ", v_ratios));
 
         durations.Add(PlayerPrefs.GetFloat("D1"));
         durations.Add(PlayerPrefs.GetFloat("D2"));
@@ -559,15 +1040,35 @@ public class Reward2D : MonoBehaviour
         durations.Add(PlayerPrefs.GetFloat("D4"));
         durations.Add(PlayerPrefs.GetFloat("D5"));
 
-        ratios.Add(PlayerPrefs.GetFloat("R1"));
-        ratios.Add(PlayerPrefs.GetFloat("R2"));
-        ratios.Add(PlayerPrefs.GetFloat("R3"));
-        ratios.Add(PlayerPrefs.GetFloat("R4"));
-        ratios.Add(PlayerPrefs.GetFloat("R5"));
-
-        for (int i = 1; i < 5; i++)
+        if (isMoving2FF)
         {
-            ratios[i] = ratios[i] + ratios[i - 1];
+            ratios.Clear();
+            ratios.Add(PlayerPrefs.GetFloat("Ratio1"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio2"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio3"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio4"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio5"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio6"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio7"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio8"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio9"));
+            ratios.Add(PlayerPrefs.GetFloat("Ratio10"));
+            for (int i = 1; i < 10; i++)
+            {
+                ratios[i] = ratios[i] + ratios[i - 1];
+            }
+        }
+        else
+        {
+            ratios.Add(PlayerPrefs.GetFloat("R1"));
+            ratios.Add(PlayerPrefs.GetFloat("R2"));
+            ratios.Add(PlayerPrefs.GetFloat("R3"));
+            ratios.Add(PlayerPrefs.GetFloat("R4"));
+            ratios.Add(PlayerPrefs.GetFloat("R5"));
+            for (int i = 1; i < 5; i++)
+            {
+                ratios[i] = ratios[i] + ratios[i - 1];
+            }
         }
 
         isGaussian = PlayerPrefs.GetInt("Gaussian Perturbation ON") == 1;
@@ -635,6 +1136,13 @@ public class Reward2D : MonoBehaviour
             // lifeSpan = PlayerPrefs.GetFloat("Firefly Life Span");
         }
 
+        sigma1 = sigma1s[0];
+        sigma2 = sigma2s[0];
+        mean = means2ff[0];
+        StochasticFFN = N2ff[0];
+        stochasticRadius = spawnradius[0];
+        LootDeltaT = deltaTs[0];
+
         // Nasta added this for sequential
         if (nFF > 1)
         {
@@ -647,7 +1155,7 @@ public class Reward2D : MonoBehaviour
                 obj.SetActive(true);
                 //Nasta Need to add a delay here to create sequential flash
                 obj.GetComponent<SpriteRenderer>().enabled = true;
-                Debug.Log("reads multiple ff");
+                //Debug.Log("reads multiple ff");
                 if (multiMode == 1)
                 {
                     switch (i)
@@ -676,19 +1184,39 @@ public class Reward2D : MonoBehaviour
         //ipd = ;
 
         timeout = PlayerPrefs.GetFloat("Timeout");
-        path = PlayerPrefs.GetString("Path");
         rewardAmt = PlayerPrefs.GetFloat("Reward");
         trialNum = 0;
 
         player.transform.position = new Vector3(0.0f, p_height, 0.0f);
-        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
         systemStartTimeVerbose = DateTime.Now.ToString("MM-dd_HH-mm-ss");
         contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
 
-        string firstLine = "";
-        if (ptb == 2)
+        string firstLine;
+        if (isCI)
         {
-            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen\n";
+            firstLine = "TrialNum,TrialTime,BackendPhase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV/linear,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist," +
+                "LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,CIFFPhase,FFTrueLocationDegree,FFnoiseDegree,frameCounter,FFV/degrees,SelfMotionSpeed\n";
+        }
+        else if (ptb == 2 && !isMoving2FF)
+        {
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen,GitterFFPhase,FFnoise,FFTrueLocationDegree,timeCounterShared,frameCounterShared,phiShared\n";
+        }
+        else if (isMoving2FF)
+        {
+            firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,CleanLinearVelocity,CleanAngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen";
+            for (int i = 0; i < nFF; i++)
+            {
+                firstLine = firstLine + ",FF" + i + "x" + ",FF" + i + "z";
+            }
+            firstLine = firstLine + "\n";
         }
         else
         {
@@ -698,11 +1226,19 @@ public class Reward2D : MonoBehaviour
   
         programT0 = Time.realtimeSinceStartup;
         timeSinceLastFixedUpdate = Time.realtimeSinceStartup;
+        timeSinceLastFFloot = Time.realtimeSinceStartup;
         currPhase = Phases.begin;
         phase = Phases.begin;
 
         player.transform.position = Vector3.up * p_height;
-        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
 
         player_rotation_initial = player.transform.rotation;
 
@@ -739,6 +1275,10 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Update()
     {
+        for (int k = (int)StochasticFFN * 2; k < nFF; k++)
+        {
+            pooledFF[k].SetActive(false);
+        }
         phaseString = currPhase.ToString();
         //print(phaseString);
 
@@ -780,6 +1320,7 @@ public class Reward2D : MonoBehaviour
                         toggle = rand.NextDouble() <= ratio;
                     }
                     currentTask = Begin();
+                    beginTimeTmp = Time.realtimeSinceStartup;
                     break;
 
 
@@ -805,6 +1346,13 @@ public class Reward2D : MonoBehaviour
                         }
                     }
                     currentTask = Check();
+                    endTimeTmp = Time.realtimeSinceStartup;
+                    /*print("EndTime");
+                    print(endTimeTmp - beginTimeTmp);
+                    print("timeCounterShared");
+                    print(AlloEgoJoystick.SharedJoystick.timeCounterShared);
+                    print("framCounterShared");
+                    print(AlloEgoJoystick.SharedJoystick.frameCounterShared);*/
                     break;
 
                 case Phases.none:
@@ -815,13 +1363,82 @@ public class Reward2D : MonoBehaviour
         {
             print(currentTask.Exception);
         }
+        if (isCI)
+        {
+            /*ViveSR.Error error = SRanipal_Eye_API.GetEyeData(ref data);
+            float x;
+            float y;
+            float z;
+            Vector3 location = Vector3.zero;
+            float direction = 0.0f;
+            var left = new SingleEyeData();
+            var right = new SingleEyeData();
+            var combined = new CombinedEyeData();
 
+            if (error == ViveSR.Error.WORK)
+            {
+                left = data.verbose_data.left;
+                right = data.verbose_data.right;
+                combined = data.verbose_data.combined;
+
+                x = combined.eye_data.gaze_direction_normalized.x;
+                y = combined.eye_data.gaze_direction_normalized.y;
+                z = combined.eye_data.gaze_direction_normalized.z;
+
+                var tuple = CalculateConvergenceDistanceAndCoords(player.transform.position, new Vector3(-x, y, z), ~((1 << 12) | (1 << 13)));
+
+                location = tuple.Item1;
+                direction = tuple.Item2;
+
+                if (Camera.main.gameObject.activeInHierarchy)
+                {
+                    HitLocations2D.Add(string.Join(",", 0.0f, 0.0f));
+                }
+                else
+                {
+                    HitLocations2D.Add(string.Join(",", 0.0f, 0.0f));
+                }
+
+                var alpha = Vector3.SignedAngle(player.transform.position, player.transform.position + new Vector3(-x, y, z), player.transform.forward) * Mathf.Deg2Rad;
+                var hypo = 10.0f / Mathf.Cos(alpha);
+                Marker.transform.localPosition = new Vector3(-x, y, z) * hypo;
+            }
+            else
+            {
+                x = 0.0f;
+                y = 0.0f;
+                z = 0.0f;
+
+                left.pupil_diameter_mm = 0.0f;
+                left.eye_openness = 0.0f;
+                right.pupil_diameter_mm = 0.0f;
+                right.eye_openness = 0.0f;
+            }
+            sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}\n",
+                   trialNum,
+                   Time.realtimeSinceStartup,
+                   firefly.activeInHierarchy ? 1 : 0,
+                   string.Join(",", player.transform.position.x / 10, player.transform.position.y / 10, player.transform.position.z / 10),
+                   string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
+                   SharedJoystick.moveX,
+                   velocity_Noised,
+                   string.Join(",", x, y, z),
+                   string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                   location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                   direction,
+                   string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                   string.Join(",", left.eye_openness, right.eye_openness),
+                   GFFPhaseFlag,
+                   GFFTrueDegree * Mathf.Rad2Deg,
+                   FFnoise,
+                   Time.frameCount));*/
+        }
     }
 
     /// <summary>
-    /// Capture data at 120 Hz
+    /// Capture data at 90 Hz
     /// 
-    /// Set Unity's fixed timestep to 1/120 (0.00833333...) in order to get 120 Hz recording
+    /// Set Unity's fixed timestep to 1/90 (0.011111111...) in order to get 90 Hz recording
     /// Edit -> Project Settings -> Time -> Fixed Timestep
     /// </summary>
     public void FixedUpdate()
@@ -872,14 +1489,53 @@ public class Reward2D : MonoBehaviour
                     n.Add(trialNum);
                     isBegin = false;
                 }
+                var tempFFPos = firefly.transform.position - player_origin;
+                var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
+                string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
+                //ffPos.Add(transformedFFPos);
             }
             //else if (isCheck)
             //{
             //    checkTime.Add(Time.realtimeSinceStartup - programT0);
             //    isCheck = false;
             //}
-
-
+            if (isTrial)
+            {
+                if(tNow - timeSinceLastFFloot >= (Time.fixedDeltaTime)*LootDeltaT && LootDeltaT != 0){
+                    if (isMoving2FF)
+                    {
+                        //print("looting");
+                        Vector3 positioni;
+                        positioni.y = 0.0001f;
+                        Vector3 positionj;
+                        positionj.y = 0.0001f;
+                        float ri = stochasticRadius + (float)rand.NextDouble();
+                        float rj = stochasticRadius + (float)rand.NextDouble();
+                        double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - rand.NextDouble();
+                        int i = rand.Next(0, (int)StochasticFFN);
+                        int j = rand.Next((int)StochasticFFN, 2* (int)StochasticFFN);
+                        //print(i);
+                        //print(j);
+                        double randStdNormali = mean + sigma1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        double randStdNormalj = -mean + sigma2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        float anglei = (1 + (float)randStdNormali) * (maxPhi - minPhi) / 2 + minPhi;
+                        float anglej = (1 + (float)randStdNormalj) * (maxPhi - minPhi) / 2 + minPhi;
+                        //print(randStdNormal);
+                        positioni = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(anglei, Vector3.up) * initialPforward * ri;
+                        positionj = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(anglej, Vector3.up) * initialPforward * rj;
+                        pooledFF[i].transform.position = positioni;
+                        pooledFF[j].transform.position = positionj;
+                        ffPositions[i] = positioni;
+                        ffPositions[i] = positionj;
+                        timeSinceLastFFloot = tNow;
+                    }
+                }
+            }
 
             //Nasta Added for sequential
             if (isCheck)
@@ -908,7 +1564,63 @@ public class Reward2D : MonoBehaviour
             //Nasta Add Ends
             if (isMoving && nFF < 2)
             {
-                firefly.transform.position += move * Time.deltaTime;
+                /*System.Random randNoise = new System.Random();
+                double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                double u2 = 1.0 - randNoise.NextDouble();
+                double randStdNormal = noise_SD * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                             Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+                                                           //double randNormal =
+                                                           //mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+                                                           
+                //print(randStdNormal);*/
+                double randStdNormal = 0;
+                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+                {
+                    //print(timeCounter);
+                    if (GFFPhaseFlag == 4)
+                    {
+                        //timeCounter += velocity * Mathf.Deg2Rad / 90;
+                        if(velocity > 0)
+                        {
+                            sign_v = 1;
+                        }
+                        else if(velocity < 0)
+                        {
+                            sign_v = -1;
+                        }
+                        else
+                        {
+                            sign_v = 0;
+                        }
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t1_acc) / t_max) * ((Time.time - t1_acc) / t_max));
+                        //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
+                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
+                        float y = 0.0001f;
+                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
+                        //print(x);
+                        //print(z);
+                        firefly.transform.position = new Vector3(x, y, z);
+                    }
+                    else if(GFFPhaseFlag > 2.5 && GFFPhaseFlag < 4)
+                    {
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc);
+                        float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
+                        float y = 0.0001f;
+                        float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
+                        firefly.transform.position = new Vector3(x, y, z);
+                    }
+                }
+                else
+                {
+                    Vector3 temp = move;
+                    move = move + (direction * (float)randStdNormal);
+                    velocity_Noised = velocity + (float)randStdNormal;
+                    firefly.transform.position += move * Time.deltaTime;
+                    move = temp;
+                }
+                FFnoise = (float)randStdNormal;
+                FFnoiseList.Add(FFnoise);
+                GFFTrueDegree = timeCounter;
             }
 
             if (isEnd)
@@ -916,11 +1628,14 @@ public class Reward2D : MonoBehaviour
                 endTime.Add(Time.realtimeSinceStartup - programT0);
                 if (toggle)
                 {
-                    onDur.Add(endTime[endTime.Count - 1] - beginTime[beginTime.Count - 1]);
+                    onDur.Add(lifeSpan);
                 }
-                checkTimeStrList.Add(checkTimeString.Substring(1));
-                checkTimeString = "";
-                isEnd = false;
+                if (multiMode == 1)
+                {
+                    checkTimeStrList.Add(checkTimeString.Substring(1));
+                    checkTimeString = "";
+                    isEnd = false;
+                }
             }
 
             //if (nFF > 1)
@@ -980,6 +1695,7 @@ public class Reward2D : MonoBehaviour
                 }
                 else
                 {
+                    //print("eye tracking error!");
                     x = 0.0f;
                     y = 0.0f;
                     z = 0.0f;
@@ -1002,32 +1718,82 @@ public class Reward2D : MonoBehaviour
                 string transformedPos = new Vector3(tempQuat.x, tempQuat.y, tempQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
                 string transformedRot = (player.transform.rotation * Quaternion.Inverse(player_rotation_initial)).ToString("F8").Trim(toTrim).Replace(" ", "");
 
-                var tempFFPos = firefly.transform.position - player_origin;
+                var tempFFPos = firefly.transform.position - player_origin; // THIS NEED TO BE FIXED
                 var tempFFQuat = Quaternion.Inverse(player_rotation_initial) * new Quaternion(tempFFPos.x, tempFFPos.y, tempFFPos.z, 0.0f) * player_rotation_initial;
                 string transformedFFPos = new Vector3(tempFFQuat.x, tempFFQuat.y, tempFFQuat.z).ToString("F8").Trim(toTrim).Replace(" ", "");
-                
-                
-                // continous saving
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
-                       trialNum,
-                       Time.realtimeSinceStartup,
-                       (int)currPhase,
-                       firefly.activeInHierarchy ? 1 : 0,
-                       transformedPos,
-                       transformedRot,
-                       SharedJoystick.cleanVel,
-                       SharedJoystick.cleanRot,
-                       transformedFFPos,
-                       velocity,
-                       string.Join(",", x, y, z),
-                       string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
-                       location.ToString("F8").Trim(toTrim).Replace(" ", ""),
-                       direction,
-                       string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
-                       string.Join(",", left.eye_openness, right.eye_openness)));
 
-                if (ptb == 2)
+
+                // continous saving
+                if (isCI)
                 {
+                    transformedFFPos = new Vector3(firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x).ToString("F8").Trim(toTrim).Replace(" ", "");
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
+                           trialNum,
+                           Time.realtimeSinceStartup,
+                           (int)currPhase,
+                           firefly.activeInHierarchy ? 1 : 0,
+                           string.Join(",", player.transform.position.z, player.transform.position.y, player.transform.position.x),
+                           string.Join(",", player.transform.rotation.x, player.transform.rotation.y, player.transform.rotation.z, player.transform.rotation.w),
+                           -999,
+                           SharedJoystick.moveX * SharedJoystick.RotSpeed,
+                           transformedFFPos,
+                           -999,
+                           string.Join(",", x, y, z),
+                           string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                           location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                           direction,
+                           string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                           string.Join(",", left.eye_openness, right.eye_openness),
+                           GFFPhaseFlag,
+                           GFFTrueDegree * Mathf.Rad2Deg,
+                           FFnoise,
+                           Time.frameCount,
+                           velocity,
+                           SelfMotionSpeed));
+                }
+                else
+                {
+                    sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}",
+                           trialNum,
+                           Time.realtimeSinceStartup,
+                           (int)currPhase,
+                           firefly.activeInHierarchy ? 1 : 0,
+                           transformedPos,
+                           transformedRot,
+                           SharedJoystick.cleanVel,
+                           SharedJoystick.cleanRot,
+                           transformedFFPos,
+                           velocity_Noised,
+                           string.Join(",", x, y, z),
+                           string.Join(",", player.transform.position.x, player.transform.position.y, player.transform.position.z),
+                           location.ToString("F8").Trim(toTrim).Replace(" ", ""),
+                           direction,
+                           string.Join(",", left.pupil_diameter_mm, right.pupil_diameter_mm),
+                           string.Join(",", left.eye_openness, right.eye_openness),
+                           GFFPhaseFlag,
+                           FFnoise,
+                           GFFTrueDegree,
+                           SharedJoystick.timeCounterShared,
+                           SharedJoystick.frameCounterShared,
+                           SharedJoystick.phiShared));
+                }
+
+                if (isCI)
+                {
+                    //sb.Append("\n");
+                }
+                if (ptb == 2 && !isMoving2FF)
+                {
+                    sb.Append("\n");
+                }
+                else if (isMoving2FF)
+                {
+                    string ffPosStr = "";
+                    foreach (GameObject FF in pooledFF)
+                    {
+                        ffPosStr = ffPosStr + "," + FF.transform.position.x + "," + FF.transform.position.z;
+                    }
+                    sb.Append(ffPosStr);
                     sb.Append("\n");
                 }
                 else
@@ -1071,7 +1837,16 @@ public class Reward2D : MonoBehaviour
         isBegin = true;
         loopCount = 0;
 
+        if(PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+        }
 
+        player.transform.position = Vector3.up * p_height;
         //Nasta Added for sequential
 
         if (nFF > 1 && multiMode == 1)
@@ -1114,6 +1889,8 @@ public class Reward2D : MonoBehaviour
         }
         else if (nFF > 1 && multiMode == 2)
         {
+            player.transform.position = Vector3.up * p_height;
+            FPS.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
             for (int i = 0; i < nFF; i++)
             {
                 bool tooClose;
@@ -1121,26 +1898,166 @@ public class Reward2D : MonoBehaviour
                 {
                     tooClose = false;
                     Vector3 position;
-                    float r = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
+                    float radius = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
                     float angle = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
                     if (LR != 0.5f)
                     {
                         float side = rand.NextDouble() < LR ? 1 : -1;
-                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle * side, Vector3.up) * player.transform.forward * r;
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle * side, Vector3.up) * player.transform.forward * radius;
                     }
                     else
                     {
-                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * r;
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * radius;
                     }
                     position.y = 0.0001f;
                     if (i > 0) for (int k = 0; k < i; k++) { if (Vector3.Distance(position, pooledFF[k].transform.position) <= separation) tooClose = true; } // || Mathf.Abs(position.x - pooledFF[k - 1].transform.position.x) >= 0.5f || Mathf.Abs(position.z - pooledFF[k - 1].transform.position.z) <= 0.5f) tooClose = true; }
+                    if (isMoving2FF)
+                    {
+                        float r = (float)rand.NextDouble();
+
+                        if (r <= ratios[0])
+                        {
+                            sigma1 = sigma1s[0];
+                            sigma2 = sigma2s[0];
+                            mean = means2ff[0];
+                            StochasticFFN = N2ff[0];
+                            stochasticRadius = spawnradius[0];
+                            LootDeltaT = deltaTs[0];
+                        }
+                        else if (r > ratios[0] && r <= ratios[1])
+                        {
+                            sigma1 = sigma1s[1];
+                            sigma2 = sigma2s[1];
+                            mean = means2ff[1];
+                            StochasticFFN = N2ff[1];
+                            stochasticRadius = spawnradius[1];
+                            LootDeltaT = deltaTs[1];
+                        }
+                        else if (r > ratios[1] && r <= ratios[2])
+                        {
+                            sigma1 = sigma1s[2];
+                            sigma2 = sigma2s[2];
+                            mean = means2ff[2];
+                            StochasticFFN = N2ff[2];
+                            stochasticRadius = spawnradius[2];
+                            LootDeltaT = deltaTs[2];
+                        }
+                        else if (r > ratios[2] && r <= ratios[3])
+                        {
+                            sigma1 = sigma1s[3];
+                            sigma2 = sigma2s[3];
+                            mean = means2ff[3];
+                            StochasticFFN = N2ff[3];
+                            stochasticRadius = spawnradius[3];
+                            LootDeltaT = deltaTs[3];
+                        }
+                        else if (r > ratios[3] && r <= ratios[4])
+                        {
+                            sigma1 = sigma1s[4];
+                            sigma2 = sigma2s[4];
+                            mean = means2ff[4];
+                            StochasticFFN = N2ff[4];
+                            stochasticRadius = spawnradius[4];
+                            LootDeltaT = deltaTs[4];
+                        }
+                        else if (r > ratios[4] && r <= ratios[5])
+                        {
+                            sigma1 = sigma1s[5];
+                            sigma2 = sigma2s[5];
+                            mean = means2ff[5];
+                            StochasticFFN = N2ff[5];
+                            stochasticRadius = spawnradius[5];
+                            LootDeltaT = deltaTs[5];
+                        }
+                        else if (r > ratios[5] && r <= ratios[6])
+                        {
+                            sigma1 = sigma1s[6];
+                            sigma2 = sigma2s[6];
+                            mean = means2ff[6];
+                            StochasticFFN = N2ff[6];
+                            stochasticRadius = spawnradius[6];
+                            LootDeltaT = deltaTs[6];
+                        }
+                        else if (r > ratios[6] && r <= ratios[7])
+                        {
+                            sigma1 = sigma1s[7];
+                            sigma2 = sigma2s[7];
+                            mean = means2ff[7];
+                            StochasticFFN = N2ff[7];
+                            stochasticRadius = spawnradius[7];
+                            LootDeltaT = deltaTs[7];
+                        }
+                        else if (r > ratios[7] && r <= ratios[8])
+                        {
+                            sigma1 = sigma1s[8];
+                            sigma2 = sigma2s[8];
+                            mean = means2ff[8];
+                            StochasticFFN = N2ff[8];
+                            stochasticRadius = spawnradius[8];
+                            LootDeltaT = deltaTs[8];
+                        }
+                        else if (r > ratios[8] && r <= ratios[9])
+                        {
+                            sigma1 = sigma1s[9];
+                            sigma2 = sigma2s[9];
+                            mean = means2ff[9];
+                            StochasticFFN = N2ff[9];
+                            stochasticRadius = spawnradius[9];
+                            LootDeltaT = deltaTs[9];
+                        }
+                        for(int k = (int)StochasticFFN * 2; k < nFF; k++)
+                        {
+                            pooledFF[k].SetActive(false);
+                        }
+
+                        sigma1data.Add(sigma1);
+                        sigma2data.Add(sigma2);
+                        meansdata.Add(mean);
+                        spawnRdata.Add(stochasticRadius);
+                        deltaTdata.Add(LootDeltaT);
+                        N2ffdata.Add(StochasticFFN);
+                        /*print(StochasticFFN);
+                        print(sigma1);
+                        print(sigma2);
+                        print(mean);
+                        print(stochasticRadius);
+                        print(LootDeltaT);
+                        /*foreach (var ratio in ratios)
+                        {
+                            print(ratio);
+                        }*/
+
+                        radius = stochasticRadius + (float)rand.NextDouble();
+                        double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - rand.NextDouble();
+                        double randStdNormal = 0;
+                        if (i < StochasticFFN)
+                        {
+                            randStdNormal = mean + sigma1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        }
+                        else
+                        {
+                            randStdNormal = -mean + sigma2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        }
+                        angle = (1 + (float)randStdNormal) * (maxPhi - minPhi) / 2 + minPhi;
+                        //print(randStdNormal);
+                        position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * radius;
+                        tooClose = false;
+                    }
                     pooledFF[i].transform.position = position;
                     ffPositions[i] = position;
+                    initialPposition = player.transform.position;
+                    initialPforward = player.transform.forward;
+                    initialRotation = FPS.transform.rotation.y;
                 } while (tooClose);
             }
         }
         else
         {
+            firefly.SetActive(false);
             Vector3 position;
             float r = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
             float angle = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
@@ -1154,8 +2071,19 @@ public class Reward2D : MonoBehaviour
                 position = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle, Vector3.up) * player.transform.forward * r;
             }
             position.y = 0.0001f;
-            firefly.transform.position = position;
-            ffPositions.Add(position);
+            if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(0f) / 2;
+                float y = 0;
+                float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
+                position = new Vector3(x, y, z);
+                firefly.transform.position = position;
+            }
+            else
+            {
+                firefly.transform.position = position;
+                ffPositions.Add(position);
+            }
         }
         //Nasta Add ends
 
@@ -1197,9 +2125,6 @@ public class Reward2D : MonoBehaviour
         {
             await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold); // Used to be rb.velocity.magnitude
         }
-
-        
-        if (lineOnOff == 1) line.SetActive(true);
 
         // Here, I do something weird to the Vector3. "F8" is how many digits I want when I
         // convert to string, Trim takes off the parenthesis at the beginning and end of 
@@ -1246,70 +2171,99 @@ public class Reward2D : MonoBehaviour
             //print("setting moving FF params");
             //if ((float)rand.NextDouble() < moveRatio)
             //{
-            float r = (float)rand.NextDouble();
 
-            if (r <= v_ratios[0])
+            //real random. We do not use it in causal inference task.
+            float r = (float)rand.NextDouble();
+            if (isCI)
             {
-                //v1
-                velocity = velocities[0];
-            }
-            else if (r > v_ratios[0] && r <= v_ratios[1])
-            {
-                //v2
-                velocity = velocities[1];
-            }
-            else if (r > v_ratios[1] && r <= v_ratios[2])
-            {
-                //v3
-                velocity = velocities[2];
-            }
-            else if (r > v_ratios[2] && r <= v_ratios[3])
-            {
-                //v4
-                velocity = velocities[3];
-            }
-            else if (r > v_ratios[3] && r <= v_ratios[4])
-            {
-                //v5
-                velocity = velocities[4];
-            }
-            else if (r > v_ratios[4] && r <= v_ratios[5])
-            {
-                //v6
-                velocity = velocities[5];
-            }
-            else if (r > v_ratios[5] && r <= v_ratios[6])
-            {
-                //v7
-                velocity = velocities[6];
-            }
-            else if (r > v_ratios[6] && r <= v_ratios[7])
-            {
-                //v8
-                velocity = velocities[7];
-            }
-            else if (r > v_ratios[7] && r <= v_ratios[8])
-            {
-                //v9
-                velocity = velocities[8];
-            }
-            else if (r > v_ratios[8] && r <= v_ratios[9])
-            {
-                //v10
-                velocity = velocities[9];
-            }
-            else if (r > v_ratios[9] && r <= v_ratios[10])
-            {
-                //v11
-                velocity = velocities[10];
+                var trialpair = CItrialsetup[CItrialNum];
+                CItrialNum++;
+                velocity = trialpair.Item1;
+                SelfMotionSpeed = trialpair.Item2;
+                selfmotiontrial = trialpair.Item3 == 1;
+                AlwaysOntrial = trialpair.Item4 == 1;
+                DoubleObservtrial = trialpair.Item5 == 1;
+                string trialset = "Trial velocity =" + velocity.ToString() + "\n" + "Trial SMspeed:" + SelfMotionSpeed.ToString() + " Selfmotion:" + selfmotiontrial.ToString() + " Always On:" 
+                    + AlwaysOntrial.ToString() + "Double Obsv:" + DoubleObservtrial.ToString();
+                print(trialset);
+                noise_SD = 0;//not using noised FFs right now
             }
             else
             {
-                //v12
-                velocity = velocities[11];
+                if (r <= v_ratios[0])
+                {
+                    //v1
+                    velocity = velocities[0];
+                    noise_SD = v_noises[0];
+                }
+                else if (r > v_ratios[0] && r <= v_ratios[1])
+                {
+                    //v2
+                    velocity = velocities[1];
+                    noise_SD = v_noises[1];
+                }
+                else if (r > v_ratios[1] && r <= v_ratios[2])
+                {
+                    //v3
+                    velocity = velocities[2];
+                    noise_SD = v_noises[2];
+                }
+                else if (r > v_ratios[2] && r <= v_ratios[3])
+                {
+                    //v4
+                    velocity = velocities[3];
+                    noise_SD = v_noises[3];
+                }
+                else if (r > v_ratios[3] && r <= v_ratios[4])
+                {
+                    //v5
+                    velocity = velocities[4];
+                    noise_SD = v_noises[4];
+                }
+                else if (r > v_ratios[4] && r <= v_ratios[5])
+                {
+                    //v6
+                    velocity = velocities[5];
+                    noise_SD = v_noises[5];
+                }
+                else if (r > v_ratios[5] && r <= v_ratios[6])
+                {
+                    //v7
+                    velocity = velocities[6];
+                    noise_SD = v_noises[6];
+                }
+                else if (r > v_ratios[6] && r <= v_ratios[7])
+                {
+                    //v8
+                    velocity = velocities[7];
+                    noise_SD = v_noises[7];
+                }
+                else if (r > v_ratios[7] && r <= v_ratios[8])
+                {
+                    //v9
+                    velocity = velocities[8];
+                    noise_SD = v_noises[8];
+                }
+                else if (r > v_ratios[8] && r <= v_ratios[9])
+                {
+                    //v10
+                    velocity = velocities[9];
+                    noise_SD = v_noises[9];
+                }
+                else if (r > v_ratios[9] && r <= v_ratios[10])
+                {
+                    //v11
+                    velocity = velocities[10];
+                    noise_SD = v_noises[10];
+                }
+                else
+                {
+                    //v12
+                    velocity = velocities[11];
+                    noise_SD = v_noises[11];
+                }
             }
-
-            var direction = new Vector3();
+            
             if (LRFB)
             {
                 direction = player.transform.right;
@@ -1318,12 +2272,14 @@ public class Reward2D : MonoBehaviour
             {
                 direction = player.transform.forward;
             }
-            fv.Add(velocity);
             move = direction * velocity;
+            fv.Add(velocity);
+            fvSD.Add(noise_SD);
         }
         else
         {
             fv.Add(0.0f);
+            fvSD.Add(0.0f);
         }
 
 
@@ -1332,6 +2288,7 @@ public class Reward2D : MonoBehaviour
 
         if (nFF > 1)
         {
+            //print(mode.ToString());
             switch (mode)
             {
                 case Modes.ON:
@@ -1407,7 +2364,10 @@ public class Reward2D : MonoBehaviour
             {
 
                 case Modes.ON:
-                    firefly.SetActive(true);
+                    if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                    {
+                        firefly.SetActive(true);
+                    }
                     break;
                 case Modes.Flash:
                     on = true;
@@ -1451,8 +2411,11 @@ public class Reward2D : MonoBehaviour
                         }
                         else
                         {
-                            SetFireflyLocation();
-                            firefly.SetActive(true);
+                            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                            {
+                                SetFireflyLocation();
+                                firefly.SetActive(true);
+                            }
                         }
                         //Debug.Log("always on");
                     }
@@ -1526,7 +2489,10 @@ public class Reward2D : MonoBehaviour
                         }
                         else
                         {
-                            SetFireflyLocation();
+                            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                            {
+                                SetFireflyLocation();
+                            }
                             onDur.Add(lifeSpan);
                             OnOff(lifeSpan);
                         }
@@ -1536,7 +2502,7 @@ public class Reward2D : MonoBehaviour
         }
         phase = Phases.trial;
         currPhase = Phases.trial;
-        Debug.Log("Begin Phase End.");
+        //Debug.Log("Begin Phase End.");
     }
 
     /// <summary>
@@ -1546,28 +2512,168 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Trial()
     {
+        isTrial = true;
         // Debug.Log("Trial Phase Start.");
 
         source = new CancellationTokenSource();
 
-        var t = Task.Run(async () => {
-            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
-        }, source.Token);
+        bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
-        var t1 = Task.Run(async () => {
-            await new WaitForSeconds(timeout); // Used to be rb.velocity.magnitude
-        }, source.Token);
-
-        if (await Task.WhenAny(t, t1) == t)
+        if (lineOnOff == 1 && is_gitter)
         {
-            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            //preperation
+            GFFPhaseFlag = 1;
+            PreparationStart.Add(Time.realtimeSinceStartup);
+            line.SetActive(true);
+            LineRenderer lr;
+            motion_toggle = true;
+            lr = line.GetComponent<LineRenderer>();
+            lr.sortingOrder = 1;
+            lr.material = new Material(Shader.Find("Sprites/Default"));
+            lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
+            int endFrame = Time.frameCount;
+            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.preparation_1);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.preparation_2; prep++)
+            {
+                await new WaitForSecondsRealtime(1f / frameRate);
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, prep / (frameRate * sharedTimeStamps.preparation_2)));
+            }
+
+            //Habituation
+            GFFPhaseFlag = 2;
+            HabituationStart.Add(Time.realtimeSinceStartup);
+            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_1);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            for (int prep = 0; prep < frameRate * sharedTimeStamps.habituation_2; prep++)
+            {
+                await new WaitForSecondsRealtime(1f / frameRate);
+                float ring_color = (float)(((frameRate * sharedTimeStamps.habituation_2) - prep) /
+                    (frameRate * sharedTimeStamps.habituation_2));
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, ring_color));
+            }
+            endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.habituation_3);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            motion_toggle = false;
+            line.SetActive(false);
+        }
+        else if (lineOnOff == 1)
+        {
+            line.SetActive(true);
+        }
+
+        if (is_gitter)
+        {
+
+            //ramp up
+            GFFPhaseFlag = 2.5f;
+            float updur = PlayerPrefs.GetFloat("RampUpDur");
+            await new WaitForSeconds(updur);
+
+            float grace_time = PlayerPrefs.GetFloat("GracePeriod");
+            await new WaitForSeconds(grace_time);
+
+            // Observation
+            GFFPhaseFlag = 3;
+
+            //Firefly Generation
+            System.Random randNoise = new System.Random();
+            float CImean1 = PlayerPrefs.GetFloat("CIFFmean1");
+            float CImean2 = PlayerPrefs.GetFloat("CIFFmean2");
+            float drawSD1 = PlayerPrefs.GetFloat("CIFFSD1");
+            float drawSD2 = PlayerPrefs.GetFloat("CIFFSD2");
+            float FF_circX = 999;//FF pos in deg
+
+            float player_circX = SharedJoystick.circX * Mathf.Rad2Deg;//player pos in deg
+            double dist_decider = randNoise.NextDouble();
+            if(dist_decider > 0.5)
+            {
+                while (Mathf.Abs(FF_circX - player_circX) > 15)
+                {
+                    double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                    double u2 = 1.0 - randNoise.NextDouble();
+                    FF_circX = player_circX + (float)(CImean1 + drawSD1 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                 Math.Sin(2.0 * Math.PI * u2));
+                }
+            }
+            else
+            {
+                while (Mathf.Abs(FF_circX - player_circX) > 15)
+                {
+                    double u1 = 1.0 - randNoise.NextDouble(); //uniform(0,1] random doubles
+                    double u2 = 1.0 - randNoise.NextDouble();
+                    FF_circX = player_circX + (float)(CImean2 + drawSD2 * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                 Math.Sin(2.0 * Math.PI * u2));
+                }
+            }
+            float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(FF_circX * Mathf.Deg2Rad) / 2;
+            float y = 0;
+            float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(FF_circX * Mathf.Deg2Rad) / 2;
+            Vector3 position = new Vector3(x, y, z);
+            FF0_acc = FF_circX;
+            t0_acc = Time.time;//FF generation time
+            firefly.transform.position = position;
+            ffPositions.Add(position);
+            timeCounter = FF_circX * Mathf.Deg2Rad;
+            firefly.SetActive(true);
+            ObservationStart.Add(Time.realtimeSinceStartup);
+
+            int endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.observation);
+            await new WaitUntil(() => Time.frameCount == endFrame);
+            if (!toggle)
+            {
+                firefly.SetActive(false);
+            }
+
+            //ramp down
+            GFFPhaseFlag = 3.5f;
+            float downdur = PlayerPrefs.GetFloat("RampDownDur");
+            await new WaitForSeconds(downdur);
+        }
+
+        //Action
+        GFFPhaseFlag = 4;
+        t1_acc = Time.time;//Action phase begin time
+        if (is_gitter)
+        {
+            ActionStart.Add(Time.realtimeSinceStartup);
+            await new WaitForSeconds(0.75f);
+            if (DoubleObservtrial)
+            {
+                firefly.SetActive(true);
+            }
+            await new WaitForSeconds(0.3f);
+            if (!toggle)
+            {
+                firefly.SetActive(false);
+            }
+            await new WaitForSeconds(0.45f);
         }
         else
         {
-            //print("Timed out");
-            isTimeout = true;
-        }
+            ActionStart.Add(Time.realtimeSinceStartup);
+            var t = Task.Run(async () => {
+                await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) >= velocityThreshold); // Used to be rb.velocity.magnitude
+            }, source.Token);
 
+
+            var t1 = Task.Run(async () => {
+                await new WaitForSecondsRealtime(timeout); // Used to be rb.velocity.magnitude
+            }, source.Token);
+
+            if (await Task.WhenAny(t, t1) == t)
+            {
+                await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) < velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) < rotationThreshold
+                && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f)) || t1.IsCompleted || currPhase == Phases.check); // Used to be rb.velocity.magnitude // || (angleL > 3.0f or angleR > 3.0f)
+            }
+            else
+            {
+                //print("Timed out");
+                isTimeout = true;
+            }
+        }
+        
+        GFFPhaseFlag = 5;
         source.Cancel();
 
         if (mode == Modes.Flash)
@@ -1627,7 +2733,7 @@ public class Reward2D : MonoBehaviour
 
             if (toggle && multiMode != 1)
             {
-                onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
+                //onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
             }
         }
         //Nasta Add ends
@@ -1635,6 +2741,7 @@ public class Reward2D : MonoBehaviour
         move = new Vector3(0.0f, 0.0f, 0.0f);
         velocity = 0.0f;
         line.SetActive(false);
+        isTrial = false;
         phase = Phases.check;
         currPhase = Phases.check;
         // Debug.Log("Trial Phase End.");
@@ -1647,7 +2754,52 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     async Task Check()
     {
-        Debug.Log(loopCount);
+        // Self Report
+        GFFPhaseFlag = 5;
+        SelfReportStart.Add(Time.realtimeSinceStartup);
+
+        if (isMoving)
+        {
+            if(lineOnOff == 1)
+            {
+                line.SetActive(true);
+                LineRenderer lr;
+                lr = line.GetComponent<LineRenderer>();
+                lr.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 1f));
+            }
+
+            currPhase = Phases.question;
+
+            await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+
+            panel.SetActive(true);
+
+            await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
+
+            if (SharedJoystick.currentRot < 0.0f)
+            {
+                // no
+                answer.Add(0);
+            }
+            else
+            {
+                // yes
+                answer.Add(1);
+            }
+
+            panel.SetActive(false);
+
+            await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+        }
+        else
+        {
+            answer.Add(0);
+        }
+        //Debug.Log(loopCount);
+
+        // Feedback
+        GFFPhaseFlag = 6;
+        FeedbackStart.Add(Time.realtimeSinceStartup);
 
         string ffPosStr = "";
 
@@ -1662,13 +2814,20 @@ public class Reward2D : MonoBehaviour
 
         pPos = player.transform.position - new Vector3(0.0f, p_height, 0.0f);
 
-        pos = player.transform.position;
+        if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            pos = new Vector3(player.transform.position.z, player.transform.position.y, player.transform.position.x);
+        }
+        else
+        {
+            pos = player.transform.position;
+        }
         rot = player.transform.rotation;
 
         if (!isTimeout)
         {
             //source = new CancellationTokenSource();
-            // Debug.Log("Check Phase Start.");
+            //Debug.Log("Check Phase Start.");
 
             float delay = c_lambda * Mathf.Exp(-c_lambda * ((float)rand.NextDouble() * (c_max - c_min) + c_min));
             // Debug.Log("firefly delay: " + delay);
@@ -1746,7 +2905,7 @@ public class Reward2D : MonoBehaviour
                 proximity = true;
             }
         }
-        else if (nFF > 1 && multiMode == 2)
+        else if (nFF > 1 && multiMode == 2 && !isMoving2FF)
         {
             foreach (GameObject FF in pooledFF)
             {
@@ -1760,28 +2919,158 @@ public class Reward2D : MonoBehaviour
                 distances.Add(distance);
             }
         }
+        else if (isMoving2FF)
+        {
+            float meanangle1 = (1 + mean) * (maxPhi - minPhi) / 2 + minPhi;
+            float meanangle2 = (1 - mean) * (maxPhi - minPhi) / 2 + minPhi;
+            float r = stochasticRadius + 0.5f;
+            Vector3 meanposition1;
+            meanposition1.y = 0.0001f;
+            Vector3 meanposition2;
+            meanposition2.y = 0.0001f;
+            meanposition1 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(meanangle1, Vector3.up) * initialPforward * r;
+            meanposition2 = (initialPposition - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(meanangle2, Vector3.up) * initialPforward * r;
+            Vector3 meanA1 = meanposition1 - initialPposition;
+            meanA1.y = 0; meanA1.z = 0;
+            float meanD1 = meanA1.magnitude;
+            Vector3 meanA2 = meanposition2 - initialPposition;
+            meanA2.y = 0; meanA2.z = 0;
+            float meanD2 = -meanA2.magnitude;
+            Vector3 meanAP = pPos - initialPposition;
+            meanAP.y = 0; meanAP.z = 0;
+            float meanDP = meanAP.magnitude;
+            float score1 = (float)Math.Exp(-Math.Pow((meanDP - meanD1), 2)/25);
+            float score2 = (float)Math.Exp(-Math.Pow((meanDP - meanD2), 2)/25);
+            List<float> values = new List<float>();
+            for (float i = minPhi; i < maxPhi; i = i + 0.1f)
+            {
+                values.Add((float)Math.Exp(-Math.Pow((i - meanD1), 2) / 25) + (float)Math.Exp(-Math.Pow((i - meanD2), 2) / 25));
+            }
+            float maxima = (from x in values orderby x descending select x).First();
+            score2FF = (score1 + score2)/(maxima);
+            TextMeshPro textmeshPro = scoring.GetComponent<TextMeshPro>();
+            totalScore = totalScore + score2FF;
+            textmeshPro.SetText("Total Score:{0}\nLast Trial:{1} ", (float)Math.Round((decimal)totalScore, 1), (float)Math.Round((decimal)score2FF, 1));
+            if (PlayerPrefs.GetInt("Feedback") == 1)
+            {
+                scoring.SetActive(true);
+                await new WaitForSeconds(2);
+                scoring.SetActive(false);
+            }
+            scores2FF.Add(score2FF);
+            if (score2FF > winscore)
+            {
+                isReward = true;
+                proximity = true;
+            }
+        }
+        else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            float reward_radius = (maxDrawDistance + minDrawDistance) / 2;
+            float player_degree = 0;
+            if(pPos.x > 30)
+            {
+                player_degree = Mathf.Acos(30 / reward_radius) * Mathf.Rad2Deg;
+            }
+            else
+            {
+                player_degree = Mathf.Acos(pPos.x / reward_radius) * Mathf.Rad2Deg;
+            }
+            float FF_Degree = Mathf.Acos(firefly.transform.position.x / reward_radius) * Mathf.Rad2Deg;
+            float degree_score = Mathf.Abs(player_degree - FF_Degree);
+            if(degree_score <= 25)
+            {
+                proximity = true;
+            }
+            if (degree_score <= 5)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                star4.SetActive(true);
+                star5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(5f);
+            }
+            else if (degree_score <= 10)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                star4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(4f);
+            }
+            else if (degree_score <= 15)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                star3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(3f);
+            }
+            else if (degree_score <= 20)
+            {
+                star1.SetActive(true);
+                star2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(2f);
+            }
+            else if (degree_score <= 25)
+            {
+                star1.SetActive(true);
+                darkstar2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(1f);
+            }
+            else
+            {
+                darkstar1.SetActive(true);
+                darkstar2.SetActive(true);
+                darkstar3.SetActive(true);
+                darkstar4.SetActive(true);
+                darkstar5.SetActive(true);
+                starring.SetActive(true);
+                CIScores.Add(0f);
+            }
+            await new WaitForSeconds(sharedTimeStamps.feedback);
+            star1.SetActive(false);
+            star2.SetActive(false);
+            star3.SetActive(false);
+            star4.SetActive(false);
+            star5.SetActive(false);
+            darkstar1.SetActive(false);
+            darkstar2.SetActive(false);
+            darkstar3.SetActive(false);
+            darkstar4.SetActive(false);
+            darkstar5.SetActive(false);
+            starring.SetActive(false);
+            print(string.Format("Scored: {0}", degree_score));
+            //print(player_degree);
+            //print(FF_Degree);
+            ffPosStr = string.Format("{0},{1},{2}", firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x);
+            distances.Add(degree_score);
+        }
         else
         {
             if (Vector3.Distance(pPos, firefly.transform.position) <= fireflyZoneRadius) proximity = true;
             distance = Vector3.Distance(pPos, firefly.transform.position);
-            //ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
+            ffPosStr = firefly.transform.position.ToString("F5").Trim(toTrim).Replace(" ", "");
             distances.Add(distance);
         }
 
         isCheck = true;
-
-        //if (isReward && proximity)
-        //{
-        //    audioSource.clip = winSound;
-        //    //points++;
-        //}
-        //else
-        //{
-        //    audioSource.clip = loseSound;
-        //}
-
-        //print(string.Format("Proximity: {0}", proximity));
-        //print(string.Format("isReward: {0}", isReward));
 
         //Nasta Added sequential
         if (isReward && proximity)
@@ -1812,6 +3101,15 @@ public class Reward2D : MonoBehaviour
                     //Debug.Log("Juice: " + DateTime.Now.ToLongTimeString());
                 }
             }
+            else if (isMoving2FF)
+            {
+                audioSource.clip = winSound;
+                if (PlayerPrefs.GetInt("Feedback ON") == 0)
+                {
+                    audioSource.clip = neutralSound;
+                }
+                audioSource.Play();
+            }
             else
             {
                 audioSource.clip = winSound;
@@ -1834,6 +3132,10 @@ public class Reward2D : MonoBehaviour
         else
         {
             audioSource.clip = loseSound;
+            if (PlayerPrefs.GetInt("Feedback ON") == 0)
+            {
+                audioSource.clip = neutralSound;
+            }
             //juiceDuration.Add(0.0f);
             rewardTime.Add(0.0f);
             audioSource.Play();
@@ -1875,7 +3177,14 @@ public class Reward2D : MonoBehaviour
                     }
 
                     player.transform.position = Vector3.up * p_height;
-                    player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                    if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                    {
+                        player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                    }
+                    else
+                    {
+                        player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                    }
 
                     score.Add(isReward && proximity ? 1 : 0);
                     timedout.Add(isTimeout ? 1 : 0);
@@ -1932,7 +3241,14 @@ public class Reward2D : MonoBehaviour
                 isTimeout = false;
                 //nasta added 
                 player.transform.position = Vector3.up * p_height;
-                player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+                {
+                    player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                }
+                else
+                {
+                    player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                }
                 //Nasta Add ends
                 await new WaitForSeconds(wait);
 
@@ -1979,43 +3295,21 @@ public class Reward2D : MonoBehaviour
             ffPosStr = "";
 
             isTimeout = false;
-            player.transform.position = Vector3.up * p_height;
-            player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+            //player.transform.position = Vector3.up * p_height;
+            //player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
-            if (isMoving)
+            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
-                currPhase = Phases.question;
-
-                await new WaitUntil(() => Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
-
-                panel.SetActive(true);
-
-                await new WaitUntil(() => SharedJoystick.currentRot < -10.0f || SharedJoystick.currentRot > 10.0f);
-
-                if (SharedJoystick.currentRot < 0.0f)
-                {
-                    // no
-                    answer.Add(0);
-                }
-                else
-                {
-                    // yes
-                    answer.Add(1);
-                }
-
-                panel.SetActive(false);
-
-                await new WaitUntil(() => (Mathf.Abs(SharedJoystick.currentSpeed) <= velocityThreshold && Mathf.Abs(SharedJoystick.currentRot) <= rotationThreshold) && (SharedJoystick.moveX == 0.0f && SharedJoystick.moveY == 0.0f));
+                player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                player.transform.position = Vector3.up * p_height;
             }
             else
             {
-                answer.Add(0);
+                player.transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                player.transform.position = Vector3.up * p_height;
             }
 
-            //player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-            //player.transform.position = Vector3.up * p_height;
-
-            if (!proximity && (PlayerPrefs.GetInt("Feedback ON") == 1))
+            if (!proximity && (PlayerPrefs.GetInt("Feedback ON") == 1) && PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
                 currPhase = Phases.feedback;
                 firefly.SetActive(true);
@@ -2037,13 +3331,22 @@ public class Reward2D : MonoBehaviour
 
             isEnd = true;
 
-            await new WaitForSeconds(wait);
+            if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+            {
+                await new WaitForSeconds(wait);
+            }
 
             phase = Phases.begin;
             // Debug.Log("Check Phase End.");
         }
 
+        timeCounter = 0;
+        var liner = line.GetComponent<LineRenderer>();
+        liner.materials[0].SetColor("_Color", new Color(0.5529411f, 0.5607843f, 1f, 0f));
+        line.SetActive(false);
 
+        //end of trial
+        GFFPhaseFlag = 0;
     }
 
     void SetFireflyLocation()
@@ -2061,20 +3364,41 @@ public class Reward2D : MonoBehaviour
                 do
                 {
                     tooClose = false;
+
                     float r_i = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
                     float angle_i = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
                     if (LR != 0.5f)
                     {
                         float side_i = rand.NextDouble() < LR ? 1 : -1;
-                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle_i * side_i, Vector3.up) * player.transform.forward * r_i;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + 
+                            Quaternion.AngleAxis(angle_i * side_i, Vector3.up) * player.transform.forward * r_i;
                     }
                     else
                     {
-                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) + 
+                            Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
                     }
                     position_i.y = 0.0001f;
-                    if (i > 0) for (int k = 0; k < i; k++) { if (Vector3.Distance(position_i, pooledFF[k].transform.position) <= 1.0f || Mathf.Abs(position_i.x - pooledFF[k - 1].transform.position.x) >= 0.5f || Mathf.Abs(position_i.z - pooledFF[k - 1].transform.position.z) <= 0.5f) tooClose = true; }
-                }
+                    if (i > 0)
+                        for (int k = 0; k < i; k++)
+                        { if (Vector3.Distance(position_i, pooledFF[k].transform.position) <= 1.0f || 
+                                Mathf.Abs(position_i.x - pooledFF[k - 1].transform.position.x) >= 0.5f || 
+                                Mathf.Abs(position_i.z - pooledFF[k - 1].transform.position.z) <= 0.5f) 
+                                tooClose = true; }
+                    if (isMoving2FF)
+                    {
+                        r_i = 10;
+                        tooClose = false;
+                        System.Random randFFdist = new System.Random();
+                        double u1 = 1.0 - randFFdist.NextDouble(); //uniform(0,1] random doubles
+                        double u2 = 1.0 - randFFdist.NextDouble();
+                        double randStdNormal = 0.2 * noise_SD * Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                     Math.Sin(2.0 * Math.PI * u2);
+                        angle_i = (1+(float)randStdNormal) * (maxPhi - minPhi)/2 + minPhi;
+                        position_i = (player.transform.position - new Vector3(0.0f, p_height, 0.0f)) +
+                            Quaternion.AngleAxis(angle_i, Vector3.up) * player.transform.forward * r_i;
+                    }
+                } 
                 while (tooClose);
                 posTemp.Add(position_i);
                 distTemp[i] = Vector3.Distance(player.transform.position, position_i);
@@ -2285,7 +3609,10 @@ public class Reward2D : MonoBehaviour
     {
         CancellationTokenSource source = new CancellationTokenSource();
 
-        firefly.SetActive(true);
+        if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
+        {
+            firefly.SetActive(true);
+        }
 
         var t = Task.Run(async () =>
         {
@@ -2441,18 +3768,47 @@ public class Reward2D : MonoBehaviour
         return (coords, hit);
     }
 
+    void drawLine(float radius, int segments)
+    {
+        LineRenderer lr;
+        lr = line.GetComponent<LineRenderer>();
+        Vector3[] points = new Vector3[segments + 1];
+        for (int i = 0; i < segments; i++)
+        {
+            float angle = ((float)i / (float)segments) * 360 * Mathf.Deg2Rad;
+            float x = Mathf.Sin(angle) * radius;
+            float z = Mathf.Cos(angle) * radius;
+            points[i] = new Vector3(x, 0f, z);
+        }
+        points[segments] = points[0];
+        lr.positionCount = segments + 1;
+        lr.SetPositions(points);
+    }
 
-/// <summary>
-/// If you provide filepaths beforehand, the program will save all of your data as .csv files.
-/// 
-/// I did something weird where I saved the rotation/position data as strings; I did this
-/// because the number of columns that the .csv file will have will vary depending on the
-/// number of FF. Each FF has it's own position and distance from the player, and that data
-/// has to be saved along with everything else, and I didn't want to allocate memory for all
-/// the maximum number of FF if not every experiment will have 5 FF, so concatenating all of
-/// the available FF positions and distances into one string and then adding each string as
-/// one entry in a list was my best idea.
-/// </summary>
+    void Shuffle(List<Tuple<float, float, float, float, float>> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rand.Next(n + 1);
+            var value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
+    /// <summary>
+    /// If you provide filepaths beforehand, the program will save all of your data as .csv files.
+    /// 
+    /// I did something weird where I saved the rotation/position data as strings; I did this
+    /// because the number of columns that the .csv file will have will vary depending on the
+    /// number of FF. Each FF has it's own position and distance from the player, and that data
+    /// has to be saved along with everything else, and I didn't want to allocate memory for all
+    /// the maximum number of FF if not every experiment will have 5 FF, so concatenating all of
+    /// the available FF positions and distances into one string and then adding each string as
+    /// one entry in a list was my best idea.
+    /// </summary>
     public void Save()
     { 
         try
@@ -2463,7 +3819,7 @@ public class Reward2D : MonoBehaviour
 
             StringBuilder csvDisc = new StringBuilder();
 
-            if (nFF > 1)
+            if (nFF > 1 && !isMoving2FF)
             {
                 string ffPosStr = "";
                 string cPosStr = "";
@@ -2482,16 +3838,24 @@ public class Reward2D : MonoBehaviour
 
                 if (nFF > 1 && multiMode == 1)
                 {
-                    firstLine = string.Format("n,max_v,max_w,ffv,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}{1}{2}{3}rewarded,timeout,beginTime,{4}endTime,checkWait,interWait", ffPosStr, cPosStr, cRotStr, distStr, checkStr);
+                    firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}{1}{2}{3}rewarded,timeout,beginTime,{4}endTime,checkWait,interWait", ffPosStr, cPosStr, cRotStr, distStr, checkStr);
                 }
                 else
                 {
-                    firstLine = string.Format("n,max_v,max_w,ffv,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait", ffPosStr, distStr);
+                    firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait", ffPosStr, distStr);
                 }
+            }
+            else if (isMoving2FF)
+            {
+                firstLine = string.Format("n,max_v,max_w,ffv,ffvNoiseSD,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,score,sigma1,sigma2,mean,NperSigma,deltaT,FFspawnRadius");
+            }
+            else if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                firstLine = "n,max_v,max_w,ffv,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,duration,delays,ITI,endTime,PrepStart,HabituStart,ObservStart,ActionStart,ReportStart,FeedbackStart,Score,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
             else
             {
-                firstLine = "n,max_v,max_w,ffv,onDuration,density,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,juiceDuration,beginTime,checkTime,rewardTime,endTime,checkWait,interWait," + PlayerPrefs.GetString("Name") + "," + PlayerPrefs.GetString("Date") + "," + PlayerPrefs.GetInt("Run Number").ToString("D3");
+                firstLine = "n,max_v,max_w,ffv,ffvNoiseSD,onDuration,Answer,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,ffX,ffY,ffZ,pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,distToFF,rewarded,timeout,beginTime,checkTime,endTime,checkWait,interWait,Gaussamp,Gaussdur,GaussSD,flowdur,Human," + DateTime.Now.ToString("d") + ",Run Number 000";
             }
 
             csvDisc.AppendLine(firstLine);
@@ -2515,7 +3879,8 @@ public class Reward2D : MonoBehaviour
                 max_v.Count,
                 max_w.Count,
                 fv.Count,
-                onDur.Count,
+                fvSD.Count,
+                onDur.Count
             };
             if (ptb != 2)
             {
@@ -2531,8 +3896,27 @@ public class Reward2D : MonoBehaviour
                 temp.Add(gaussSD.Count);
                 temp.Add(flowDur.Count);
             }
+            if (isMoving2FF)
+            {
+                temp.Add(scores2FF.Count);
+                temp.Add(sigma1data.Count);
+                temp.Add(sigma2data.Count);
+                temp.Add(spawnRdata.Count);
+                temp.Add(N2ffdata.Count);
+                temp.Add(deltaTdata.Count);
+                temp.Add(meansdata.Count);
+            }
+            if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                temp.Add(PreparationStart.Count);
+                temp.Add(HabituationStart.Count);
+                temp.Add(ObservationStart.Count);
+                temp.Add(ActionStart.Count);
+                temp.Add(SelfReportStart.Count);
+                temp.Add(FeedbackStart.Count);
+                temp.Add(CIScores.Count);
+            }
 
-            
             //nasta added
             if (nFF > 1 && multiMode == 1)
             {
@@ -2543,12 +3927,12 @@ public class Reward2D : MonoBehaviour
                 temp.Add(checkTime.Count);
             }
 
-            //for (int i = 0; i < temp.Count; i++)
-            //{
-            //    print(temp[i]);
-            //}
-
             temp.Sort();
+            for (int i = 0; i < temp.Count; i++)
+            {
+                //print(string.Format("temp{0}", i));
+                //print(temp[i]);
+            }
 
             var totalScore = 0;
 
@@ -2558,11 +3942,12 @@ public class Reward2D : MonoBehaviour
                 {
                     //     firstLine = string.Format("n,max_v,max_w,ffv,onDuration,PosX0,PosY0,PosZ0,RotX0,RotY0,RotZ0,RotW0,{0}pCheckX,pCheckY,pCheckZ,rCheckX,rCheckY,rCheckZ,rCheckW,{1}timeout,beginTime,{2}rewardTime,endTime,checkWait,interWait", ffPosStr, distStr, checkStr);
 
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
                         onDur[i],
                         origin[i],
                         heading[i],
@@ -2582,15 +3967,16 @@ public class Reward2D : MonoBehaviour
                     totalScore += score[i];
                 }
             }
-            else if (ptb == 0 || ptb == 1)
+            else if (ptb == 0 && !isMoving2FF || ptb == 1 && !isMoving2FF)
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
                         onDur[i],
                         origin[i],
                         heading[i],
@@ -2610,15 +3996,76 @@ public class Reward2D : MonoBehaviour
                     csvDisc.AppendLine(line);
                 }
             }
-            else
+            else if (isMoving2FF)
             {
                 for (int i = 0; i < temp[0]; i++)
                 {
-                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}",
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}",
                         n[i],
                         max_v[i],
                         max_w[i],
                         fv[i],
+                        fvSD[i],
+                        onDur[i],
+                        origin[i],
+                        heading[i],
+                        cPos[i],
+                        cRot[i],
+                        scores2FF[i],
+                        sigma1data[i],
+                        sigma2data[i],
+                        meansdata[i],
+                        N2ffdata[i],
+                        deltaTdata[i],
+                        spawnRdata[i]);
+                    csvDisc.AppendLine(line);
+                }
+            }
+            else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                for (int i = 0; i < temp[0]; i++)
+                {
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26}",
+                        n[i],
+                        max_v[i],
+                        max_w[i],
+                        fv[i],
+                        onDur[i],
+                        answer[i],
+                        origin[i],
+                        heading[i],
+                        ffPos[i],
+                        cPos[i],
+                        cRot[i],
+                        dist[i],
+                        score[i],
+                        timedout[i],
+                        beginTime[i],
+                        checkTime[i],
+                        -999,
+                        -999,
+                        -999,
+                        endTime[i],
+                        PreparationStart[i],
+                        HabituationStart[i],
+                        ObservationStart[i],
+                        ActionStart[i],
+                        SelfReportStart[i],
+                        FeedbackStart[i],
+                        CIScores[i]);
+                    csvDisc.AppendLine(line);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < temp[0]; i++)
+                {
+                    var line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
+                        n[i],
+                        max_v[i],
+                        max_w[i],
+                        fv[i],
+                        fvSD[i],
                         onDur[i],
                         answer[i],
                         origin[i],
@@ -2648,6 +4095,40 @@ public class Reward2D : MonoBehaviour
             File.WriteAllText(discPath, csvDisc.ToString());
 
             //PlayerPrefs.GetInt("Save") == 1)
+
+            if (isCI)
+            {
+                int trial_count = 0;
+                string metaPath = path + "/CIMetaData_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+                File.AppendAllText(metaPath, "TrialNum,TrialFFV,TrialSelfMotionSpeed,Selfmotion,ObservCondition,FFmoving\n");//TODO
+                foreach (var tuple in CItrialsetup)
+                {
+                    int obscondition;
+                    if(alwaysON[trial_count] == true)
+                    {
+                        obscondition = 0;
+                    }
+                    else if(tuple.Item5 == 0)
+                    {
+                        obscondition = 1;
+                    }
+                    else
+                    {
+                        obscondition = 2;
+                    }
+                    trial_count++;
+                    if (tuple.Item1 != 0)
+                    {
+                        string trialtext = string.Format("{0},{1},{2},{3},{4},{5} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3, obscondition, 1.ToString());
+                        File.AppendAllText(metaPath, trialtext);
+                    }
+                    else
+                    {
+                        string trialtext = string.Format("{0},{1},{2},{3},{4},{5} \n", trial_count, tuple.Item1, tuple.Item2, tuple.Item3, obscondition, 0.ToString());
+                        File.AppendAllText(metaPath, trialtext);
+                    }
+                }
+            }
 
             string configPath = path + "/config_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".xml";
 
@@ -2863,8 +4344,8 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Frequency").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("DutyCycle");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Duty Cycle").ToString());
+            xmlWriter.WriteStartElement("MultiMode");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Multi Mode").ToString());
             xmlWriter.WriteEndElement();
 
             //xmlWriter.WriteStartElement("FireflyLifeSpan");
@@ -2914,6 +4395,10 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("MovingON");
             xmlWriter.WriteString(PlayerPrefs.GetInt("Moving ON").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("SelfMotionOn");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("SelfMotionOn").ToString());
             xmlWriter.WriteEndElement();
 
             //xmlWriter.WriteStartElement("RatioMoving");
@@ -3018,6 +4503,58 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("VR12");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("VR12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN11");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN11").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("VN12");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("VN12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FixedYSpeed");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FixedYSpeed").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
@@ -3281,6 +4818,305 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteEndElement();
 
+
+            xmlWriter.WriteStartElement("Setting");
+            xmlWriter.WriteAttributeString("Type", "Stochastic Fire Flies Settings");
+
+            xmlWriter.WriteStartElement("StochasticFireFlies");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("Stochastic Fire Flies").ToString());
+            xmlWriter.WriteEndElement();
+
+
+            xmlWriter.WriteStartElement("Sigma1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma12");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma12").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma22");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma22").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma13");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma13").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma23");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma23").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma14");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma14").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma24");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma24").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma15");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma15").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma25");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma25").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma16");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma16").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma26");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma26").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma17");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma17").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma27");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma27").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma18");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma18").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma28");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma28").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma19");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma19").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma29");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma29").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma110");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma110").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Sigma210");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Sigma210").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Means10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Means10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("NFFperSigma10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("NFFperSigma10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("LootDeltaT10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("LootDeltaT10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFRadius10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFRadius10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Ratio10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Ratio10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Feedback");
+            xmlWriter.WriteString(PlayerPrefs.GetInt("Feedback").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("WinScore");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("WinScore").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteEndElement();
+
             xmlWriter.WriteStartElement("Setting");
             xmlWriter.WriteAttributeString("Type", "Data Collection Settings");
 
@@ -3290,6 +5126,159 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("FullON");
             xmlWriter.WriteString(PlayerPrefs.GetInt("Full ON").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Setting");
+            xmlWriter.WriteAttributeString("Type", "Causal Inference Settings");
+
+            xmlWriter.WriteStartElement("Velocities1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities4").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities5");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities5").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities6");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities6").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities7");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities7").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities8");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities8").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities9");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities9").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities10");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities10").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("Velocities11");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocities11").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD3");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD3").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFNoiseSD4");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFNoiseSD4").ToString());
+            xmlWriter.WriteEndElement();
+
+            for(int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD1";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD2";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD3";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "V" + i.ToString() + "SD4";
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 6; i++)
+            {
+                string savename = "SelfMotionSpeed" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            for (int i = 1; i < 6; i++)
+            {
+                string savename = "NtrialsSM" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            xmlWriter.WriteStartElement("RampUpDur");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("RampUpDur").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("RampDownDur");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("RampDownDur").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFmean1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFmean1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFmean2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFmean2").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFSD1");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFSD1").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("CIFFSD2");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("CIFFSD2").ToString());
+            xmlWriter.WriteEndElement();
+
+            for (int i = 1; i < 12; i++)
+            {
+                string savename = "CIRatios" + i.ToString();
+                xmlWriter.WriteStartElement(savename);
+                xmlWriter.WriteString(PlayerPrefs.GetFloat(savename).ToString());
+                xmlWriter.WriteEndElement();
+            }
+
+            xmlWriter.WriteStartElement("GracePeriod");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("GracePeriod").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("FFacceleration");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("FFacceleration").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();

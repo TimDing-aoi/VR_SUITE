@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using static Reward2D;
 using UnityEngine.InputSystem.LowLevel;
+using static timelinestamps;
 
 public class AlloEgoJoystick : MonoBehaviour
 {
@@ -29,11 +30,17 @@ public class AlloEgoJoystick : MonoBehaviour
 
     public float moveX;
     public float moveY;
+    public float circX;
+    public float circXlast;
     public int press;
     [ShowOnly] public float currentSpeed = 0.0f;
     [ShowOnly] public float currentRot = 0.0f;
     public float RotSpeed = 0.0f;
     public float MaxSpeed = 0.0f;
+
+    public float phiShared = 0.0f;
+
+    public bool worldcentric = true;
 
     //readonly List<float> t = new List<float>();
     //readonly List<bool> isPtb = new List<bool>();
@@ -57,6 +64,17 @@ public class AlloEgoJoystick : MonoBehaviour
     float[] y = new float[count + 1];
     ulong[] xcomp;
     float aDivY0;
+
+    public float timeCounterShared = 0;
+    private float timeCounter = 0;
+    public float frameCounterShared = 0;
+    private float frameCounter = 0;
+    private float hbobCounter = 0;
+    private float accelCounter = 0;
+    private float decelCounter = 0;
+    private float tmpCnt = 0.0f;
+
+    public GameObject FF;
 
     [HideInInspector] public bool ptb;
 
@@ -100,6 +118,11 @@ public class AlloEgoJoystick : MonoBehaviour
     private float prevX;
     private float prevY;
 
+    //Causal Inference Max rot speed
+    private float maxJoyRotDeg = 60.0f;// deg/s
+
+    private float frameRate = 90.0f; // frame rate
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -111,15 +134,22 @@ public class AlloEgoJoystick : MonoBehaviour
         seed = UnityEngine.Random.Range(1, 10000);
         rand = new System.Random(seed);
 
+        circX = 0;
+
         ptb = PlayerPrefs.GetInt("Type") != 2;
 
         //print(PlayerPrefs.GetInt("Type"));
         //print(ptb);
 
-        if (!ptb)
+        if (!ptb && PlayerPrefs.GetFloat("FixedYSpeed") == 0)
         {
             MaxSpeed = 20.0f * PlayerPrefs.GetFloat("Player Height");
             RotSpeed = 90.0f;
+        }
+        else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+        {
+            MaxSpeed = PlayerPrefs.GetFloat("FixedYSpeed") * 0.1f;
+            RotSpeed = 60.0f;
         }
 
         meanDist = PlayerPrefs.GetFloat("Mean Distance");
@@ -194,6 +224,12 @@ public class AlloEgoJoystick : MonoBehaviour
             CTIJoystick joystick = CTIJoystick.current;
             moveX = joystick.x.ReadValue();
             moveY = joystick.y.ReadValue();
+            /*moveX = Input.GetAxis("Vertical");
+            if (Mathf.Abs(moveX) < 0.05f)
+            {
+                moveX = 0;
+            }
+            moveY = 1.0f;*/
 
             if (moveX < 0.0f)
             {
@@ -237,6 +273,9 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             prevY = moveY;
 
+            float minR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
+            float maxR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
+
             if (ptb)
             {
                 ProcessNoise();
@@ -244,15 +283,155 @@ public class AlloEgoJoystick : MonoBehaviour
             }
             else
             {
-                currentSpeed = moveY * MaxSpeed;
                 currentRot = moveX * RotSpeed;
+                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+                {
+                    if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2)
+                    {
+                        currentSpeed = 0.0f;
+                        SharedReward.currPhase = Phases.check;
+                    }
+                    else
+                    {
+                        currentSpeed = 1.0f;
+                    }
+                }
+                else
+                {
+                    currentSpeed = moveY * MaxSpeed;
+                }
                 cleanVel = currentSpeed;
                 cleanRot = currentRot;
             }
             //transform.position = transform.position + transform.forward * currentSpeed * Time.fixedDeltaTime;
             //transform.Rotate(0f, currentRot * Time.fixedDeltaTime, 0f);
-            transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
-            transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+            if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+            {
+                moveY = PlayerPrefs.GetFloat("FixedYSpeed");
+                //print(Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position));
+
+                bool self_motion = SharedReward.selfmotiontrial;
+                if (Vector3.Distance(new Vector3(0f, 0f, 0f), transform.position) > (minR + maxR) / 2 || SharedReward.GFFPhaseFlag == 1
+                    || SharedReward.GFFPhaseFlag == 2 || !self_motion && SharedReward.GFFPhaseFlag == 3 || SharedReward.isTimeout)
+                //Out of circle(Feedback) OR Preparation & Habituation & No selfmotion's Observation OR Timed Out
+                {
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+                    moveY = 0;                    
+                    timeCounter = 0;
+                    accelCounter = 0;
+                    decelCounter = 0;
+                    frameCounter = 0;
+                    hbobCounter = 0;
+                    circX = 0;
+                }
+                else if (self_motion && SharedReward.GFFPhaseFlag == 2.5)
+                //Selfmotion Ramp Up
+                {
+                    float updur = PlayerPrefs.GetFloat("RampUpDur");
+                    float accelTime = Mathf.Ceil(updur * 90);
+                    float SMspeed = SharedReward.SelfMotionSpeed;
+                    float acceleration = (accelCounter / accelTime) * SMspeed;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    accelCounter++;
+                    frameCounter = 0;
+                    hbobCounter += acceleration/frameRate;
+                    if (hbobCounter > 0)
+                    {
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
+                    }
+                    else
+                    {
+                        circX = -hbobCounter * Mathf.Deg2Rad;
+                    }
+                }
+                else if (self_motion && SharedReward.GFFPhaseFlag == 3.5)
+                //Selfmotion Ramp Down
+                {
+                    float downdur = PlayerPrefs.GetFloat("RampDownDur");
+                    float decelTime = Mathf.Ceil(downdur * 90);
+                    float SMspeed = SharedReward.SelfMotionSpeed;
+                    float deceleration = (1-(decelCounter / decelTime)) * SMspeed;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    decelCounter++;
+                    frameCounter = 0;
+                    hbobCounter += deceleration/frameRate;
+                    if(hbobCounter > 0)
+                    {
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
+                    }
+                    else
+                    {
+                        circX = -hbobCounter * Mathf.Deg2Rad;
+                    }
+                }
+                else if (self_motion && SharedReward.GFFPhaseFlag == 3) 
+                //Selfmotion Observation
+                {
+                    float SMspeed = SharedReward.SelfMotionSpeed/frameRate;
+                    transform.rotation = Quaternion.Euler(0.0f, 90.0f + hbobCounter, 0.0f);
+                    moveY = 0;
+                    timeCounter = 0;
+                    frameCounter = 0;
+                    hbobCounter += SMspeed;
+                    if (hbobCounter > 0)
+                    {
+                        circX = (360 - hbobCounter) * Mathf.Deg2Rad;
+                    }
+                    else
+                    {
+                        circX = -hbobCounter * Mathf.Deg2Rad;
+                    }
+                }
+                else if(SharedReward.GFFPhaseFlag == 4)
+                //action
+                {
+                    int framcntTemp = Time.frameCount;
+                    float fixedSpeed = PlayerPrefs.GetFloat("FixedYSpeed"); // in meter per second
+                    float joyConvRateDeg = maxJoyRotDeg / frameRate;
+
+                    // for deg/s
+                    float theta = joyConvRateDeg * moveX; // moveX consider to be in degree; We use joyConvRate in Degree
+
+                    // transfering theta from deg to rad if its necessary
+                    theta = theta * Mathf.Deg2Rad;
+
+                    //timeCounter += 0.005f * speedMultiplier;
+                    frameCounter += 1;
+                    frameCounterShared = frameCounter;
+                    timeCounter += Time.deltaTime;
+                    timeCounterShared = timeCounter;
+                    circX -= theta;//Unrealistic steering
+                    float x = Mathf.Cos(circX);
+                    float z = Mathf.Sin(circX);
+
+                    tmpCnt += 1;
+                    if (tmpCnt > 90)
+                    {
+                        tmpCnt = 0;
+                    }
+                    Vector3 previouspos = transform.position;
+                    //transform.position = new Vector3(moveY * timeCounter * x, 0f, moveY * timeCounter * z);
+                    transform.position = new Vector3(fixedSpeed * timeCounter * x, 0f, fixedSpeed * timeCounter * z);
+                    FF = GameObject.Find("Firefly");
+                    transform.LookAt(new Vector3(0f, 0f, 0f));
+                    transform.Rotate(0f, 180f, 0f);
+                    //transform.position = new Vector3(moveY * timeCounter * x, 1f, moveY * timeCounter * z);
+                    transform.position = new Vector3(fixedSpeed * timeCounter * x, 1f, fixedSpeed * timeCounter * z);
+                    circXlast = circX;
+                }
+            }
+            else
+            {
+                if(SharedReward.isTrial)
+                {
+                    transform.position = transform.position + transform.forward * currentSpeed * Time.deltaTime;
+                    transform.Rotate(0f, currentRot * Time.deltaTime, 0f);
+                }
+            }
         }
         catch (Exception e)
         {

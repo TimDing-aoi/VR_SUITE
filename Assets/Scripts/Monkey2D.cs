@@ -831,9 +831,9 @@ public class Monkey2D : MonoBehaviour
     }
 
     /// <summary>
-    /// Capture data at 120 Hz
+    /// Capture data at 90 Hz
     /// 
-    /// Set Unity's fixed timestep to 1/120 (0.00833333...) in order to get 120 Hz recording
+    /// Set Unity's fixed timestep to 1/90 (0.011111111...) in order to get 90 Hz recording
     /// Edit -> Project Settings -> Time -> Fixed Timestep
     /// </summary>
     public void FixedUpdate()

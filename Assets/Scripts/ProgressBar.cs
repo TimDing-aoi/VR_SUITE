@@ -1,52 +1,42 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
-using static ObjectPooler;
+using static Reward2D;
 
 public class ProgressBar : FillBar
 {
-
-    // Event to invoke when the progress bar fills up
-    private UnityEvent onProgressComplete;
-    public GameObject panel;
-
-    // Create a property to handle the slider's value
-    public new float CurrentValue
-    {
-        get
-        {
-            return base.CurrentValue;
-        }
-        set
-        {
-            // If the value exceeds the max fill, invoke the completion function
-            if (value >= 0.99995)
-            {
-                onProgressComplete.Invoke();
-            }
-
-            // Remove any overfill (i.e. 105% fill -> 5% fill)
-            base.CurrentValue = value % slider.maxValue;
-        }
-    }
+    public Canvas bar_canvas;
+    public float maxFFR;
+    public float minFFR;
 
     void Start()
     {
-        // Initialize onProgressComplete and set a basic callback
-        if (onProgressComplete == null)
-        {
-            onProgressComplete = new UnityEvent();
-            onProgressComplete.AddListener(OnProgressComplete);
-        }
+        minFFR = PlayerPrefs.GetFloat("Minimum Firefly Distance");
+        maxFFR = PlayerPrefs.GetFloat("Maximum Firefly Distance");
     }
 
     void Update()
     {
-        CurrentValue = ObjectPooler.SharedInstance.fill;
+        float onoff = SharedReward.GFFPhaseFlag;
+        if (onoff != 4)
+        {
+            bar_canvas.enabled = false;
+        }
+        else
+        {
+            bar_canvas.enabled = true;
+        }
+        float progress = Vector3.Distance(new Vector3(0f, 0f, 0f), SharedReward.player.transform.position) / ((maxFFR+minFFR)/2);
+        if (progress > 1)
+        {
+            progress = 1;
+        }
+        if (progress < 0.04)
+        {
+            progress = 0;
+        }
+        var objectScale = transform.localScale;
+        // Sets the local scale of game object
+        transform.localScale = new Vector3(progress, objectScale.y, objectScale.z);
     }
 
-    // The method to call when the progress bar fills up
-    void OnProgressComplete()
-    {
-        panel.SetActive(false);
-    }
 }

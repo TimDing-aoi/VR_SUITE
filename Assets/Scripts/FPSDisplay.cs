@@ -38,7 +38,7 @@ public class FPSDisplay : MonoBehaviour
 		style.normal.textColor = new Color(0.0f, 0.0f, 0.5f, 1.0f);
 		float msec = deltaTime * 1000.0f;
 		fps = 1.0f / deltaTime;
-		string text = string.Format("{0:0.0} ms ({1:0.} fps)\nTrial Number: {2}", msec, fps, reward.trialNum);
+		string text = string.Format("{0:0.0} ms ({1:0.} fps)\nTrial Number: {2}\nPhase: {3}", msec, fps, reward.trialNum, SharedReward.GFFPhaseFlag);
 		GUI.Label(rect, text, style);
 	}
 
