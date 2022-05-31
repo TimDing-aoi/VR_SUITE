@@ -260,7 +260,7 @@ public class GoToSettings : MonoBehaviour
         {
             if (obj.name == "Moving ON" || obj.name == "Feedback ON" || obj.name == "AboveBelow" || obj.name == "Full ON" || obj.name == "VertHor" || 
                 obj.name == "Gaussian Perturbation ON" || obj.name == "Optic Flow OnOff" || obj.name == "Stochastic Fire Flies" || obj.name == "Feedback" ||
-                obj.name == "SelfMotionOn")
+                obj.name == "SelfMotionOn" || obj.name == "isColored")
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<UnityEngine.UI.Toggle>().isOn ? 1 : 0);
             }

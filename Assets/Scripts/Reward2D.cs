@@ -171,6 +171,7 @@ public class Reward2D : MonoBehaviour
     readonly public List<float> ampDurations = new List<float>();
     readonly public List<float> toggleDurations = new List<float>();
     readonly public List<float> toggleRatios = new List<float>();
+    readonly public List<float> colorratios = new List<float>();
     private bool isFlowToggle;
     private bool isGaussian;
     private float currentAmp = 0;
@@ -1068,6 +1069,19 @@ public class Reward2D : MonoBehaviour
             for (int i = 1; i < 5; i++)
             {
                 ratios[i] = ratios[i] + ratios[i - 1];
+            }
+        }
+
+        if (PlayerPrefs.GetInt("isColored") == 1)
+        {
+            colorratios.Add(PlayerPrefs.GetFloat("red"));
+            colorratios.Add(PlayerPrefs.GetFloat("blue"));
+            colorratios.Add(PlayerPrefs.GetFloat("green"));
+            colorratios.Add(PlayerPrefs.GetFloat("yellow"));
+            colorratios.Add(PlayerPrefs.GetFloat("white"));
+            for (int i = 1; i < 5; i++)
+            {
+                colorratios[i] = colorratios[i] + colorratios[i - 1];
             }
         }
 
@@ -2048,6 +2062,35 @@ public class Reward2D : MonoBehaviour
                         tooClose = false;
                     }
                     pooledFF[i].transform.position = position;
+                    if (PlayerPrefs.GetInt("isColored") == 1)
+                    {
+                        float r = (float)rand.NextDouble();
+
+                        if (r <= colorratios[0])
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.red;
+                        }
+                        else if (r > colorratios[0] && r <= colorratios[1])
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.blue;
+                        }
+                        else if (r > colorratios[1] && r <= colorratios[2])
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.green;
+                        }
+                        else if (r > colorratios[2] && r <= colorratios[3])
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.yellow;
+                        }
+                        else if (r > colorratios[3] && r <= colorratios[4])
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.white;
+                        }
+                        else
+                        {
+                            pooledFF[i].GetComponent<SpriteRenderer>().color = Color.black;
+                        }
+                    }
                     ffPositions[i] = position;
                     initialPposition = player.transform.position;
                     initialPforward = player.transform.forward;
