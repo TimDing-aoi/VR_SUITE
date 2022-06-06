@@ -490,6 +490,10 @@ public class Reward2D : MonoBehaviour
         isCI = !(PlayerPrefs.GetFloat("FixedYSpeed") == 0);
 
         path = PlayerPrefs.GetString("Path");
+        if (!Directory.Exists(path))
+        {
+            SceneManager.LoadScene("errorpage");
+        }
 
         star1.SetActive(false);
         star2.SetActive(false);
