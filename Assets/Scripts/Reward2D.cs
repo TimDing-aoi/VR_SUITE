@@ -85,8 +85,9 @@ public class Reward2D : MonoBehaviour
         Fixed
     }
     private Modes mode;
-    // Is causal inference or not
+    // Is causal inference or not; or is CI demo
     private bool isCI;
+    private bool isDemo;
     // Toggle for whether trial is an always on trial or not
     public bool toggle;
     // Toggle for self motion
@@ -488,6 +489,7 @@ public class Reward2D : MonoBehaviour
         Rcam.ResetProjectionMatrix();
 
         isCI = !(PlayerPrefs.GetFloat("FixedYSpeed") == 0);
+        isDemo = PlayerPrefs.GetFloat("DevMode") == 1;
 
         path = PlayerPrefs.GetString("Path");
         if (!Directory.Exists(path))
@@ -806,7 +808,44 @@ public class Reward2D : MonoBehaviour
             ntrials = CItrialsetup.Count;
             CItrialNum = 0;
         }*/
-        if (isCI)
+        if (isDemo)
+        {
+            ratio = 0.6f;
+            for (int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
+            {
+                float SMspeedToggle = (float)rand.NextDouble();
+                float conditionspeed;
+                float conditionvelocity = CIvelocities[velocitiescondition];
+                Tuple<float, float, float, float, float> New_Tuple;
+                if (SMspeedToggle < 0.33)
+                {
+                    conditionspeed = SMspeeds[0];
+                }
+                else if(SMspeedToggle < 0.66)
+                {
+                    conditionspeed = SMspeeds[1];
+                }
+                else
+                {
+                    conditionspeed = SMspeeds[2];
+                }
+                if (conditionspeed != 0)
+                {
+                    New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                }
+                else
+                {
+                    New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                }
+                CItrialsetup.Add(New_Tuple);
+            }
+            Shuffle(CItrialsetup);
+            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
+            print(setupcheck);
+            ntrials = CItrialsetup.Count;
+            CItrialNum = 0;
+        }
+        else if (isCI)
         {
             for(int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
             {
@@ -5326,6 +5365,10 @@ public class Reward2D : MonoBehaviour
 
             xmlWriter.WriteStartElement("FFacceleration");
             xmlWriter.WriteString(PlayerPrefs.GetFloat("FFacceleration").ToString());
+            xmlWriter.WriteEndElement();
+
+            xmlWriter.WriteStartElement("DevMode");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("DevMode").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
