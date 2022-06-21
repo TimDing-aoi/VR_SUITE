@@ -810,37 +810,41 @@ public class Reward2D : MonoBehaviour
         }*/
         if (isDemo)
         {
-            ratio = 0.6f;
-            for (int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
+            float DemoNum = PlayerPrefs.GetFloat("DemoNum");
+            ratio = 1f;
+            for(int n = 0; n < DemoNum; n++)
             {
-                float SMspeedToggle = (float)rand.NextDouble();
-                float conditionspeed;
-                float conditionvelocity = CIvelocities[velocitiescondition];
-                Tuple<float, float, float, float, float> New_Tuple;
-                if (SMspeedToggle < 0.33)
+                for (int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
                 {
-                    conditionspeed = SMspeeds[0];
+                    float SMspeedToggle = (float)rand.NextDouble();
+                    float conditionspeed;
+                    float conditionvelocity = CIvelocities[velocitiescondition];
+                    Tuple<float, float, float, float, float> New_Tuple;
+                    if (SMspeedToggle < 0.33)
+                    {
+                        conditionspeed = SMspeeds[0];
+                    }
+                    else if (SMspeedToggle < 0.66)
+                    {
+                        conditionspeed = SMspeeds[1];
+                    }
+                    else
+                    {
+                        conditionspeed = SMspeeds[2];
+                    }
+                    if (conditionspeed != 0)
+                    {
+                        New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                    }
+                    else
+                    {
+                        New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                    }
+                    CItrialsetup.Add(New_Tuple);
                 }
-                else if(SMspeedToggle < 0.66)
-                {
-                    conditionspeed = SMspeeds[1];
-                }
-                else
-                {
-                    conditionspeed = SMspeeds[2];
-                }
-                if (conditionspeed != 0)
-                {
-                    New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
-                }
-                else
-                {
-                    New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
-                }
-                CItrialsetup.Add(New_Tuple);
             }
             Shuffle(CItrialsetup);
-            string setupcheck = "Causal Inference Task: total number of " + CItrialsetup.Count.ToString() + " trials";
+            string setupcheck = "Causal Inference Demo: total number of " + CItrialsetup.Count.ToString() + " trials";
             print(setupcheck);
             ntrials = CItrialsetup.Count;
             CItrialNum = 0;
@@ -853,13 +857,13 @@ public class Reward2D : MonoBehaviour
                 {
                     int conditioncount;
                     conditioncount = (int)(SMtrials[speeds] * CIratios[velocitiescondition]);
-                    int No_2_observ = (int)(conditioncount * 0.5);
+                    int No_2_observ = conditioncount/2;
                     while (conditioncount > 0)
                     {
                         float conditionvelocity = CIvelocities[velocitiescondition];
                         float conditionspeed = SMspeeds[speeds];
                         Tuple<float, float, float, float, float> New_Tuple;
-                        if (conditioncount >= No_2_observ)
+                        if (conditioncount > No_2_observ)
                         {
                             if (conditionspeed != 0)
                             {
@@ -884,6 +888,26 @@ public class Reward2D : MonoBehaviour
                         CItrialsetup.Add(New_Tuple);
                         conditioncount--;
                     }
+                }
+            }
+            if(ratio == -1)
+            {
+                int alwaysonNum = CItrialsetup.Count / 10;
+                for(int i = 0;i < alwaysonNum; i++)
+                {
+                    int alwaysonpos = rand.Next(1, CItrialsetup.Count);
+                    float condvel = CItrialsetup[alwaysonpos].Item1;
+                    float condspd = CItrialsetup[alwaysonpos].Item2;
+                    Tuple<float, float, float, float, float> New_Tuple;
+                    if (condvel != 0)
+                    {
+                        New_Tuple = new Tuple<float, float, float, float, float>(condvel, condspd, 1f, 1f, 1f);
+                    }
+                    else
+                    {
+                        New_Tuple = new Tuple<float, float, float, float, float>(condvel, condspd, 0f, 1f, 1f);
+                    }
+                    CItrialsetup.Add(New_Tuple);
                 }
             }
             Shuffle(CItrialsetup);
@@ -1371,6 +1395,10 @@ public class Reward2D : MonoBehaviour
                         {
                             toggle = true;
                         }
+                    }
+                    else if(ratio == -1)
+                    {
+                        toggle = AlwaysOntrial;
                     }
                     else
                     {
@@ -4190,11 +4218,21 @@ public class Reward2D : MonoBehaviour
                 foreach (var tuple in CItrialsetup)
                 {
                     int obscondition;
-                    if(alwaysON[trial_count] == true)
+
+                    if(trial_count == alwaysON.Count)
+                    {
+                        break;
+                    }
+
+                    if (tuple.Item4 == 1 && ratio == -1)
                     {
                         obscondition = 0;
                     }
-                    else if(tuple.Item5 == 0)
+                    else if(alwaysON[trial_count] == true)
+                    {
+                        obscondition = 0;
+                    }
+                    else if (tuple.Item5 == 0)
                     {
                         obscondition = 1;
                     }
