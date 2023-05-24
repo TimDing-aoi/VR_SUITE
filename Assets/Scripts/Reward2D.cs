@@ -50,6 +50,7 @@ public class Reward2D : MonoBehaviour
     [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
+    public GameObject eye_point;
 
     [HideInInspector] public int frameRate = 90;
 
@@ -1791,7 +1792,7 @@ public class Reward2D : MonoBehaviour
                     right.eye_openness = 0.0f;
                 }
 
-
+                eye_point.transform.position = location;
                 var tempPos = player.transform.position - player_origin;
 
                 //Nasta Added for sequential
