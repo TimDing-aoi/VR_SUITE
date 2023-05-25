@@ -333,7 +333,7 @@ public class GoToSettings : MonoBehaviour
             {
                 PlayerPrefs.SetInt(obj.name, obj.GetComponent<TMP_Dropdown>().value);
             }
-            else if (obj.name == "Path")
+            else if (obj.name == "Path" )
             {
                 string temp = input.text;
                 PlayerPrefs.SetString(obj.name, input.text);
@@ -345,6 +345,11 @@ public class GoToSettings : MonoBehaviour
                 {
                     Debug.LogException(e, this);
                 }
+            }
+            else if(obj.name == "Name")
+            {
+                string temp = input.text;
+                PlayerPrefs.SetString(obj.name, input.text);
             }
             else
             {

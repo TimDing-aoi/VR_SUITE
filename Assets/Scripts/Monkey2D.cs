@@ -690,7 +690,7 @@ public class Monkey2D : MonoBehaviour
         player.transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
         //print("Begin test.");
         systemStartTimeVerbose = DateTime.Now.ToString("MM-dd_HH-mm-ss");
-        contPath = path + "/continuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+        contPath = path + "/continuous_data_" + PlayerPrefs.GetString("Name") + "_" + DateTime.Today.ToString("MMddyyyy") + "_" + PlayerPrefs.GetInt("Run Number").ToString("D3") + ".txt";
         //string firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,LinearVelocty,AngularVelocity,FFX,FFY,FFZ,FFV,LeftGazeX,LeftGazeY,LeftGazeZ,LeftGazeX0,LeftGazeY0,LeftGazeZ0,LHitX,LHitY,LHitZ,LConvergenceDist,2DLHitX,2DLHitY,RightGazeX,RightGazeY,RightGazeZ,RightGazeX0,RightGazeY0,RightGazeZ0,RHitX,RHitY,RHitZ,RConvergenceDist,2DRHitX,2DRHitY,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,2DHitX,2DHitY,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen";
         string firstLine = "TrialNum,TrialTime,Phase,OnOff,PosX,PosY,PosZ,RotX,RotY,RotZ,RotW,LinearVelocty,AngularVelocity,FFX,FFY,FFZ,FFV,GazeX,GazeY,GazeZ,GazeX0,GazeY0,GazeZ0,HitX,HitY,HitZ,ConvergeDist,LeftPupilDiam,RightPupilDiam,LeftOpen,RightOpen";
         File.WriteAllText(contPath, firstLine + "\n");
@@ -855,6 +855,7 @@ public class Monkey2D : MonoBehaviour
             playing = false;
 
             File.AppendAllText(contPath, sb.ToString());
+            print(contPath);
             Save();
             juiceBox.close();
             SceneManager.LoadScene("MainMenu");
@@ -2121,7 +2122,7 @@ public class Monkey2D : MonoBehaviour
                 csvDisc.AppendLine(line);
             }
 
-            string discPath = path + "/discontinuous_data_" + PlayerPrefs.GetInt("Optic Flow Seed").ToString() + ".txt";
+            string discPath = path + "/discontinuous_data_" + PlayerPrefs.GetString("Name") + "_" + DateTime.Today.ToString("MMddyyyy") + "_" + PlayerPrefs.GetInt("Run Number").ToString("D3") + ".txt";
 
             //File.Create(discPath);
             File.WriteAllText(discPath, csvDisc.ToString());
