@@ -1663,7 +1663,7 @@ public class Reward2D : MonoBehaviour
                                                            
                 //print(randStdNormal);*/
                 double randStdNormal = 0;
-                if (PlayerPrefs.GetFloat("FixedYSpeed") != 0)
+                if (isCI)
                 {
                     //print(timeCounter);
                     if (GFFPhaseFlag == 4)
@@ -1671,17 +1671,17 @@ public class Reward2D : MonoBehaviour
                         //timeCounter += velocity * Mathf.Deg2Rad / 90;
                         if(velocity > 0)
                         {
-                            sign_v = 1;
+                            sign_v = -1;
                         }
                         else if(velocity < 0)
                         {
-                            sign_v = -1;
+                            sign_v = 1;
                         }
                         else
                         {
                             sign_v = 0;
                         }
-                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t1_acc) / t_max) * ((Time.time - t1_acc) / t_max));
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + -velocity * Mathf.Deg2Rad * (Time.time - t0_acc) + sign_v * dFF_acc * Mathf.Deg2Rad * (((Time.time - t1_acc) / t_max) * ((Time.time - t1_acc) / t_max));
                         //velocity_Noised = timeCounter + (float)randStdNormal * Mathf.Deg2Rad;
                         float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                         float y = 0.0001f;
@@ -1692,7 +1692,7 @@ public class Reward2D : MonoBehaviour
                     }
                     else if(GFFPhaseFlag > 2.5 && GFFPhaseFlag < 4)
                     {
-                        timeCounter = FF0_acc * Mathf.Deg2Rad + velocity * Mathf.Deg2Rad * (Time.time - t0_acc);
+                        timeCounter = FF0_acc * Mathf.Deg2Rad + -velocity * Mathf.Deg2Rad * (Time.time - t0_acc);
                         float x = (minDrawDistance + maxDrawDistance) * Mathf.Cos(timeCounter) / 2;
                         float y = 0.0001f;
                         float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(timeCounter) / 2;
@@ -3086,19 +3086,12 @@ public class Reward2D : MonoBehaviour
         }
         else if(PlayerPrefs.GetFloat("FixedYSpeed") != 0)
         {
-            float reward_radius = (maxDrawDistance + minDrawDistance) / 2;
-            float player_degree = 0;
-            if(pPos.x > 30)
-            {
-                player_degree = Mathf.Acos(30 / reward_radius) * Mathf.Rad2Deg;
-            }
-            else
-            {
-                player_degree = Mathf.Acos(pPos.x / reward_radius) * Mathf.Rad2Deg;
-            }
-            float FF_Degree = Mathf.Acos(firefly.transform.position.x / reward_radius) * Mathf.Rad2Deg;
-            float degree_score = Mathf.Abs(player_degree - FF_Degree);
-            if(degree_score <= 25)
+            float degree_score;
+            Vector3 player_vec = new Vector3(pPos.x, 0, pPos.z);
+            Vector3 FF_vec = new Vector3(firefly.transform.position.x, 0, firefly.transform.position.z);
+            degree_score = Vector3.Angle(player_vec, FF_vec);
+            print(degree_score);
+            if (degree_score <= 25)
             {
                 proximity = true;
             }
