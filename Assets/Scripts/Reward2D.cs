@@ -480,7 +480,7 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Start()
     {
-       
+        Application.targetFrameRate = 90;
 
         UnityEngine.XR.InputTracking.disablePositionalTracking = true;
         UnityEngine.XR.XRDevice.DisableAutoXRCameraTracking(Lcam, true);
