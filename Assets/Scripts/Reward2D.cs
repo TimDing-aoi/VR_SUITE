@@ -4287,20 +4287,8 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Player Height").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("EyeMode");
-            xmlWriter.WriteString(PlayerPrefs.GetInt("Eye Mode").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("FPMode");
-            xmlWriter.WriteString(PlayerPrefs.GetInt("FP Mode").ToString());
-            xmlWriter.WriteEndElement();
-
             xmlWriter.WriteStartElement("FeedbackON");
             xmlWriter.WriteString(PlayerPrefs.GetInt("Feedback ON").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("AboveBelow");
-            xmlWriter.WriteString(PlayerPrefs.GetInt("AboveBelow").ToString());
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
@@ -4308,69 +4296,21 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteStartElement("Setting");
             xmlWriter.WriteAttributeString("Type", "Joystick Settings");
 
-            xmlWriter.WriteStartElement("Type");
-            xmlWriter.WriteString(PlayerPrefs.GetInt("Type").ToString());
+            xmlWriter.WriteStartElement("MinLinearSpeed");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Min_Linear_Speed").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("TauTau");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Tau Tau").ToString());
+            xmlWriter.WriteStartElement("MaxLinearSpeed");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Max_Linear_Speed").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("FilterTau");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Filter Tau").ToString());
+            xmlWriter.WriteStartElement("MinAngularSpeed");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Min_Angular_Speed").ToString());
             xmlWriter.WriteEndElement();
 
-            xmlWriter.WriteStartElement("RotationNoiseGain");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Rotation Noise Gain").ToString());
+            xmlWriter.WriteStartElement("MaxAngularSpeed");
+            xmlWriter.WriteString(PlayerPrefs.GetFloat("Max_Angular_Speed").ToString());
             xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("VelocityNoiseGain");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocity Noise Gain").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("NumberOfTaus");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Number Of Taus").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("MinTau");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Min Tau").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("MaxTau");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Max Tau").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("MeanDistance");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Mean Distance").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("MeanTravelTime");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Mean Travel Time").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("VelocityThreshold");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Velocity Threshold").ToString());
-            xmlWriter.WriteEndElement();
-
-            xmlWriter.WriteStartElement("RotationThreshold");
-            xmlWriter.WriteString(PlayerPrefs.GetFloat("Rotation Threshold").ToString());
-            xmlWriter.WriteEndElement();
-
-            //xmlWriter.WriteStartElement("MinVelocityGain");
-            //xmlWriter.WriteString(PlayerPrefs.GetFloat("Min Velocity Gain").ToString());
-            //xmlWriter.WriteEndElement();
-
-            //xmlWriter.WriteStartElement("MaxVelocityGain");
-            //xmlWriter.WriteString(PlayerPrefs.GetFloat("Max Velocity Gain").ToString());
-            //xmlWriter.WriteEndElement();
-
-            //xmlWriter.WriteStartElement("MinRotationGain");
-            //xmlWriter.WriteString(PlayerPrefs.GetFloat("Min Rotation Gain").ToString());
-            //xmlWriter.WriteEndElement();
-
-            //xmlWriter.WriteStartElement("MaxRotationGain");
-            //xmlWriter.WriteString(PlayerPrefs.GetFloat("MinRotationGain").ToString());
-            //xmlWriter.WriteEndElement();
 
             xmlWriter.WriteEndElement();
 
