@@ -45,12 +45,18 @@ public class Reward2D : MonoBehaviour
     public static Reward2D SharedReward;
 
     public GameObject firefly;
+    SpriteRenderer FFrender;
     public GameObject line;
     public GameObject progressbar;
+    public GameObject mapimage;
     [HideInInspector] public int lineOnOff = 1;
     public GameObject marker;
     public GameObject panel;
     public GameObject eye_point;
+    public GameObject leftArr;
+    public GameObject rightArr;
+    public TrailRenderer player_trail;
+    public TrailRenderer FF_trail;
 
     [HideInInspector] public int frameRate = 90;
 
@@ -90,7 +96,7 @@ public class Reward2D : MonoBehaviour
     private bool isCI;
     private bool isDemo;
     // Toggle for whether trial is an always on trial or not
-    public bool toggle;
+    public bool toggleAlwaysOn;
     // Toggle for self motion
     public bool motion_toggle = false;
     // Toggle for habituation/observation
@@ -510,6 +516,8 @@ public class Reward2D : MonoBehaviour
         darkstar5.SetActive(false);
         starring.SetActive(false);
 
+        FFrender = firefly.GetComponent<SpriteRenderer>();
+
         List<XRDisplaySubsystem> displaySubsystems = new List<XRDisplaySubsystem>();
         SubsystemManager.GetInstances<XRDisplaySubsystem>(displaySubsystems);
         if (displaySubsystems.Count > 0)
@@ -811,8 +819,7 @@ public class Reward2D : MonoBehaviour
         }*/
         if (isDemo)
         {
-            float DemoNum = PlayerPrefs.GetFloat("DemoNum");
-            ratio = 1f;
+            float DemoNum = 4;
             for(int n = 0; n < DemoNum; n++)
             {
                 for (int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
@@ -833,13 +840,27 @@ public class Reward2D : MonoBehaviour
                     {
                         conditionspeed = SMspeeds[2];
                     }
-                    if (conditionspeed != 0)
+                    if(DemoNum < 2)
                     {
-                        New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                        if (conditionspeed != 0)
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                        }
+                        else
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                        }
                     }
                     else
                     {
-                        New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                        if (conditionspeed != 0)
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                        }
+                        else
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                        }
                     }
                     CItrialsetup.Add(New_Tuple);
                 }
@@ -1260,7 +1281,7 @@ public class Reward2D : MonoBehaviour
                     }
                 }
             }
-            firefly.SetActive(false);
+            FFrender.enabled = false;
         }
         //Nasta add ends
         //ipd = ;
@@ -1324,7 +1345,7 @@ public class Reward2D : MonoBehaviour
 
         player_rotation_initial = player.transform.rotation;
 
-        firefly.SetActive(false);
+        FFrender.enabled = false;
     }
 
     /// <summary>
@@ -1357,6 +1378,14 @@ public class Reward2D : MonoBehaviour
     /// </summary>
     void Update()
     {
+        if (GFFPhaseFlag != 4)
+        {
+            progressbar.SetActive(false);
+        }
+        else
+        {
+            progressbar.SetActive(true);
+        }
         for (int k = (int)StochasticFFN * 2; k < nFF; k++)
         {
             pooledFF[k].SetActive(false);
@@ -1394,16 +1423,16 @@ public class Reward2D : MonoBehaviour
                     {
                         if (nFF > 1)
                         {
-                            toggle = true;
+                            toggleAlwaysOn = true;
                         }
                     }
                     else if(ratio == -1)
                     {
-                        toggle = AlwaysOntrial;
+                        toggleAlwaysOn = AlwaysOntrial;
                     }
                     else
                     {
-                        toggle = rand.NextDouble() <= ratio;
+                        toggleAlwaysOn = rand.NextDouble() <= ratio;
                     }
                     currentTask = Begin();
                     beginTimeTmp = Time.realtimeSinceStartup;
@@ -1428,7 +1457,7 @@ public class Reward2D : MonoBehaviour
                         }
                         else
                         {
-                            firefly.SetActive(false);
+                            FFrender.enabled = false;
                         }
                     }
                     currentTask = Check();
@@ -1715,7 +1744,7 @@ public class Reward2D : MonoBehaviour
             if (isEnd)
             {
                 endTime.Add(Time.realtimeSinceStartup - programT0);
-                if (toggle)
+                if (toggleAlwaysOn)
                 {
                     onDur.Add(lifeSpan);
                 }
@@ -1936,6 +1965,9 @@ public class Reward2D : MonoBehaviour
         }
 
         player.transform.position = Vector3.up * p_height;
+        
+        player_trail.Clear();
+        FF_trail.Clear();
         //Nasta Added for sequential
 
         if (nFF > 1 && multiMode == 1)
@@ -2175,7 +2207,7 @@ public class Reward2D : MonoBehaviour
         }
         else
         {
-            firefly.SetActive(false);
+            FFrender.enabled = false;
             Vector3 position;
             float r = minDrawDistance + (maxDrawDistance - minDrawDistance) * Mathf.Sqrt((float)rand.NextDouble());
             float angle = (float)rand.NextDouble() * (maxPhi - minPhi) + minPhi;
@@ -2196,6 +2228,8 @@ public class Reward2D : MonoBehaviour
                 float z = (minDrawDistance + maxDrawDistance) * Mathf.Sin(0f) / 2;
                 position = new Vector3(x, y, z);
                 firefly.transform.position = position;
+                player_trail.Clear();
+                FF_trail.Clear();
             }
             else
             {
@@ -2423,7 +2457,7 @@ public class Reward2D : MonoBehaviour
                     }
                     break;
                 case Modes.Fixed:
-                    if (toggle)
+                    if (toggleAlwaysOn)
                     {
                         foreach (GameObject FF in pooledFF)
                         {
@@ -2484,7 +2518,7 @@ public class Reward2D : MonoBehaviour
                 case Modes.ON:
                     if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
                     {
-                        firefly.SetActive(true);
+                        FFrender.enabled = true;
                     }
                     break;
                 case Modes.Flash:
@@ -2492,7 +2526,7 @@ public class Reward2D : MonoBehaviour
                     flashTask = Flash(firefly);
                     break;
                 case Modes.Fixed:
-                    if (toggle)
+                    if (toggleAlwaysOn)
                     {
                         alwaysON.Add(true);
 
@@ -2516,7 +2550,7 @@ public class Reward2D : MonoBehaviour
                                     print(Vector3.Magnitude(firefly.transform.position - player.transform.position));
                                     firefly.transform.position += Vector3.Normalize(player.transform.forward) * halfArea;
 
-                                    firefly.SetActive(true);
+                                    FFrender.enabled = true;
                                 }
                                 player.transform.position += currentDirection * perturb[i];
                                 await new WaitForFixedUpdate();
@@ -2532,7 +2566,7 @@ public class Reward2D : MonoBehaviour
                             if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
                             {
                                 SetFireflyLocation();
-                                firefly.SetActive(true);
+                                FFrender.enabled = true;
                             }
                         }
                         //Debug.Log("always on");
@@ -2635,9 +2669,9 @@ public class Reward2D : MonoBehaviour
 
         source = new CancellationTokenSource();
 
-        bool is_gitter = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
+        bool isCIFF = PlayerPrefs.GetFloat("FixedYSpeed") != 0;
 
-        if (lineOnOff == 1 && is_gitter)
+        if (lineOnOff == 1 && isCIFF)
         {
             //preperation
             GFFPhaseFlag = 1;
@@ -2680,7 +2714,7 @@ public class Reward2D : MonoBehaviour
             line.SetActive(true);
         }
 
-        if (is_gitter)
+        if (isCIFF)
         {
 
             //ramp up
@@ -2733,14 +2767,16 @@ public class Reward2D : MonoBehaviour
             firefly.transform.position = position;
             ffPositions.Add(position);
             timeCounter = FF_circX * Mathf.Deg2Rad;
-            firefly.SetActive(true);
+            player_trail.Clear();
+            FF_trail.Clear();
+            FFrender.enabled = true;
             ObservationStart.Add(Time.realtimeSinceStartup);
 
             int endFrame = (int)(Time.frameCount + frameRate * sharedTimeStamps.observation);
             await new WaitUntil(() => Time.frameCount == endFrame);
-            if (!toggle)
+            if (!toggleAlwaysOn)
             {
-                firefly.SetActive(false);
+                FFrender.enabled = false;
             }
 
             //ramp down
@@ -2752,18 +2788,18 @@ public class Reward2D : MonoBehaviour
         //Action
         GFFPhaseFlag = 4;
         t1_acc = Time.time;//Action phase begin time
-        if (is_gitter)
+        if (isCIFF)
         {
             ActionStart.Add(Time.realtimeSinceStartup);
             await new WaitForSeconds(0.75f);
             if (DoubleObservtrial)
             {
-                firefly.SetActive(true);
+                FFrender.enabled = true;
             }
             await new WaitForSeconds(0.3f);
-            if (!toggle)
+            if (!toggleAlwaysOn)
             {
-                firefly.SetActive(false);
+                FFrender.enabled = false;
             }
             await new WaitForSeconds(0.45f);
         }
@@ -2799,20 +2835,8 @@ public class Reward2D : MonoBehaviour
             on = false;
         }
 
-        //if (toggle)
-        //{
-        //    if (nFF > 1)
-        //    {
-        //        pooledFF[loopCount].GetComponent<SpriteRenderer>().enabled = false;
-        //    }
-        //    else
-        //    {
-        //        firefly.SetActive(false);
-        //    }
-        //}
-
         //Nasta Added for sequential
-        if (toggle)
+        if (toggleAlwaysOn)
         {
             if (nFF > 1 && multiMode == 1)
             {
@@ -2832,7 +2856,7 @@ public class Reward2D : MonoBehaviour
                     pooledFF[loopCount].SetActive(false);
                 }
 
-                if (toggle && (isTimeout || loopCount + 1 >= nFF))
+                if (toggleAlwaysOn && (isTimeout || loopCount + 1 >= nFF))
                 {
                     onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
                 }
@@ -2846,10 +2870,10 @@ public class Reward2D : MonoBehaviour
             }
             else
             {
-                firefly.SetActive(false);
+                FFrender.enabled = false;
             }
 
-            if (toggle && multiMode != 1)
+            if (toggleAlwaysOn && multiMode != 1)
             {
                 //onDur.Add(Time.realtimeSinceStartup - beginTime[beginTime.Count - 1] - programT0);
             }
@@ -3091,6 +3115,8 @@ public class Reward2D : MonoBehaviour
             Vector3 FF_vec = new Vector3(firefly.transform.position.x, 0, firefly.transform.position.z);
             degree_score = Vector3.Angle(player_vec, FF_vec);
             print(degree_score);
+            Vector3 center = new Vector3(0, 0, 0);
+            int direction = DetermineRotationDirection(center, player_vec, FF_vec);
             if (degree_score <= 25)
             {
                 proximity = true;
@@ -3114,6 +3140,14 @@ public class Reward2D : MonoBehaviour
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
                 CIScores.Add(4f);
+                if (direction == 1)
+                {
+                    leftArr.SetActive(true);
+                }
+                else
+                {
+                    rightArr.SetActive(true);
+                }
             }
             else if (degree_score <= 15)
             {
@@ -3124,6 +3158,14 @@ public class Reward2D : MonoBehaviour
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
                 CIScores.Add(3f);
+                if (direction == 1)
+                {
+                    leftArr.SetActive(true);
+                }
+                else
+                {
+                    rightArr.SetActive(true);
+                }
             }
             else if (degree_score <= 20)
             {
@@ -3134,6 +3176,14 @@ public class Reward2D : MonoBehaviour
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
                 CIScores.Add(2f);
+                if (direction == 1)
+                {
+                    leftArr.SetActive(true);
+                }
+                else
+                {
+                    rightArr.SetActive(true);
+                }
             }
             else if (degree_score <= 25)
             {
@@ -3144,6 +3194,14 @@ public class Reward2D : MonoBehaviour
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
                 CIScores.Add(1f);
+                if (direction == 1)
+                {
+                    leftArr.SetActive(true);
+                }
+                else
+                {
+                    rightArr.SetActive(true);
+                }
             }
             else
             {
@@ -3154,6 +3212,19 @@ public class Reward2D : MonoBehaviour
                 darkstar5.SetActive(true);
                 starring.SetActive(true);
                 CIScores.Add(0f);
+                if (direction == 1)
+                {
+                    leftArr.SetActive(true);
+                }
+                else
+                {
+                    rightArr.SetActive(true);
+                }
+            }
+            if (isDemo)
+            {
+                mapimage.SetActive(true);
+                await new WaitForSeconds(2f);
             }
             await new WaitForSeconds(sharedTimeStamps.feedback);
             star1.SetActive(false);
@@ -3167,9 +3238,10 @@ public class Reward2D : MonoBehaviour
             darkstar4.SetActive(false);
             darkstar5.SetActive(false);
             starring.SetActive(false);
+            leftArr.SetActive(false);
+            rightArr.SetActive(false);
+            mapimage.SetActive(false);
             print(string.Format("Scored: {0}", degree_score));
-            //print(player_degree);
-            //print(FF_Degree);
             ffPosStr = string.Format("{0},{1},{2}", firefly.transform.position.z, firefly.transform.position.y, firefly.transform.position.x);
             distances.Add(degree_score);
         }
@@ -3423,13 +3495,13 @@ public class Reward2D : MonoBehaviour
             if (!proximity && (PlayerPrefs.GetInt("Feedback ON") == 1) && PlayerPrefs.GetFloat("FixedYSpeed") == 0)
             {
                 currPhase = Phases.feedback;
-                firefly.SetActive(true);
+                FFrender.enabled = true;
                 mesh.enabled = true;
                 text.enabled = true;
                 await new WaitForSeconds(2.0f);
                 text.enabled = false;
                 mesh.enabled = false;
-                firefly.SetActive(false);
+                FFrender.enabled = false;
             }
 
             float wait = i_lambda * Mathf.Exp(-i_lambda * ((float)rand.NextDouble() * (i_max - i_min) + i_min));
@@ -3722,7 +3794,7 @@ public class Reward2D : MonoBehaviour
 
         if (PlayerPrefs.GetFloat("FixedYSpeed") == 0)
         {
-            firefly.SetActive(true);
+            FFrender.enabled = true;
         }
 
         var t = Task.Run(async () =>
@@ -3732,11 +3804,11 @@ public class Reward2D : MonoBehaviour
 
         if (await Task.WhenAny(t, Task.Run(async () => { await new WaitUntil(() => currPhase == Phases.check); })) == t)
         {
-            firefly.SetActive(false);
+            FFrender.enabled = false;
         }
         else
         {
-            firefly.SetActive(false);
+            FFrender.enabled = false;
         }
 
         source.Cancel();
@@ -3746,7 +3818,7 @@ public class Reward2D : MonoBehaviour
     {
         CancellationTokenSource source = new CancellationTokenSource();
 
-        firefly.SetActive(true);
+        FFrender.enabled = true;
 
         var t = Task.Run(async () =>
         {
@@ -3780,7 +3852,7 @@ public class Reward2D : MonoBehaviour
     {
         while (on)
         {
-            if (toggle && !obj.activeInHierarchy)
+            if (toggleAlwaysOn && !obj.activeInHierarchy)
             {
                 obj.GetComponent<SpriteRenderer>().enabled = false;
             }
@@ -5354,6 +5426,30 @@ public class Reward2D : MonoBehaviour
         catch (Exception e)
         {
             UnityEngine.Debug.LogError(e);
+        }
+    }
+
+    public static int DetermineRotationDirection(Vector3 center, Vector3 pointA, Vector3 pointB)
+    {
+        Vector2 vectorA = new Vector2(pointA.x - center.x, pointA.z - center.z);
+        Vector2 vectorB = new Vector2(pointB.x - center.x, pointB.z - center.z);
+
+        float crossProduct = vectorA.x * vectorB.y - vectorA.y * vectorB.x;
+
+        if (Math.Abs(crossProduct) < 1e-9)
+        {
+            // Points are collinear
+            return 0;
+        }
+        else if (crossProduct > 0)
+        {
+            // Clockwise
+            return 1;
+        }
+        else
+        {
+            // Counterclockwise
+            return 2;
         }
     }
 }
