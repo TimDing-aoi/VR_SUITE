@@ -819,8 +819,8 @@ public class Reward2D : MonoBehaviour
         }*/
         if (isDemo)
         {
-            float DemoNum = 4;
-            for(int n = 0; n < DemoNum; n++)
+            float DemoNum = PlayerPrefs.GetFloat("DemoNum") ;
+            for(int n = (int)DemoNum; n < 9; n++)
             {
                 for (int velocitiescondition = 0; velocitiescondition < 11; velocitiescondition++)
                 {
@@ -828,7 +828,13 @@ public class Reward2D : MonoBehaviour
                     float conditionspeed;
                     float conditionvelocity = CIvelocities[velocitiescondition];
                     Tuple<float, float, float, float, float> New_Tuple;
-                    if (SMspeedToggle < 0.33)
+
+                    //Demo Yaw speeds
+                    if(n == 0 || n == 3 || n == 6)
+                    {
+                        conditionspeed = 0;
+                    }
+                    else if (SMspeedToggle < 0.33)
                     {
                         conditionspeed = SMspeeds[0];
                     }
@@ -840,7 +846,19 @@ public class Reward2D : MonoBehaviour
                     {
                         conditionspeed = SMspeeds[2];
                     }
-                    if(DemoNum < 2)
+
+                    if(n < 3)
+                    {
+                        if (conditionspeed != 0)
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 1f, 1f);
+                        }
+                        else
+                        {
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 1f, 1f);
+                        }
+                    }
+                    else if (n < 6)
                     {
                         if (conditionspeed != 0)
                         {
@@ -855,11 +873,11 @@ public class Reward2D : MonoBehaviour
                     {
                         if (conditionspeed != 0)
                         {
-                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 1f);
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 1f, 0f, 0f);
                         }
                         else
                         {
-                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 1f);
+                            New_Tuple = new Tuple<float, float, float, float, float>(conditionvelocity, conditionspeed, 0f, 0f, 0f);
                         }
                     }
                     CItrialsetup.Add(New_Tuple);
