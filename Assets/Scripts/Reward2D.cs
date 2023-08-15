@@ -4402,6 +4402,10 @@ public class Reward2D : MonoBehaviour
             xmlWriter.WriteString(PlayerPrefs.GetFloat("Max_Angular_Speed").ToString());
             xmlWriter.WriteEndElement();
 
+            xmlWriter.WriteStartElement("AngularSpeed");
+            xmlWriter.WriteString(60f.ToString());
+            xmlWriter.WriteEndElement();
+
             xmlWriter.WriteEndElement();
 
             xmlWriter.WriteStartElement("Setting");
