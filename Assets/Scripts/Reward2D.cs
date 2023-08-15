@@ -883,7 +883,6 @@ public class Reward2D : MonoBehaviour
                     CItrialsetup.Add(New_Tuple);
                 }
             }
-            Shuffle(CItrialsetup);
             string setupcheck = "Causal Inference Demo: total number of " + CItrialsetup.Count.ToString() + " trials";
             print(setupcheck);
             ntrials = CItrialsetup.Count;
@@ -1437,14 +1436,7 @@ public class Reward2D : MonoBehaviour
             {
                 case Phases.begin:
                     phase = Phases.none;
-                    if (mode == Modes.ON)
-                    {
-                        if (nFF > 1)
-                        {
-                            toggleAlwaysOn = true;
-                        }
-                    }
-                    else if(ratio == -1)
+                    if(isDemo)
                     {
                         toggleAlwaysOn = AlwaysOntrial;
                     }
